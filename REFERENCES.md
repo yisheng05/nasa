@@ -26,6 +26,10 @@ Access: [AppEEARS](https://appeears.earthdatacloud.nasa.gov/), [Earthdata Search
 | SoilGrids 2.0 | ISRIC | Soil properties outside the US | [SoilGrids](https://soilgrids.org/) |
 | OpTIS | CTIC / TNC / Regrow | Context only | [OpTIS 2.0](https://www.farmprogress.com/crops/optis-20-adds-geography-cropping-seasons-and-search-options) |
 
+## Rules and guidance
+
+- NASA Space Apps 2026 [Participant FAQs](https://www.spaceappschallenge.org/resources/participant-faqs/), [2026 event page](https://www.spaceappschallenge.org/2026/), [Project Submission Guide](https://www.spaceappschallenge.org/resources/project-submission-guide/), [Judging & Awards Guide](https://www.spaceappschallenge.org/resources/judging-awards-guide)
+
 ## Research and agronomy
 
 - Bowles, T. M. et al. (2020). Long-term evidence shows that crop-rotation diversification increases agricultural resilience to adverse growing conditions in North America. *One Earth* 2(3). DOI: [10.1016/j.oneear.2020.02.007](https://doi.org/10.1016/j.oneear.2020.02.007)
@@ -41,5 +45,5 @@ See `requirements.txt`. Add any third-party code copied or adapted here, with a 
 
 | Tool | Used for |
 |---|---|
-| Claude Code (Anthropic) | Pre-event repo setup: README, rules checklist, this file, the data-access check script |
+| Claude Code (Anthropic) | Pre-event: repo setup, README, rules checklist, this file, the data-access check script (9 Nov); research on 2026 rules and revision of the design handoff to v2.1 (13 Nov) |
 | | *(add tools used during the event)* |
