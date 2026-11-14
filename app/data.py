@@ -80,6 +80,21 @@ def load_hls(fid: str) -> pd.DataFrame | None:
     return pd.read_parquet(p) if p.exists() else None
 
 
+def load_engine1(fid: str) -> dict | None:
+    p = PROCESSED / fid / "engine1.json"
+    return json.loads(p.read_text()) if p.exists() else None
+
+
+def load_smooth(fid: str) -> pd.Series | None:
+    p = PROCESSED / fid / "ndvi_smooth.parquet"
+    return pd.read_parquet(p)["ndvi_smooth"] if p.exists() else None
+
+
+def coverage_text(e1: dict) -> str:
+    names = {"L30": "Landsat", "S30": "Sentinel-2"}
+    return ", ".join(f"{names.get(s, s)} {a}–{b}" for s, (a, b) in e1["coverage"].items())
+
+
 def field_label(fid: str, static: dict, props: dict) -> str:
     letter = fid.split("_")[-1].upper()
     return f"Field {letter} · {static['area_ha']['value']:.1f} ha · corn {props.get('corn_years', '?')} yrs"

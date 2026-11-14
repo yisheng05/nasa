@@ -28,15 +28,37 @@ def _style(chart: alt.Chart) -> alt.Chart:
     )
 
 
-def season_strip(seq: pd.DataFrame, cover: pd.DataFrame | None = None, stress: pd.DataFrame | None = None) -> alt.Chart:
-    """Ten seasons on one strip: crop (CDL or farmer), living cover (Engine 1), stress window (Engine 2)."""
+COMPUTED = "#f6f5f2"
+
+
+def _cover_cell(rec: dict | None) -> tuple[str, str, str]:
+    """Label, fill and tooltip for the no-living-cover row."""
+    if rec is None:
+        return "no data yet", PENDING, "HLS for this season not downloaded or processed yet"
+    if rec.get("no_living_cover_share") is None:
+        return "—", PENDING, rec.get("note") or "Not enough clear observations"
+    months = rec["no_living_cover_share"] * 12
+    label = f"{months:.1f} mo" + ("*" if rec.get("cover_year_partial") else "")
+    tip = (
+        f"No living cover {rec['no_living_cover_days']} of {rec['cover_year_days']} days "
+        f"({rec['cover_year_start']} to {rec['cover_year_end']}{', partial year' if rec.get('cover_year_partial') else ''}). "
+        f"Green-up {rec['greenup_date']}, peak {rec['peak_date']} (NDVI {rec['peak_ndvi']}), end of living cover {rec['living_cover_end']}. "
+        f"Off-season living days {rec.get('off_season_living_days')}. Spring: {rec['spring_green']}. Confidence {rec['confidence']}."
+    )
+    return label, COMPUTED, tip
+
+
+def season_strip(seq: pd.DataFrame, e1_seasons: list[dict] | None = None) -> alt.Chart:
+    """Ten seasons on one strip: crop (CDL or farmer), no living cover (Engine 1), stress window (Engine 2)."""
+    by_year = {r["season"]: r for r in (e1_seasons or [])}
     rows = []
     for r in seq.itertuples():
         rows.append({"season": str(r.season), "row": "Crop", "label": r.crop.replace("soybeans", "soy"), "fill": CROP_COLOURS.get(r.crop, NEUTRAL), "tip": f"{r.crop} · source {r.source}", "ink": "#ffffff" if r.crop == "soybeans" else INK})
-        rows.append({"season": str(r.season), "row": "Living cover", "label": "pending", "fill": PENDING, "tip": "Engine 1 (HLS 30 m): not computed yet", "ink": INK_2})
+        label, fill, tip = _cover_cell(by_year.get(r.season))
+        rows.append({"season": str(r.season), "row": "No living cover", "label": label, "fill": fill, "tip": tip, "ink": INK if fill == COMPUTED else INK_2})
         rows.append({"season": str(r.season), "row": "Stress at sensitive stage", "label": "pending", "fill": PENDING, "tip": "Engine 2: not computed yet", "ink": INK_2})
     df = pd.DataFrame(rows)
-    order = ["Crop", "Living cover", "Stress at sensitive stage"]
+    order = ["Crop", "No living cover", "Stress at sensitive stage"]
     base = alt.Chart(df).encode(
         x=alt.X("season:O", title=None, axis=alt.Axis(orient="top", labelAngle=0, domain=False, ticks=False)),
         y=alt.Y("row:N", title=None, sort=order, axis=alt.Axis(domain=False, ticks=False, labelLimit=220)),
@@ -48,20 +70,31 @@ def season_strip(seq: pd.DataFrame, cover: pd.DataFrame | None = None, stress: p
     return _style((cells + text).properties(height=150))
 
 
-def ndvi_scatter(obs: pd.DataFrame) -> alt.Chart:
+def ndvi_scatter(obs: pd.DataFrame, smooth: pd.Series | None = None, threshold: float | None = None) -> alt.Chart:
     d = obs.copy()
     d["Sensor"] = d["sensor"].map({"L30": "Landsat (L30)", "S30": "Sentinel-2 (S30)"})
     d["kept"] = d["passes_v1"].map({True: "Kept (≥ 50 valid px)", False: "Dropped (V1)"})
     sel = alt.selection_point(nearest=True, on="pointerover", fields=["date"], empty=False)
+    domain, rng = ["Landsat (L30)", "Sentinel-2 (S30)"], [BLUE, ORANGE]
+    layers = []
+    if smooth is not None:
+        domain, rng = [*domain, "Smoothed (Engine 1)"], [*rng, INK_2]
+        sm = smooth.rename("ndvi").reset_index().rename(columns={"index": "date"})
+        sm.columns = ["date", "ndvi"]
+        sm["Sensor"] = "Smoothed (Engine 1)"
+        layers.append(alt.Chart(sm).mark_line(strokeWidth=2).encode(x="date:T", y="ndvi:Q", color=alt.Color("Sensor:N", scale=alt.Scale(domain=domain, range=rng), legend=alt.Legend(title=None))))
+    if threshold is not None:
+        th = pd.DataFrame({"y": [threshold]})
+        layers.append(alt.Chart(th).mark_rule(color=INK_2, strokeDash=[4, 4], strokeWidth=1).encode(y="y:Q", tooltip=[alt.Tooltip("y:Q", title="Living-cover threshold")]))
     pts = alt.Chart(d).mark_circle(size=70, stroke=SURFACE, strokeWidth=2).encode(
         x=alt.X("date:T", title=None),
         y=alt.Y("ndvi_median:Q", title="Field median NDVI", scale=alt.Scale(domain=[-0.1, 1.0])),
-        color=alt.Color("Sensor:N", scale=alt.Scale(domain=["Landsat (L30)", "Sentinel-2 (S30)"], range=[BLUE, ORANGE]), legend=alt.Legend(title=None)),
+        color=alt.Color("Sensor:N", scale=alt.Scale(domain=domain, range=rng), legend=alt.Legend(title=None)),
         opacity=alt.condition(alt.datum.passes_v1, alt.value(0.9), alt.value(0.15)),
         tooltip=[alt.Tooltip("date:T", title="Date"), alt.Tooltip("Sensor:N"), alt.Tooltip("ndvi_median:Q", title="NDVI median", format=".2f"), alt.Tooltip("n_valid:Q", title="Valid pixels"), alt.Tooltip("kept:N", title="V1")],
     ).add_params(sel)
     rule = alt.Chart(d).mark_rule(color=INK_2, strokeWidth=1).encode(x="date:T").transform_filter(sel)
-    return _style((pts + rule).properties(height=280))
+    return _style(alt.layer(*layers, pts, rule).properties(height=300))
 
 
 def trend_chart(metrics: pd.DataFrame, col: str, title: str, unit: str, band: dict, corn_years: list[int]) -> alt.Chart:

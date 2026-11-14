@@ -40,6 +40,16 @@ def _hls(fid: str) -> pd.DataFrame | None:
 
 
 @st.cache_data
+def _engine1(fid: str) -> dict | None:
+    return D.load_engine1(fid)
+
+
+@st.cache_data
+def _smooth(fid: str) -> pd.Series | None:
+    return D.load_smooth(fid)
+
+
+@st.cache_data
 def _props() -> dict:
     return D.demo_props()
 
@@ -67,6 +77,7 @@ with st.sidebar:
     rented = st.checkbox(D.LONG_TERM_NOTE)
 
 static, power, hls = _static(fid), _power(fid), _hls(fid)
+e1, smooth = _engine1(fid), _smooth(fid)
 props = PROPS.get(fid, {})
 
 # farmer edits take precedence over CDL (handoff §8.1)
@@ -83,7 +94,7 @@ with st.sidebar:
         ("Slope", "NASADEM (NASA SRTM), V12 passed", True),
         ("Weather and root-zone wetness", "NASA POWER 1981–2025", True),
         ("Greenness", "NASA HLS 30 m via AppEEARS", hls is not None),
-        ("Engine 1 · cover days", "HLS", False),
+        ("Engine 1 · cover days", f"HLS: {D.coverage_text(e1)}" if e1 else "waiting for HLS", e1 is not None),
         ("Engine 2 · stress windows", "POWER, SMAP L4", False),
         ("Engine 3 · ratings", "Engines 1–2, soil, catalogue", False),
     ]
@@ -111,18 +122,32 @@ t_hist, t_cond, t_rot, t_inputs, t_sum = st.tabs(["Field history", "Changing con
 
 # ---------------------------------------------------------------- field history
 with t_hist:
+    if e1:
+        sm, sens = e1["summary"], e1["sensitivity_no_living_cover_months"]
+        m1, m2, m3 = st.columns(3)
+        m1.metric("No living cover", f"~{sm['no_living_cover_months_per_year']} months a year", help=f"{e1['source']}. Mean over {sm['complete_cover_years']} complete cover years; any green vegetation counts as living cover.")
+        m2.metric("Spring green before the crop", f"{sm['spring_green_seasons']} of {sm['spring_assessable_seasons']} springs", help="Springs with ≥ 2 clear scenes 15 Mar–30 Apr. Green may be a cover crop, weeds or volunteers: confirm before crediting.")
+        m3.metric("Autumn green after the crop", f"{sm['autumn_green_seasons']} of {len(e1['seasons'])} seasons", help="≥ 2 clear observations ≥ 0.40 after the end of living cover. Recorded, not credited as a cover crop.")
+        st.caption(
+            f"Coverage so far: {D.coverage_text(e1)}. Living-cover threshold NDVI {e1['method']['cover_threshold_ndvi']:.2f} (provisional); "
+            f"at 0.35 / 0.40 / 0.45 the headline is {sens['0.35']} / {sens['0.40']} / {sens['0.45']} months a year."
+        )
     st.subheader("Ten seasons on one strip")
-    st.altair_chart(charts.season_strip(seq), width="stretch", theme=None)
-    st.caption("Crop from the USDA Cropland Data Layer unless you edited it under Your inputs. Living cover (Engine 1) and stress at the sensitive stage (Engine 2) are not computed yet.")
+    st.altair_chart(charts.season_strip(seq, e1["seasons"] if e1 else None), width="stretch", theme=None)
+    st.caption("Crop from the USDA Cropland Data Layer unless you edited it under Your inputs. No living cover = months of each cover year (end of one season's living canopy to the next) with no green vegetation; * = partial first year. Hover a cell for dates. Stress at the sensitive stage (Engine 2) is not computed yet.")
     if hls is not None:
         st.subheader("Field greenness, every clear satellite pass")
-        st.altair_chart(charts.ndvi_scatter(hls), width="stretch", theme=None)
+        st.altair_chart(charts.ndvi_scatter(hls, smooth, e1["method"]["cover_threshold_ndvi"] if e1 else None), width="stretch", theme=None)
         cov = ", ".join(f"{s} {g.date.dt.year.min()}–{g.date.dt.year.max()}" for s, g in hls.groupby("sensor"))
-        st.caption(f"Median NDVI over the field interior, NASA HLS v2.0, 30 m. Coverage so far: {cov} (L30 = Landsat, S30 = ESA Sentinel-2; other AppEEARS tasks still processing). Faded points had fewer than 50 valid pixels after cloud masking (V1).")
+        thr = f" Dashed line: living-cover threshold NDVI {e1['method']['cover_threshold_ndvi']:.2f}." if e1 else ""
+        st.caption(f"Median NDVI over the field interior, NASA HLS v2.0, 30 m. Coverage so far: {cov} (L30 = Landsat, S30 = ESA Sentinel-2; other AppEEARS tasks still processing). Faded points had fewer than 50 valid pixels after cloud masking (V1). Grey line: Engine 1 smoothed curve.{thr}")
     else:
         st.info("Satellite greenness (NASA HLS, 30 m) is still processing in AppEEARS. Once it lands, this tab shows every clear pass since 2016, then the cover days and spring-cover flags from Engine 1.")
     with st.expander("Show data"):
         st.dataframe(seq, hide_index=True, width="stretch")
+        if e1:
+            cols = ["season", "crop", "greenup_date", "peak_date", "peak_ndvi", "decline_date", "living_cover_end", "cover_year_days", "living_cover_days", "off_season_living_days", "no_living_cover_share", "spring_green", "autumn_green_obs", "n_obs_apr_oct", "max_gap_apr_oct", "confidence"]
+            st.dataframe(pd.DataFrame(e1["seasons"])[cols], hide_index=True, width="stretch")
 
 # ---------------------------------------------------------------- changing conditions
 with t_cond:
@@ -245,8 +270,16 @@ with t_sum:
         "## Your priorities",
         ", ".join(f"{i + 1} {p.lower()}" for i, p in enumerate(priorities)) or "Not set",
         "",
+        "## Soil cover (Engine 1, NASA HLS 30 m)",
+        (
+            f"- No living cover: about {e1['summary']['no_living_cover_months_per_year']} months a year "
+            f"({D.coverage_text(e1)}; threshold NDVI {e1['method']['cover_threshold_ndvi']:.2f}, range "
+            f"{e1['sensitivity_no_living_cover_months']['0.35']}–{e1['sensitivity_no_living_cover_months']['0.45']})\n"
+            f"- Spring green before the crop: {e1['summary']['spring_green_seasons']} of {e1['summary']['spring_assessable_seasons']} assessable springs (confirm before crediting a cover crop)"
+            if e1 else "- Pending: HLS still processing"
+        ),
+        "",
         "## Pending",
-        "- Living cover and bare periods per season (Engine 1, NASA HLS 30 m)",
         "- Stress at the sensitive stage, and how often it recurs (Engine 2)",
         "- Rotation ratings with evidence and confidence (Engine 3)",
         "",
