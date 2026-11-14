@@ -53,6 +53,7 @@ MAX_GAP_HIGH_CONF = 30  # days, April-October
 SUPPORT_DAYS = 30  # a living-cover day needs a clear observation >= threshold this close
 PEAK_CAP_DAYS = 45
 PEAK_CAP_TOL = 0.02
+PEAK_GAP_UNCERTAIN = 30  # days
 
 
 def whittaker(y: np.ndarray, w: np.ndarray, lam: float = WHITTAKER_LAMBDA) -> np.ndarray:
@@ -90,6 +91,8 @@ class Season:
     max_gap_apr_oct: int | None
     peak_date: str | None = None
     peak_ndvi: float | None = None
+    peak_gap_days: int | None = None  # days between the clear observations either side of the peak
+    peak_uncertain: bool = False  # peak_gap_days > PEAK_GAP_UNCERTAIN: peak value and date uncertain
     greenup_date: str | None = None
     decline_date: str | None = None
     integrated_ndvi: float | None = None
@@ -167,6 +170,12 @@ def run(obs: pd.DataFrame, crops: dict[int, str], seasons: list[int], threshold:
         below = autumn[autumn < threshold]
         harvest = below.index[0] if len(below) else None
         s.peak_date, s.peak_ndvi = peak_day.date().isoformat(), round(peak, 3)
+        before, after = gdates[gdates <= peak_day], gdates[gdates >= peak_day]
+        if len(before) and len(after):
+            s.peak_gap_days = int((after.min() - before.max()).days)
+        s.peak_uncertain = s.peak_gap_days is None or s.peak_gap_days > PEAK_GAP_UNCERTAIN
+        if s.peak_uncertain:
+            s.note = f"peak in a {s.peak_gap_days}-day cloudy gap: value held near the clear maximum; peak value and date uncertain"
         s.greenup_date = greenup.date().isoformat() if greenup is not None else None
         s.decline_date = decline.date().isoformat() if decline is not None else None
         if greenup is not None and decline is not None:

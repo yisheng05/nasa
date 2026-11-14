@@ -42,7 +42,7 @@ def _cover_cell(rec: dict | None) -> tuple[str, str, str]:
     tip = (
         f"No living cover {rec['no_living_cover_days']} of {rec['cover_year_days']} days "
         f"({rec['cover_year_start']} to {rec['cover_year_end']}{', partial year' if rec.get('cover_year_partial') else ''}). "
-        f"Green-up {rec['greenup_date']}, peak {rec['peak_date']} (NDVI {rec['peak_ndvi']}), end of living cover {rec['living_cover_end']}. "
+        f"Green-up {rec['greenup_date']}, peak {rec['peak_date']} (NDVI {rec['peak_ndvi']}{f", uncertain: {rec.get('peak_gap_days')}-day cloudy gap" if rec.get('peak_uncertain') else ''}), end of living cover {rec['living_cover_end']}. "
         f"Off-season living days {rec.get('off_season_living_days')}. Spring: {rec['spring_green']}. Confidence {rec['confidence']}."
     )
     return label, COMPUTED, tip

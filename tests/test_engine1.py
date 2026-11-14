@@ -85,6 +85,9 @@ def test_no_overshoot_across_cloudy_peak():
     _, z = E.run(o, CROPS, YEARS)
     seen = o[o.date.dt.year == 2019].ndvi_median.max()
     assert z["2019-04-01":"2019-10-31"].max() <= seen + E.PEAK_CAP_TOL + 1e-9
+    seasons, _ = E.run(o, CROPS, YEARS)
+    assert next(s for s in seasons if s.season == 2019).peak_uncertain
+    assert not next(s for s in seasons if s.season == 2018).peak_uncertain
 
 
 def test_v7_deterministic():
