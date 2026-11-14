@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import charts
 from app import data as D
+from pipeline import engine3 as E3
 
 st.set_page_config(page_title="Field Shift", page_icon="🌱", layout="wide")
 
@@ -50,6 +51,11 @@ def _engine2(fid: str) -> dict | None:
 
 
 @st.cache_data
+def _engine3(fid: str) -> dict | None:
+    return D.load_engine3(fid)
+
+
+@st.cache_data
 def _smooth(fid: str) -> pd.Series | None:
     return D.load_smooth(fid)
 
@@ -73,17 +79,18 @@ with st.sidebar:
     st.subheader("Your priorities")
     priorities = st.multiselect(
         "Pick in order of importance",
-        D.PRIORITIES,
+        E3.PRIORITIES,
         default=["Soil protection", "Water and stress risk", "Workload and simplicity"],
         help="The order you pick sets the row order in Rotation options. It never changes the evidence or the ratings (test V9).",
     )
     st.subheader("Constraints")
-    active = {k for k, label in D.CONSTRAINTS.items() if st.checkbox(label, key=f"c_{k}")}
+    active = {k for k, label in E3.CONSTRAINTS.items() if st.checkbox(label, key=f"c_{k}")}
     rented = st.checkbox(D.LONG_TERM_NOTE)
 
 static, power, hls = _static(fid), _power(fid), _hls(fid)
 e1, smooth = _engine1(fid), _smooth(fid)
 e2 = _engine2(fid)
+e3 = _engine3(fid)
 props = PROPS.get(fid, {})
 
 # farmer edits take precedence over CDL (handoff §8.1)
@@ -102,7 +109,7 @@ with st.sidebar:
         ("Greenness", "NASA HLS 30 m via AppEEARS", hls is not None),
         ("Engine 1 · cover days", f"HLS: {D.coverage_text(e1)}" if e1 else "waiting for HLS", e1 is not None),
         ("Engine 2 · stress windows", "POWER (SMAP L4 pending)" if e2 and "SMAP" not in e2["source"] else "POWER, SMAP L4", e2 is not None),
-        ("Engine 3 · ratings", "Engines 1–2, soil, catalogue", False),
+        ("Engine 3 · ratings", "Engines 1–2, soil, slope, crop catalogue", e3 is not None),
     ]
     for name, src, ok in status:
         st.markdown(f"{'✅' if ok else '⏳'} **{name}**  \n<span style='color:#52514e;font-size:0.85em'>{src}</span>", unsafe_allow_html=True)
@@ -200,27 +207,54 @@ with t_cond:
 # ---------------------------------------------------------------- rotation options
 with t_rot:
     st.subheader("Rotation options against your priorities")
-    kept, dropped = D.apply_constraints(active)
-    for name, why in dropped:
-        st.warning(f"**{name}** removed: {why}.")
-    crit = D.ordered_criteria(priorities)
-    table = pd.DataFrame(
-        {c["name"]: [("baseline" if i == 0 else "pending") for _ in crit] + ["—" if i == 0 else "pending"] for i, c in enumerate(kept)},
-        index=pd.Index([*crit, "Confidence"], name="Criterion (your priority order)"),
-    )
-    st.dataframe(table, width="stretch")
-    order_txt = " → ".join(priorities) if priorities else "no priorities chosen (default order)"
-    st.caption(f"Rows follow your priorities: {order_txt}. Ratings will be better / similar / worse relative to the current rotation, each with its evidence and confidence (Engine 3, not built yet). Changing priorities reorders rows; it never changes a rating (V9).")
-    if rented:
-        st.info("On a short lease, the benefits of cover crops and longer rotations build over years and may not reach the person farming. Check lease terms before choosing.")
-    with st.expander("What each rating will use"):
-        for k in crit:
-            st.markdown(f"**{k}.** {D.CRITERION_EVIDENCE[k]}")
-    with st.expander("What this tool cannot establish"):
-        st.markdown(
-            "- Yield or profit effects on this field.\n- Soil organic carbon, nitrogen, phosphorus, pH, compaction or biology.\n"
-            "- Whether winter green is a cover crop or weeds: confirm before crediting it.\n- Field-level moisture: drivers are regional (9 km and ~0.5°)."
+    if not e3:
+        st.info("Engine 3 runs once Engines 1 and 2 have this field's seasons.")
+    else:
+        ratings = e3["ratings"]
+        kept, dropped = E3.apply_constraints(active)
+        for name, why in dropped:
+            st.warning(f"**{name}** removed: {why}.")
+        for note in e3["notes"]:
+            st.info(note)
+        ranked = E3.rank(ratings, kept, priorities)
+        crit = E3.ordered_criteria(priorities)
+        sym = {"better": "▲ better", "similar": "● similar", "worse": "▼ worse", "baseline": "baseline"}
+        table = pd.DataFrame(
+            {c["name"]: [str(i + 1)] + [sym[ratings[c["id"]][k]["rating"]] for k in crit] for i, c in enumerate(ranked)},
+            index=pd.Index(["Rank under your priorities", *crit], name="Criterion (your priority order)"),
         )
+        st.dataframe(table, width="stretch")
+        order_txt = " → ".join(priorities) if priorities else "no priorities chosen (default order)"
+        st.caption(
+            f"Ratings are relative to the current rotation. Options are ordered by your first priority, then the next to break ties: {order_txt}. "
+            "Changing priorities reorders rows and options; it never changes a rating (V9). Income is not predicted."
+        )
+        top = ranked[0]
+        if top["id"] == "cs":
+            st.markdown("**Under these priorities the current rotation ranks first.** Each alternative costs more workload than it returns on your top priority.")
+        else:
+            gains = [k for k in crit if ratings[top["id"]][k]["rating"] == "better"]
+            costs = [k for k in crit if ratings[top["id"]][k]["rating"] == "worse"]
+            est = ratings[top["id"]]["Soil cover and living roots"].get("estimate")
+            st.markdown(
+                f"**Worth discussing: {top['name']}.** Better on {', '.join(g.lower() for g in gains) or 'nothing'}; "
+                f"worse on {', '.join(c.lower() for c in costs) or 'nothing'}." + (f" Soil cover: {est}." if est else "")
+            )
+        wi = E3.what_if(ratings, kept, priorities)
+        st.markdown("**How stable is this?** Top option if each priority came first:")
+        st.dataframe(pd.DataFrame({"If this came first": list(wi.keys()), "Top option": list(wi.values())}), hide_index=True, width="stretch")
+        if rented:
+            st.info("On a short lease, the benefits of cover crops and longer rotations build over years and may not reach the person farming. Check lease terms before choosing.")
+        for c in ranked:
+            if c["id"] == "cs":
+                continue
+            with st.expander(f"Evidence: {c['name']}"):
+                for k in crit:
+                    cell = ratings[c["id"]][k]
+                    st.markdown(f"**{k}: {cell['rating']}** (confidence {cell['confidence']}). {cell['evidence']}" + (f"  \n*Verify:* {cell['verify']}" if cell["verify"] else ""))
+        with st.expander("What this tool cannot establish"):
+            st.markdown("\n".join(f"- {x}" for x in e3["not_established"]))
+        st.caption("Crop characteristics: " + "; ".join(e3["sources"]) + ". Confirm the catalogue with an agronomist before relying on it.")
 
 # ---------------------------------------------------------------- inputs
 with t_inputs:
@@ -273,6 +307,25 @@ with t_inputs:
         st.caption(f"{props.get('naip_note', '')}. Selected because CDL shows strict corn/soybean alternation 2016–2025; checked on NAIP 2025.")
 
 # ---------------------------------------------------------------- summary
+def _rotation_lines() -> list[str]:
+    kept, dropped = E3.apply_constraints(active)
+    ranked = E3.rank(e3["ratings"], kept, priorities)
+    lines = []
+    for i, c in enumerate(ranked):
+        r = e3["ratings"][c["id"]]
+        if c["id"] == "cs":
+            lines.append(f"{i + 1}. {c['name']}: baseline")
+            continue
+        better = [k.lower() for k in E3.CRITERIA if r[k]["rating"] == "better"]
+        worse = [k.lower() for k in E3.CRITERIA if r[k]["rating"] == "worse"]
+        lines.append(f"{i + 1}. {c['name']}: better on {', '.join(better) or 'nothing'}; worse on {', '.join(worse) or 'nothing'}")
+    lines += [f"- Removed by your constraints: {n} ({why})" for n, why in dropped]
+    verify = sorted({r[k]["verify"] for c in ranked if c["id"] != "cs" for r in [e3["ratings"][c["id"]]] for k in E3.CRITERIA if r[k]["verify"]})
+    if verify:
+        lines += ["", "Verify with an agronomist:", *[f"- {v}" for v in verify]]
+    return lines
+
+
 with t_sum:
     st.subheader("One page for the agronomist conversation")
     seq_txt = " ".join("C" if c == "corn" else "S" if c == "soybeans" else c[:3] for c in seq.crop)
@@ -303,12 +356,11 @@ with t_sum:
             if e2 else "- Pending"
         ),
         "",
-        "## Pending",
-        *([] if e2 else ["- Stress at the sensitive stage, and how often it recurs (Engine 2)"]),
-        "- Rotation ratings with evidence and confidence (Engine 3)",
+        "## Rotation options (Engine 3)",
+        *(_rotation_lines() if e3 else ["- Pending"]),
         "",
         "## Not established by this tool",
-        "Yield or profit effects on this field; change in soil carbon or nutrients.",
+        *([f"- {x}" for x in e3["not_established"]] if e3 else ["Yield or profit effects on this field; change in soil carbon or nutrients."]),
     ]
     text = "\n".join(md)
     st.markdown(text)

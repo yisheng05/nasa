@@ -1,0 +1,261 @@
+{
+ "field_id": "field_b",
+ "generated": "2026-11-14T09:11:06Z",
+ "engine": "Engine 3: Rotation Comparison (handoff \u00a78.3)",
+ "candidates": [
+  {
+   "id": "cs",
+   "name": "Corn\u2013soybean (current)",
+   "crops": [
+    "corn",
+    "soybeans"
+   ],
+   "covers": [],
+   "needs": []
+  },
+  {
+   "id": "cs_rye",
+   "name": "Corn\u2013soybean + cereal rye cover",
+   "crops": [
+    "corn",
+    "soybeans"
+   ],
+   "covers": [
+    "cereal rye"
+   ],
+   "needs": [
+    "cover_termination"
+   ]
+  },
+  {
+   "id": "cso_rc",
+   "name": "Corn\u2013soybean\u2013oats/red clover",
+   "crops": [
+    "corn",
+    "soybeans",
+    "oats"
+   ],
+   "covers": [
+    "red clover"
+   ],
+   "needs": [
+    "small_grain_market"
+   ]
+  }
+ ],
+ "criteria": [
+  "Soil cover and living roots",
+  "Erosion protection",
+  "Water and stress exposure",
+  "Nitrogen needs",
+  "Workload and complexity",
+  "Crop diversity"
+ ],
+ "priorities": [
+  "Soil protection",
+  "Water and stress risk",
+  "Nitrogen and input needs",
+  "Workload and simplicity",
+  "Crop diversity"
+ ],
+ "criteria_for_priority": {
+  "Soil protection": [
+   "Soil cover and living roots",
+   "Erosion protection"
+  ],
+  "Water and stress risk": [
+   "Water and stress exposure"
+  ],
+  "Nitrogen and input needs": [
+   "Nitrogen needs"
+  ],
+  "Workload and simplicity": [
+   "Workload and complexity"
+  ],
+  "Crop diversity": [
+   "Crop diversity"
+  ]
+ },
+ "constraints": {
+  "small_grain_market": "No local market for small grains (oats)",
+  "cover_termination": "Can't manage spring termination of a cover crop"
+ },
+ "ratings": {
+  "cs": {
+   "Soil cover and living roots": {
+    "rating": "baseline",
+    "evidence": "Current rotation; other options are rated against it.",
+    "confidence": "\u2014",
+    "verify": "",
+    "estimate": ""
+   },
+   "Erosion protection": {
+    "rating": "baseline",
+    "evidence": "Current rotation; other options are rated against it.",
+    "confidence": "\u2014",
+    "verify": "",
+    "estimate": ""
+   },
+   "Water and stress exposure": {
+    "rating": "baseline",
+    "evidence": "Current rotation; other options are rated against it.",
+    "confidence": "\u2014",
+    "verify": "",
+    "estimate": ""
+   },
+   "Nitrogen needs": {
+    "rating": "baseline",
+    "evidence": "Current rotation; other options are rated against it.",
+    "confidence": "\u2014",
+    "verify": "",
+    "estimate": ""
+   },
+   "Workload and complexity": {
+    "rating": "baseline",
+    "evidence": "Current rotation; other options are rated against it.",
+    "confidence": "\u2014",
+    "verify": "",
+    "estimate": ""
+   },
+   "Crop diversity": {
+    "rating": "baseline",
+    "evidence": "Current rotation; other options are rated against it.",
+    "confidence": "\u2014",
+    "verify": "",
+    "estimate": ""
+   }
+  },
+  "cs_rye": {
+   "Soil cover and living roots": {
+    "rating": "better",
+    "evidence": "Now about 8.2 months a year without living cover (Engine 1, NASA HLS 30 m). In nearby cover years with autumn green, the share without living cover was 0.14 lower (\u22481.7 months) than in matched years without it. Applied to this field's uncovered years: about 7.1 months a year. Satellite already shows autumn green after corn here in several seasons, so part of the gain is in place. Lower bound: cereal rye also grows in spring, which the observed (likely winter-killed) cover did not.",
+    "confidence": "moderate",
+    "verify": "Whether autumn green on this or nearby fields is a planted cover (confirm with the farmer).",
+    "estimate": "~7.1 months a year without living cover (now ~8.2)"
+   },
+   "Erosion protection": {
+    "rating": "better",
+    "evidence": "Better cover (winter cover over bare ground). Erosion importance here is lower: field mean slope 1.62% (NASADEM, smoothed; V12), 90th percentile 2.74%, SSURGO slope 1.607%, K factor 0.276.",
+    "confidence": "moderate",
+    "verify": "",
+    "estimate": ""
+   },
+   "Water and stress exposure": {
+    "rating": "similar",
+    "evidence": "Same cash crops, so the same mid-summer sensitive stages; this field's record shows a dry or hot sensitive window in 4 of 10 recent seasons (expected 2.7 from 1991\u20132020; regional). Rye uses spring soil water before termination; can matter in a dry spring.",
+    "confidence": "low\u2013moderate",
+    "verify": "Earlier rye termination in dry springs.",
+    "estimate": ""
+   },
+   "Nitrogen needs": {
+    "rating": "similar",
+    "evidence": "Soybean credit unchanged. Cereal rye takes up leftover nitrate; can tie up nitrogen ahead of corn if terminated late.",
+    "confidence": "moderate",
+    "verify": "Rye termination timing ahead of corn, or rye ahead of soybeans only.",
+    "estimate": ""
+   },
+   "Crop diversity": {
+    "rating": "better",
+    "evidence": "3 species in 3 functional groups, against 2 species in 2 groups now (corn, soybeans, cereal rye).",
+    "confidence": "high",
+    "verify": "",
+    "estimate": ""
+   },
+   "Workload and complexity": {
+    "rating": "worse",
+    "evidence": "Adds autumn seeding and spring termination: seed in autumn after harvest; terminate in spring, well ahead of corn planting (ISU guidance is commonly ~10-14 days).",
+    "confidence": "moderate",
+    "verify": "Seeding equipment, labour at harvest, termination plan.",
+    "estimate": ""
+   }
+  },
+  "cso_rc": {
+   "Soil cover and living roots": {
+    "rating": "better",
+    "evidence": "Now about 8.2 months a year without living cover. In the oats year, oats then red clover keep living cover from spring through autumn and into the next spring (nurse crop for red clover, which covers the soil after oat harvest). Not observed on these fields, so not quantified.",
+    "confidence": "low\u2013moderate",
+    "verify": "Clover establishment under oats on this soil.",
+    "estimate": ""
+   },
+   "Erosion protection": {
+    "rating": "better",
+    "evidence": "Better cover (living cover through most of the small-grain year). Erosion importance here is lower: field mean slope 1.62% (NASADEM, smoothed; V12), 90th percentile 2.74%, SSURGO slope 1.607%, K factor 0.276.",
+    "confidence": "moderate",
+    "verify": "",
+    "estimate": ""
+   },
+   "Water and stress exposure": {
+    "rating": "better",
+    "evidence": "In 1 year of 3 the cash crop is oats, whose sensitive stage (heading to grain fill, typically June; harvested in July) comes before the July\u2013August windows of corn and soybeans; this field's record shows a dry or hot sensitive window in 4 of 10 recent seasons (expected 2.7 from 1991\u20132020; regional). Corn and soybeans occupy 2 of 3 years instead of every year.",
+    "confidence": "low\u2013moderate",
+    "verify": "Oat sensitive-stage timing locally; clover's late-summer water use.",
+    "estimate": ""
+   },
+   "Nitrogen needs": {
+    "rating": "better",
+    "evidence": "Red clover is a legume; leaves a nitrogen credit for the following corn, in addition to the soybean credit.",
+    "confidence": "moderate",
+    "verify": "Clover stand density before corn.",
+    "estimate": ""
+   },
+   "Crop diversity": {
+    "rating": "better",
+    "evidence": "4 species in 3 functional groups, against 2 species in 2 groups now (corn, soybeans, oats, red clover).",
+    "confidence": "high",
+    "verify": "",
+    "estimate": ""
+   },
+   "Workload and complexity": {
+    "rating": "worse",
+    "evidence": "Adds a third crop to plant, harvest (July) and market or feed, plus clover establishment and termination: more change to operations than a cover crop alone.",
+    "confidence": "moderate",
+    "verify": "Small-grain harvest equipment, storage, local oat market.",
+    "estimate": ""
+   }
+  }
+ },
+ "erosion_importance": "lower",
+ "current_no_living_cover_months": 8.2,
+ "cover_effect": {
+  "share_reduction": 0.14,
+  "months_per_year": 1.7,
+  "evidence": {
+   "soybeans": {
+    "with": [
+     [
+      "field_a",
+      2017
+     ],
+     [
+      "field_b",
+      2018
+     ],
+     [
+      "field_b",
+      2022
+     ],
+     [
+      "field_b",
+      2024
+     ]
+    ],
+    "n_without": 9
+   }
+  }
+ },
+ "notes": [
+  "Satellite shows autumn green after the crop in 4 seasons on this field, consistent with a cover crop already in some years (confirm). If so, the current rotation already includes part of the cover-crop option."
+ ],
+ "sources": [
+  "Iowa State University Extension and Outreach",
+  "Midwest Cover Crops Council",
+  "Practical Farmers of Iowa",
+  "SARE, Managing Cover Crops Profitably (3rd ed.)"
+ ],
+ "not_established": [
+  "Yield or profit effects on this field.",
+  "Soil organic carbon, nitrogen, phosphorus, pH, compaction or biology.",
+  "Whether autumn or spring green is a planted cover, weeds or volunteers (confirm before crediting).",
+  "Field-level soil moisture: stress drivers are regional (POWER ~0.5\u00b0, SMAP 9 km)."
+ ]
+}

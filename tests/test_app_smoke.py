@@ -30,8 +30,8 @@ def test_constraint_removes_small_grain_option():
     at = _run()
     at.checkbox(key="c_small_grain_market").check().run()
     assert not at.exception
-    assert any("oats/clover" in w.value for w in at.warning)
-    assert "Corn–soybean–oats/clover" not in _option_table(at).columns
+    assert any("oats/red clover" in w.value for w in at.warning)
+    assert "Corn–soybean–oats/red clover" not in _option_table(at).columns
 
 
 def test_v9_priorities_reorder_columns_not_ratings():
@@ -40,7 +40,9 @@ def test_v9_priorities_reorder_columns_not_ratings():
     at.multiselect[0].set_value(["Crop diversity", "Soil protection"]).run()
     assert not at.exception
     after = _option_table(at)
-    assert after.index[0] == "Crop diversity"
+    assert after.index[1] == "Crop diversity"  # row 0 is the rank
     assert set(after.index) == set(before.index)
     for row in before.index:
-        assert list(before.loc[row]) == list(after.loc[row])
+        if row == "Rank under your priorities":
+            continue
+        assert before.loc[row].to_dict() == after.loc[row].to_dict()  # same rating for every option

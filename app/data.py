@@ -22,37 +22,6 @@ BASELINE = (1991, 2020)
 WINDOW = ((6, 15), (8, 15))  # calendar proxy for the maize sensitive period
 HOT_DAY_C = 30.0  # the maize GDD cap (handoff §7.4)
 
-PRIORITIES = [
-    "Soil protection",
-    "Water and stress risk",
-    "Nitrogen and input needs",
-    "Workload and simplicity",
-    "Crop diversity",
-]
-CRITERIA_FOR_PRIORITY = {
-    "Soil protection": ["Soil cover and living roots", "Erosion protection"],
-    "Water and stress risk": ["Water and stress exposure"],
-    "Nitrogen and input needs": ["Nitrogen needs"],
-    "Workload and simplicity": ["Workload and complexity"],
-    "Crop diversity": ["Crop diversity"],
-}
-CRITERION_EVIDENCE = {
-    "Soil cover and living roots": "Observed no-living-cover days per year (Engine 1, HLS 30 m), adjusted by the candidate's practice.",
-    "Erosion protection": "Cover rating combined with field slope (NASADEM, smoothed; V12) and SSURGO slope class.",
-    "Water and stress exposure": "Overlap of each crop's sensitive stage with this field's recurring stress window (Engine 2).",
-    "Nitrogen needs": "Legume credits in the sequence (crop catalogue, extension sources).",
-    "Crop diversity": "Number of distinct crops and functional groups in the rotation.",
-    "Workload and complexity": "Qualitative, from equipment and practices the farmer confirms.",
-}
-CANDIDATES = [
-    {"name": "Corn–soybean (current)", "needs": set()},
-    {"name": "Corn–soybean + cereal rye cover", "needs": {"cover_termination"}},
-    {"name": "Corn–soybean–oats/clover", "needs": {"small_grain_market"}},
-]
-CONSTRAINTS = {
-    "small_grain_market": "No local market for small grains (oats)",
-    "cover_termination": "Can't manage spring termination of a cover crop",
-}
 LONG_TERM_NOTE = "Rented land on a short lease"
 
 CROP_OPTIONS = ["corn", "soybeans", "oats", "alfalfa", "winter wheat", "fallow/idle", "other"]
@@ -87,6 +56,11 @@ def load_engine1(fid: str) -> dict | None:
 
 def load_engine2(fid: str) -> dict | None:
     p = PROCESSED / fid / "engine2.json"
+    return json.loads(p.read_text()) if p.exists() else None
+
+
+def load_engine3(fid: str) -> dict | None:
+    p = PROCESSED / fid / "engine3.json"
     return json.loads(p.read_text()) if p.exists() else None
 
 
@@ -173,25 +147,3 @@ def corn_season_context(metrics: pd.DataFrame, seq: pd.DataFrame) -> pd.DataFram
             }
         )
     return pd.DataFrame(rows)
-
-
-def ordered_criteria(priority_order: list[str]) -> list[str]:
-    seen, out = set(), []
-    for p in priority_order + [p for p in PRIORITIES if p not in priority_order]:
-        for c in CRITERIA_FOR_PRIORITY[p]:
-            if c not in seen:
-                seen.add(c)
-                out.append(c)
-    return out
-
-
-def apply_constraints(active: set[str]) -> tuple[list[dict], list[tuple[str, str]]]:
-    """Engine 3 step 1: drop candidates that break a stated hard constraint."""
-    kept, dropped = [], []
-    for c in CANDIDATES:
-        hit = c["needs"] & active
-        if hit:
-            dropped.append((c["name"], "; ".join(CONSTRAINTS[h] for h in sorted(hit))))
-        else:
-            kept.append(c)
-    return kept, dropped
