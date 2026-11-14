@@ -85,6 +85,11 @@ def load_engine1(fid: str) -> dict | None:
     return json.loads(p.read_text()) if p.exists() else None
 
 
+def load_engine2(fid: str) -> dict | None:
+    p = PROCESSED / fid / "engine2.json"
+    return json.loads(p.read_text()) if p.exists() else None
+
+
 def load_smooth(fid: str) -> pd.Series | None:
     p = PROCESSED / fid / "ndvi_smooth.parquet"
     return pd.read_parquet(p)["ndvi_smooth"] if p.exists() else None

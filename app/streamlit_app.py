@@ -45,6 +45,11 @@ def _engine1(fid: str) -> dict | None:
 
 
 @st.cache_data
+def _engine2(fid: str) -> dict | None:
+    return D.load_engine2(fid)
+
+
+@st.cache_data
 def _smooth(fid: str) -> pd.Series | None:
     return D.load_smooth(fid)
 
@@ -78,6 +83,7 @@ with st.sidebar:
 
 static, power, hls = _static(fid), _power(fid), _hls(fid)
 e1, smooth = _engine1(fid), _smooth(fid)
+e2 = _engine2(fid)
 props = PROPS.get(fid, {})
 
 # farmer edits take precedence over CDL (handoff §8.1)
@@ -95,7 +101,7 @@ with st.sidebar:
         ("Weather and root-zone wetness", "NASA POWER 1981–2025", True),
         ("Greenness", "NASA HLS 30 m via AppEEARS", hls is not None),
         ("Engine 1 · cover days", f"HLS: {D.coverage_text(e1)}" if e1 else "waiting for HLS", e1 is not None),
-        ("Engine 2 · stress windows", "POWER, SMAP L4", False),
+        ("Engine 2 · stress windows", "POWER (SMAP L4 pending)" if e2 and "SMAP" not in e2["source"] else "POWER, SMAP L4", e2 is not None),
         ("Engine 3 · ratings", "Engines 1–2, soil, catalogue", False),
     ]
     for name, src, ok in status:
@@ -133,8 +139,8 @@ with t_hist:
             f"at 0.35 / 0.40 / 0.45 the headline is {sens['0.35']} / {sens['0.40']} / {sens['0.45']} months a year."
         )
     st.subheader("Ten seasons on one strip")
-    st.altair_chart(charts.season_strip(seq, e1["seasons"] if e1 else None), width="stretch", theme=None)
-    st.caption("Crop from the USDA Cropland Data Layer unless you edited it under Your inputs. No living cover = months of each cover year (end of one season's living canopy to the next) with no green vegetation; * = partial first year. Hover a cell for dates. Stress at the sensitive stage (Engine 2) is not computed yet.")
+    st.altair_chart(charts.season_strip(seq, e1["seasons"] if e1 else None, e2["seasons"] if e2 else None), width="stretch", theme=None)
+    st.caption("Crop from the USDA Cropland Data Layer unless you edited it under Your inputs. No living cover = months of each cover year (end of one season's living canopy to the next) with no green vegetation; * = partial first year. Stress = regional root-zone dryness and/or heat in the crop's sensitive window (Engine 2; see Changing conditions). Hover a cell for details.")
     if hls is not None:
         st.subheader("Field greenness, every clear satellite pass")
         st.altair_chart(charts.ndvi_scatter(hls, smooth, e1["method"]["cover_threshold_ndvi"] if e1 else None), width="stretch", theme=None)
@@ -165,18 +171,29 @@ with t_cond:
             band = D.baseline_band(metrics, col)
             st.altair_chart(charts.trend_chart(metrics, col, title, unit, band, corn_years), width="stretch", theme=None)
             st.caption(f"Linear trend 1981–2025: {D.trend_per_decade(metrics, col):+.2f} {unit} per decade (not tested for significance). Source: {src}.")
-    st.subheader("This field's corn seasons against 1991–2020")
-    ctx = D.corn_season_context(metrics, seq)
-    if ctx.empty:
-        st.write("No corn seasons in the crop history.")
-    else:
-        dry = int((ctx.rain_pctile <= 20).sum())
-        st.markdown(f"Window rainfall was in the driest fifth of 1991–2020 in **{dry} of {len(ctx)}** corn seasons on this field (regional, calendar window).")
-        st.dataframe(
-            ctx.rename(columns={"season": "Corn season", "rain_mm": "Rain (mm)", "rain_pctile": "Rain percentile", "gwetroot": "Root-zone wetness", "gwetroot_pctile": "Wetness percentile", "hot_days": "Days > 30 °C"}),
-            hide_index=True,
-            width="stretch",
+    st.subheader("Stress at each crop's sensitive stage (Engine 2)")
+    if e2:
+        sm2 = e2["summary"]
+        a = sm2["all_seasons"]
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Seasons with a dry or hot sensitive window", f"{a['stress_seasons']} of {a['seasons']}", help=e2["source"])
+        c2.metric("Expected from 1991–2020", f"{a['expected_stress_seasons']}", help="Sum over seasons of how often the same calendar window was flagged in 1991–2020.")
+        c3.metric("Chance of at least this many", f"{a['chance_at_least_observed']:.0%}", help="If each season were flagged independently at its 1991–2020 rate. Small samples: suggestive, not conclusive.")
+        lines = []
+        for crop in ("corn", "soybeans"):
+            if crop in sm2:
+                d = sm2[crop]
+                lines.append(f"**{crop.capitalize()}:** {d['stress_seasons']} of {d['seasons']} seasons ({', '.join(map(str, d['stress_years'])) or 'none'}), expected {d['expected_stress_seasons']}.")
+        st.markdown(" ".join(lines))
+        st.caption(
+            "Corn window: 14 days around silking, estimated at 400 °C capped GDD after green-up (cross-checked against the NDVI peak). Soybean window: NDVI peak −14 to +21 days. "
+            "Flag: root-zone wetness below the 20th percentile on half the window, or Tmax above the 80th percentile on 5 of 14 days (provisional). "
+            f"All three demo fields share one POWER cell, so they see the same weather; which crop is hit depends on rotation phase. Confidence capped at moderate. {'SMAP L4 confirmation pending.' if 'SMAP' not in e2['source'] else ''}"
         )
+        cols2 = ["season", "crop", "window_start", "window_end", "dry_days", "hot_days", "window_days", "base_rate", "vigour", "scenario", "confidence"]
+        st.dataframe(pd.DataFrame(e2["seasons"])[cols2], hide_index=True, width="stretch")
+    else:
+        st.info("Engine 2 runs once Engine 1 has this field's seasons.")
     with st.expander("Show data"):
         st.dataframe(metrics.round(2), width="stretch")
 
@@ -279,8 +296,15 @@ with t_sum:
             if e1 else "- Pending: HLS still processing"
         ),
         "",
+        "## Stress at the sensitive stage (Engine 2, regional)",
+        (
+            f"- Dry or hot sensitive window in {e2['summary']['all_seasons']['stress_seasons']} of {e2['summary']['all_seasons']['seasons']} seasons "
+            f"(expected {e2['summary']['all_seasons']['expected_stress_seasons']} from 1991–2020; chance of at least this many {e2['summary']['all_seasons']['chance_at_least_observed']:.0%})"
+            if e2 else "- Pending"
+        ),
+        "",
         "## Pending",
-        "- Stress at the sensitive stage, and how often it recurs (Engine 2)",
+        *([] if e2 else ["- Stress at the sensitive stage, and how often it recurs (Engine 2)"]),
         "- Rotation ratings with evidence and confidence (Engine 3)",
         "",
         "## Not established by this tool",

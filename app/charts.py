@@ -48,15 +48,33 @@ def _cover_cell(rec: dict | None) -> tuple[str, str, str]:
     return label, COMPUTED, tip
 
 
-def season_strip(seq: pd.DataFrame, e1_seasons: list[dict] | None = None) -> alt.Chart:
+def _stress_cell(rec: dict | None) -> tuple[str, str, str]:
+    if rec is None:
+        return "pending", PENDING, "Engine 2 not run for this season yet"
+    if not rec.get("window_start"):
+        return "—", PENDING, rec.get("note") or "No sensitive window"
+    kinds = (["dry"] if any("wetness" in d for d in rec["drivers"]) else []) + (["hot"] if any("Tmax" in d for d in rec["drivers"]) else [])
+    label = "+".join(kinds) if kinds else "none"
+    tip = (
+        f"Sensitive window {rec['window_start']} to {rec['window_end']} ({rec['window_basis']}). "
+        f"Root-zone wetness < p20 on {rec['dry_days']} of {rec['window_days']} days; Tmax > p80 on {rec['hot_days']}. "
+        f"Flagged in {rec['base_rate']:.0%} of 1991–2020 years for the same dates. Vigour {rec['vigour']}. {rec['scenario']}. "
+        f"Confidence {rec['confidence']} (regional drivers)."
+    )
+    return label, COMPUTED, tip
+
+
+def season_strip(seq: pd.DataFrame, e1_seasons: list[dict] | None = None, e2_seasons: list[dict] | None = None) -> alt.Chart:
     """Ten seasons on one strip: crop (CDL or farmer), no living cover (Engine 1), stress window (Engine 2)."""
     by_year = {r["season"]: r for r in (e1_seasons or [])}
+    by_year2 = {r["season"]: r for r in (e2_seasons or [])}
     rows = []
     for r in seq.itertuples():
         rows.append({"season": str(r.season), "row": "Crop", "label": r.crop.replace("soybeans", "soy"), "fill": CROP_COLOURS.get(r.crop, NEUTRAL), "tip": f"{r.crop} · source {r.source}", "ink": "#ffffff" if r.crop == "soybeans" else INK})
         label, fill, tip = _cover_cell(by_year.get(r.season))
         rows.append({"season": str(r.season), "row": "No living cover", "label": label, "fill": fill, "tip": tip, "ink": INK if fill == COMPUTED else INK_2})
-        rows.append({"season": str(r.season), "row": "Stress at sensitive stage", "label": "pending", "fill": PENDING, "tip": "Engine 2: not computed yet", "ink": INK_2})
+        label2, fill2, tip2 = _stress_cell(by_year2.get(r.season))
+        rows.append({"season": str(r.season), "row": "Stress at sensitive stage", "label": label2, "fill": fill2, "tip": tip2, "ink": INK if fill2 == COMPUTED else INK_2})
     df = pd.DataFrame(rows)
     order = ["Crop", "No living cover", "Stress at sensitive stage"]
     base = alt.Chart(df).encode(
