@@ -1,0 +1,188 @@
+{
+ "field_id": "field_c",
+ "generated": "2026-11-14T02:21:29Z",
+ "geometry": {
+  "type": "Polygon",
+  "coordinates": [
+   [
+    [
+     -93.44732870244356,
+     42.10002110505583
+    ],
+    [
+     -93.44712250764387,
+     42.10565731515064
+    ],
+    [
+     -93.45443163068647,
+     42.10580133968423
+    ],
+    [
+     -93.45463723569709,
+     42.10016511697637
+    ],
+    [
+     -93.44732870244356,
+     42.10002110505583
+    ]
+   ]
+  ]
+ },
+ "area_ha": {
+  "value": 37.9,
+  "source": "field polygon (Albers EPSG:5070)"
+ },
+ "interior_pixels_approx": {
+  "value": 342,
+  "source": "field polygon, 30 m inward buffer"
+ },
+ "crop_sequence": [
+  {
+   "value": "soybeans",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2016",
+   "share": 1.0,
+   "cdl_class": 5
+  },
+  {
+   "value": "corn",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2017",
+   "share": 1.0,
+   "cdl_class": 1
+  },
+  {
+   "value": "soybeans",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2018",
+   "share": 1.0,
+   "cdl_class": 5
+  },
+  {
+   "value": "corn",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2019",
+   "share": 1.0,
+   "cdl_class": 1
+  },
+  {
+   "value": "soybeans",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2020",
+   "share": 1.0,
+   "cdl_class": 5
+  },
+  {
+   "value": "corn",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2021",
+   "share": 1.0,
+   "cdl_class": 1
+  },
+  {
+   "value": "soybeans",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2022",
+   "share": 1.0,
+   "cdl_class": 5
+  },
+  {
+   "value": "corn",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2023",
+   "share": 1.0,
+   "cdl_class": 1
+  },
+  {
+   "value": "soybeans",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2024",
+   "share": 1.0,
+   "cdl_class": 5
+  },
+  {
+   "value": "corn",
+   "source": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
+   "dates": "2025",
+   "share": 1.0,
+   "cdl_class": 1
+  }
+ ],
+ "soil": {
+  "aws0100wta": {
+   "value": 18.451,
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  },
+  "slopegradwta": {
+   "value": 3.183,
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  },
+  "om_r": {
+   "value": 5.177,
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  },
+  "kwfact": {
+   "value": 0.274,
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  },
+  "muname": {
+   "value": "Webster clay loam, Bemis moraine, 0 to 2 percent slopes",
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  },
+  "drclassdcd": {
+   "value": "Well drained",
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  },
+  "hydgrpdcd": {
+   "value": "C/D",
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  },
+  "dominant_share": {
+   "value": 0.262,
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  },
+  "n_map_units": {
+   "value": 7,
+   "source": "USDA NRCS SSURGO, via Soil Data Access"
+  }
+ },
+ "terrain": {
+  "mean_slope_pct": {
+   "value": 1.99,
+   "source": "NASADEM (NASA JPL reprocessing of SRTM), 1 arc-second, via Microsoft Planetary Computer"
+  },
+  "p90_slope_pct": {
+   "value": 3.52,
+   "source": "NASADEM (NASA JPL reprocessing of SRTM), 1 arc-second, via Microsoft Planetary Computer"
+  },
+  "mean_slope_pct_unsmoothed": {
+   "value": 3.9,
+   "source": "NASADEM (NASA JPL reprocessing of SRTM), 1 arc-second, via Microsoft Planetary Computer"
+  },
+  "smoothing_sigma_px": {
+   "value": 1.5,
+   "source": "NASADEM (NASA JPL reprocessing of SRTM), 1 arc-second, via Microsoft Planetary Computer"
+  },
+  "relief_m": {
+   "value": 13.0,
+   "source": "NASADEM (NASA JPL reprocessing of SRTM), 1 arc-second, via Microsoft Planetary Computer"
+  },
+  "pixels": {
+   "value": 342,
+   "source": "NASADEM (NASA JPL reprocessing of SRTM), 1 arc-second, via Microsoft Planetary Computer"
+  },
+  "item": {
+   "value": "NASADEM_HGT_n42w094",
+   "source": "NASADEM (NASA JPL reprocessing of SRTM), 1 arc-second, via Microsoft Planetary Computer"
+  },
+  "ref_3dep_10m_pct": {
+   "value": 2.03,
+   "source": "USGS 3DEP 10 m (validation reference only)"
+  }
+ },
+ "power_point_lon_lat_elev": [
+  -93.451,
+  42.103,
+  310.22
+ ]
+}

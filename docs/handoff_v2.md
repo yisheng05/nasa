@@ -578,7 +578,9 @@ Every item on the Field Shift Resources tab, and what we do with it. The Resourc
 
 - **AppEEARS:** use it for HLS, SMAP, SRTM and ECOSTRESS area extractions. It keeps NASA provenance visible for the Space Agency Data field, and HLS VI was added to it in December 2025 ([Earthdata notice](https://www.earthdata.nasa.gov/data/alerts-outages/hls-vegetation-indices-products-available-appeears)).
 - **NASA POWER API:** weather and root-zone wetness (`T2M_MAX, T2M_MIN, PRECTOTCORR, GWETROOT`, community AG). No login needed.
-- **CropScape:** CDL.
+- **CDL:** CropScape on team laptops; from the cloud container, the USDA CroplandCROS image service (`pdi.scinet.usda.gov`, 2008–2025), because CropScape fails TLS there.
+- **Slope:** NASADEM (NASA's SRTM reprocessing) via Microsoft Planetary Computer, no login. Raw 30 m slope is noise-inflated on flat ground; smooth first (V12).
+- **AppEEARS limits:** one HLS area request for three fields and ten years exceeded the file cap ~9×; split by field × sensor × five-year period (12 tasks). The HLS VI products carry no Fmask, so request Fmask from HLSL30/HLSS30 alongside NDVI.
 - **Soil Data Access / Web Soil Survey:** SSURGO.
 - **Google Earth Engine:** faster if the geospatial lead already knows it. Still cite the NASA collections explicitly.
 
@@ -763,6 +765,7 @@ These are **proposed targets for the team to agree**, not established thresholds
 | V8 | Traceability | Every number in the UI and the LLM text is looked up in the evidence JSON | 100%; the build fails otherwise |
 | V9 | Priority sensitivity | Change the priority order | The ranking may change; no evidence value or rating changes |
 | V10 | GDD unit tests | (Tmax 35, Tmin 18) → 14.0; (25, 5) → 7.5; (8, 2) → 0.0 GDD in °C | All pass |
+| V12 | Terrain | Field mean slope from NASADEM (Gaussian σ = 1.5 px before the gradient) vs USGS 3DEP 10 m lidar | Within ±0.5 percentage points on every field, and the same steepest field. **14 Nov: passes** (1.72/1.62/1.99% vs 1.51/1.55/2.03%; unsmoothed NASADEM read 3.8–4.2%) |
 | V11 | Moisture agreement | Daily root-zone percentiles, SMAP L4 vs POWER GWETROOT, 15 Jun – 15 Aug, 2016–2025 | Spearman ρ ≥ 0.6, and the two agree on ≥ 70% of season stress flags. Report it either way |
 
 The V4 comparison sets one field against a state-wide distribution, so treat it as a sanity check, not as accuracy.

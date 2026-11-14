@@ -1,14 +1,23 @@
-# Pre-event access check (prep/check_access.py) needs only requests.
+# Access check (prep/check_access.py) needs only requests.
 requests>=2.31
 
-# Planned event stack (handoff §14). Lock versions at the event.
+# Precompute pipeline (pipeline/, notebooks/01_precompute.ipynb)
 numpy>=1.26
 pandas>=2.2
 scipy>=1.12
 pyarrow>=15
-xarray>=2024.2
 rasterio>=1.3.9
-geopandas>=0.14
 shapely>=2.0
-streamlit>=1.32
+pyproj>=3.6
+pystac-client>=0.8
+planetary-computer>=1.0
+
+# Notebooks and tests
+nbformat>=5.9
+nbclient>=0.10
+ipykernel>=6.29
+matplotlib>=3.8
 pytest>=8.0
+
+# App (Sunday)
+streamlit>=1.32

@@ -1,0 +1,116 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "field_a",
+    "county": "Story County, Iowa",
+    "corn_years": "even",
+    "naip_note": "Wet spots (prairie potholes)",
+    "selection": "CDL strict corn/soy alternation 2016-2025; largest inscribed rectangle; checked on NAIP 2025"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -93.42813283607913,
+       42.03545152024078
+      ],
+      [
+       -93.42780666638912,
+       42.044307704538646
+      ],
+      [
+       -93.43401392852412,
+       42.04443107012797
+      ],
+      [
+       -93.43433931186178,
+       42.03557486889245
+      ],
+      [
+       -93.42813283607913,
+       42.03545152024078
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "field_b",
+    "county": "Story County, Iowa",
+    "corn_years": "odd",
+    "naip_note": "Uniform",
+    "selection": "CDL strict corn/soy alternation 2016-2025; largest inscribed rectangle; checked on NAIP 2025"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -93.40652579834958,
+       42.05650532425493
+      ],
+      [
+       -93.40630646866721,
+       42.062409548461375
+      ],
+      [
+       -93.41470665989942,
+       42.06257778372994
+      ],
+      [
+       -93.41492527994122,
+       42.056673544113394
+      ],
+      [
+       -93.40652579834958,
+       42.05650532425493
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "field_c",
+    "county": "Story County, Iowa",
+    "corn_years": "odd",
+    "naip_note": "Light-coloured knolls (likely eroded)",
+    "selection": "CDL strict corn/soy alternation 2016-2025; largest inscribed rectangle; checked on NAIP 2025"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -93.44732870244356,
+       42.10002110505583
+      ],
+      [
+       -93.44712250764387,
+       42.10565731515064
+      ],
+      [
+       -93.45443163068647,
+       42.10580133968423
+      ],
+      [
+       -93.45463723569709,
+       42.10016511697637
+      ],
+      [
+       -93.44732870244356,
+       42.10002110505583
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

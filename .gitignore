@@ -1,9 +1,10 @@
 # Secrets
 .env
 
-# Data: raw extracts and precomputed evidence stay local
+# Data: raw extracts stay local; small processed outputs are committed for the app
 data/*
 !data/README.md
+!data/processed/
 
 # Access-check reports
 prep/reports/
