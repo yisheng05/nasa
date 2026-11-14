@@ -1,6 +1,6 @@
 {
  "field_id": "field_c",
- "generated": "2026-11-14T13:28:46Z",
+ "generated": "2026-11-14T15:06:51Z",
  "engine": "Engine 2: Stress Recurrence (handoff \u00a78.2)",
  "source": "NASA POWER daily (community AG), NASA LaRC; NASA POWER GWETROOT (from NASA GMAO MERRA-2), modelled; NASA SMAP L4 SPL4SMGP v008 root-zone soil moisture, modelled/assimilated; NASA ECOSTRESS ECO_L4T_ESI v002, LP DAAC via AppEEARS; timing from Engine 1 (NASA HLS)",
  "method": {
@@ -75,7 +75,7 @@
     "Tmax above 80th percentile on 12 of 14 days"
    ],
    "base_rate": 0.3,
-   "smap_dry_days": 11,
+   "smap_dry_days": 8,
    "smap_agrees": true,
    "esi_scenes": null,
    "esi_median": null,
@@ -177,8 +177,8 @@
     "Tmax above 80th percentile on 14 of 36 days"
    ],
    "base_rate": 0.333,
-   "smap_dry_days": 24,
-   "smap_agrees": true,
+   "smap_dry_days": 12,
+   "smap_agrees": false,
    "esi_scenes": 6,
    "esi_median": 0.469,
    "esi_field_median": 0.529,
@@ -212,8 +212,8 @@
     "root-zone wetness below 20th percentile on 9 of 14 days"
    ],
    "base_rate": 0.233,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 14,
+   "smap_agrees": true,
    "esi_scenes": 3,
    "esi_median": 0.46,
    "esi_field_median": 0.529,
@@ -248,8 +248,8 @@
     "Tmax above 80th percentile on 20 of 36 days"
    ],
    "base_rate": 0.333,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 0,
+   "smap_agrees": false,
    "esi_scenes": 9,
    "esi_median": 0.554,
    "esi_field_median": 0.529,
@@ -283,8 +283,8 @@
     "root-zone wetness below 20th percentile on 8 of 14 days"
    ],
    "base_rate": 0.3,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 1,
+   "smap_agrees": false,
    "esi_scenes": 2,
    "esi_median": 0.512,
    "esi_field_median": 0.529,
@@ -316,8 +316,8 @@
    "stress_flag": false,
    "drivers": [],
    "base_rate": 0.3,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 0,
+   "smap_agrees": true,
    "esi_scenes": 0,
    "esi_median": null,
    "esi_field_median": 0.529,
@@ -349,8 +349,8 @@
    "stress_flag": false,
    "drivers": [],
    "base_rate": 0.333,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 0,
+   "smap_agrees": true,
    "esi_scenes": 3,
    "esi_median": 0.436,
    "esi_field_median": 0.529,
@@ -401,16 +401,25 @@
    ]
   },
   "smap": {
-   "checked_seasons": 5,
-   "agree": 5,
+   "checked_seasons": 10,
+   "agree": 7,
    "years": [
     2016,
     2017,
     2018,
     2019,
-    2020
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
    ],
-   "disagree_years": [],
+   "disagree_years": [
+    2020,
+    2022,
+    2023
+   ],
    "note": "SMAP L4 is 9 km and assimilated: it cross-checks POWER's modelled wetness, it is not a field measurement"
   },
   "corn": {
