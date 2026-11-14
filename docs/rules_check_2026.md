@@ -1,45 +1,50 @@
 # 2026 rules check
 
-Status on **Friday 13 November 2026**. Source documents: the 2026 **Project Submission Guide** and **Judging & Awards Guide** (due 13 Nov), the [Participant FAQs](https://www.spaceappschallenge.org/resources/participant-faqs/) and the challenge page.
+Status on **Saturday 14 November 2026**, updated from the **Singapore Local Lead's email to participants** (Cory Meilany, 13 Nov). That email is the authoritative source for our Local Event. Earlier entries came from search-engine extracts of spaceappschallenge.org, because automated fetches of the site failed on 13 Nov.
 
-**Retrieval note.** On 13 Nov, automated fetches of spaceappschallenge.org returned HTTP 503 and failed certificate verification, and Wayback Machine snapshots were refused. The items marked *search index* below come from search-engine extracts of the official pages, not a direct read. Before relying on them, open each page in a browser and replace the source with a direct quote.
-
-Confidence key: **Confirmed 2026** = explicit 2026 statement from an official page · **Precedent** = an earlier year's rule, not yet confirmed for 2026 · **Open** = not found.
+Confidence key: **Confirmed (LL)** = Local Lead email · **Confirmed (FAQ)** = 2026 Participant FAQ via search index · **Precedent** = an earlier year · **Open** = not found.
 
 | Rule | 2026 answer | Confidence and source | Impact on our plan |
 |---|---|---|---|
-| Work before the event | "Teams are not allowed to begin working on the challenges prior to the hackathon." Team formation and contact with Local Leads before the event are allowed. | **Confirmed 2026** (search index of the [2026 FAQ](https://www.spaceappschallenge.org/resources/participant-faqs/)). The 2022 FAQ said the same in softer terms. | All product code starts Sat 14 Nov. Disclose the pre-event material in this repo (README) and ask the Local Lead about it today. |
-| Challenge Resources | "Resources for each challenge will be published on November 13." | **Confirmed 2026** (search index of the FAQ) | Read the Resources tab manually today; add every NASA dataset listed to handoff §10 and `REFERENCES.md`. |
-| Event and submission window | Hackathon Sat 14 – Sun 15 Nov. Submission opens Sat 14 Nov 9:00 am, closes Sun 15 Nov 11:59 pm **local time**. | **Confirmed 2026** ([Space Apps 2026](https://www.spaceappschallenge.org/2026/), search index) | Check what "local" means for our Local Event (Singapore, or the virtual event). |
-| Project tab | The Project tab on the team page appears only when the hackathon begins. | Precedent (2025 guide, search index) | Draft submission text offline; paste it in on Saturday. |
-| Demo | All teams must create a Project Demo. 2022: a video of up to 30 s **or** a deck of up to 7 slides; judges stop at the limit. | Precedent (2025 guide; [2022 guide](https://spaceapps-prod.s3.amazonaws.com/media/documents/Space_Apps_2022_Project_Submission_Guide.pdf)). 2026 format **Open**. | Plan both the 30-second cut and the 7 slides (handoff §19.1) until confirmed. |
-| Finality | Submission is final; no edit requests or exceptions after the deadline. | Precedent (2025 guide, search index) | Internal deadline: submit by Sun 10:00 pm local. |
-| Certificate and Global Judging | Participants must submit a project to receive a certificate and qualify for Global Judging. | Precedent (2025 guide, search index) | — |
-| Space-agency data field | 2022: must use open NASA or partner-agency data and explain how in a "Space Agency Data" field. | Precedent. 2026 **Open**. | Fill from `REFERENCES.md`. |
-| References | 2022: list all data, code, text, images and tools. | Precedent. 2026 **Open**. | Keep `REFERENCES.md` current. |
-| AI tools | Search extracts suggest the 2026 FAQ permits AI tools (LLMs, code and image generation). The 2025 guidance asked teams to "clearly indicate where and how AI tools were utilized". | 2026 permission: unverified (the search extract's wording was unusual; read the FAQ directly). Disclosure: precedent (2025). | Disclose every AI tool and what it was used for (`REFERENCES.md`). |
-| Rights and originality | Teams must have the rights to the materials they submit; plagiarism or unauthorised use of another team's work is not permitted. | Search index of the FAQ (year not certain) | Don't copy from other teams' public repos; cite anything reused. |
-| Team size | 2024: 1–6 members. | Precedent ([Judging & Awards Guide](https://spaceappschallenge.org/resources/judging-awards-guide)) | — |
-| Repo / project link visibility | Not found. | **Open** | If it must be public, review `docs/` first (README). |
+| Event window | Virtual. Starts Sat 14 Nov 9:00 am SGT, ends Sun 15 Nov 11:59 pm SGT. | **Confirmed (LL)** | Internal deadline Sun 10:00 pm SGT. |
+| Submission route | Through the official Space Apps site. The Project Submission section opens Sat 14 Nov. | **Confirmed (LL)** | Draft text in the repo; paste it in early. |
+| Project Summary | "Explain your solution, the problem it addresses and its impact." | **Confirmed (LL)** | Lead with the problem (judged under Impact). |
+| Project Demo | "Either a 30-second demonstration video OR a 7-slide presentation." | **Confirmed (LL)** | 7 slides recommended (handoff §19.1). |
+| Final Project Link | "A publicly accessible link to your project or supporting materials." | **Confirmed (LL)** | Make the repo public before submitting, after reviewing `docs/` (README). |
+| Project Details | "Explain your approach, tools, technologies and NASA datasets used." | **Confirmed (LL)** | Fill from `REFERENCES.md`, including AI tools. |
+| NASA data | At least one NASA dataset is mandatory for Global Awards. Name the datasets, give source links and explain how the data supports the solution. Imagery, CSV/JSON, processed data and charts all count. | **Confirmed (LL)** | HLS, SMAP L4, POWER and MSLSP30NA, each with a link and its role. |
+| Live API | "A live NASA API connection is not required." | **Confirmed (LL)** | The precomputed demo fields are fine. |
+| Prototype standard | "A fully functional application is not required. A well-presented concept or prototype demonstrating meaningful NASA data usage is acceptable." | **Confirmed (LL)** | Put presentation quality ahead of live extraction. |
+| Other data | Allowed to complement NASA data. | **Confirmed (LL)** | CDL, SSURGO, Crop Progress are fine. |
+| Challenge-specific datasets | "Some challenges specify particular datasets or resources." | **Confirmed (LL)** | **Read the Field Shift Resources tab** and check whether it requires any. |
+| Team size | 1–6 members; solo welcome. | **Confirmed (LL)** | — |
+| Work before the event | "Teams are not allowed to begin working on the challenges prior to the hackathon." | **Confirmed (FAQ)**. Not mentioned in the LL email. | All product code from Sat 9:00 am SGT. Ask the Local Lead about this repo's pre-event material (README pre-event log) and disclose it. |
+| Finality | No edits after the deadline. | Precedent (2025 guide) | Submit early. |
+| AI tools | Not mentioned in the LL email. The 2025 guidance asked teams to state where and how AI tools were used. | Precedent / **Open** | Disclose every AI tool in Project Details and `REFERENCES.md`. |
+| Rights and originality | Teams must have rights to submitted materials; no plagiarism or unauthorised use of another team's work. | FAQ via search index (year uncertain) | Don't copy from other teams' public repos. |
 
-## Judging criteria
+## Judging criteria (confirmed by the Local Lead, each scored 1–5)
 
-The 2025 guide names five criteria: **Impact, Creativity, Validity, Relevance, Presentation** (search index). 2024 called the first one "Influence". The 2026 names and definitions are **Open** until the Judging & Awards Guide is read.
+| Criterion | Judges' question (2026) | How we answer it |
+|---|---|---|
+| Impact | What problem are you solving, and why does it matter? | Soil without living cover for about seven months a year and stress recurring at silking, on a field whose rotation decision is made every November. Diversified rotations cut drought-year losses by 14–90% (Bowles et al. 2020). |
+| Creativity | How innovative or original is your approach? | Field-scale history from 30 m HLS, where most tools use coarse grids. |
+| Validity | Is your solution supported by relevant evidence and appropriate data? | Validation chart (V3, V4, V6); every number traced to a NASA dataset and date; stated limits. |
+| Relevance | How well does your project address the challenge you've selected? | Every screen maps to a phrase in the brief (handoff §1.2). |
+| Presentation | How clearly and effectively do you communicate your solution? | One farmer, one field, one rotation decision; 7 slides. |
 
-| Criterion | Earlier definition | 2026 wording | How we answer it |
-|---|---|---|---|
-| Impact (2025) / Influence (2024) | "How much influence can this project have?" (2024) | | The pipeline transfers beyond one US field (handoff §19) |
-| Creativity | "Is the approach novel?" (2024) | | Field-scale history from 30 m HLS, where most tools use coarse grids |
-| Validity | "Is the solution scientifically valid? Can it work in the real world?" (2024) | | Validation chart, stated limits, honesty about resolution (§15) |
-| Relevance | "Is the project responsive to the challenge? Is it complete and feasible?" (2024) | | Every screen maps to a phrase in the brief (§1.2) |
-| Presentation | "Did the team tell the story well?" (2024) | | One farmer, one field, one rotation decision |
+Selected Singapore projects advance as Global Nominees.
 
-## To do today (13 Nov), in a browser
+## Support
 
-- [ ] Challenge **Details** tab: compare with handoff §1.1; note any differences here.
-- [ ] Challenge **Resources** tab: list every item below, then add the NASA ones to handoff §10 and `REFERENCES.md`.
+- Zoom Q&A (optional): Sat 14 Nov 8:00 pm SGT; Sun 15 Nov 5:00 pm SGT. Mentors: Roman Shirochenko (technical), Cory Meilany (design).
+- Local Lead: Cory Meilany. Discord link in the Local Lead's email.
+
+## Still to do
+
+- [ ] Field Shift **Resources** tab: list every item below; add the NASA ones to handoff §10 and `REFERENCES.md`; check for required datasets.
   - …
-- [ ] 2026 **Project Submission Guide**: demo format, required fields, AI disclosure, repo visibility.
-- [ ] 2026 **Judging & Awards Guide**: criteria names and questions, award categories.
-- [ ] Replace each *search index* source above with a direct quote and link.
-- [ ] Message the Local Lead about the pre-event material (README, "Pre-event log") and save the reply here.
+- [ ] Ask the Local Lead about the pre-event material and record the answer here:
+  - Asked: … (date, channel)
+  - Answer: …
+- [ ] Confirm the AI-tool disclosure wording if the submission form has a field for it.

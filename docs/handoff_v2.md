@@ -1,6 +1,6 @@
 # NASA Space Apps 2026: Field Shift Hackathon Handoff (v2)
 
-**Version:** v2.1, 13 November 2026 (v2: 6 November 2026). Replaces v1 (in-season crop monitoring and alerting). Changes in v2.1 are listed in §0.1.
+**Version:** v2.2, 14 November 2026 (v2.1: 13 Nov; v2: 6 Nov). Replaces v1 (in-season crop monitoring and alerting). Changes are listed in §0.1 (v2.1) and §0.2 (v2.2).
 **Challenge page:** [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/?tab=details)
 **Hackathon:** Saturday 14 – Sunday 15 November 2026
 
@@ -43,6 +43,20 @@ v2 keeps v1's analytical core and points it at past seasons instead of the curre
 | Small-sample caveat added to V3 and to crop-specific baselines. | About five corn seasons per field and four MSLSP30NA years (2016–2019). Report n; present as sanity checks. | §15, §16.3 |
 | Data checks recorded: MSLSP30NA confirmed 2016–2019 and not offered in AppEEARS; HLS VI coverage confirmed on tile T15TVG for 2016–2025. | `prep/check_access.py` run on 9 Nov. | §10, §18.2 |
 
+### 0.2 Changes in v2.2 (14 November 2026)
+
+Source: the Singapore Local Lead's email to participants (Cory Meilany, 13 Nov). It is authoritative for our Local Event.
+
+| Change | Sections |
+|---|---|
+| Event is **virtual**; 14 Nov 9:00 am – 15 Nov 11:59 pm **SGT**. Optional Zoom Q&A Sat 8:00 pm and Sun 5:00 pm SGT. | §1.3 |
+| Submission fields confirmed: **Project Summary**, **Project Demo** (30-second video **or** 7-slide deck), **Final Project Link** (publicly accessible), **Project Details** (approach, tools, technologies, NASA datasets). | §1.4, §19 |
+| At least one NASA dataset is **mandatory for Global Awards**; name each dataset, link its source and explain how it supports the solution. A live NASA API is **not** required, and a well-presented prototype is acceptable. This confirms the precompute approach (§14). | §1.4, §13.2 |
+| Judging criteria confirmed for 2026, each **scored 1–5**, with new questions. "Impact" is now about the problem and why it matters, not scale of influence. | §1.5 |
+| Demo choice: **7 slides recommended** over the 30-second video. | §19.1 |
+| No live pitch was announced for the virtual event; §19.2 is optional. | §19.2 |
+| Still open: the pre-work rule is not mentioned in the email, so the question about this repo's pre-event material still needs a written answer from the Local Lead. | §1.4 |
+
 ---
 
 ## 1. The challenge, the rules and the dates
@@ -73,36 +87,42 @@ v2 keeps v1's analytical core and points it at past seasons instead of the curre
 
 ### 1.3 Key dates
 
-- **Hackathon:** Saturday 14 – Sunday 15 November 2026.
-- **Challenge Resources published:** Friday 13 November (2026 FAQ).
-- **Submission window:** opens Saturday 14 November at 9:00 am; closes Sunday 15 November at 11:59 pm local time ([Space Apps 2026](https://www.spaceappschallenge.org/2026/)).
+- **Hackathon (Singapore Local Event, virtual):** Saturday 14 November 9:00 am – Sunday 15 November 11:59 pm **SGT** (Local Lead email, 13 Nov).
+- **Submission:** through the official Space Apps site; the Project Submission section opens Saturday 14 November. Deadline Sunday 15 November 11:59 pm SGT. **Internal deadline: Sunday 10:00 pm SGT.**
+- **Zoom Q&A (optional):** Saturday 8:00 pm SGT; Sunday 5:00 pm SGT. Mentors: Roman Shirochenko (technical), Cory Meilany (design). Use Sunday's session for a submission check.
+- **Challenge Resources published:** Friday 13 November (2026 FAQ). Find them under the challenge's Resources tab.
 - **Project Submission and Judging & Awards guides:** published Friday 13 November ([Participant FAQs](https://www.spaceappschallenge.org/resources/participant-faqs/)).
 
-### 1.4 Rules (updated 13 November)
+### 1.4 Rules (updated 14 November)
 
-The pre-work rule below is from the 2026 FAQ. The other points come from earlier years; confirm each against the 2026 guides.
+Submission, data and team rules below are confirmed by the Singapore Local Lead's email (13 Nov). The pre-work rule is from the 2026 FAQ.
 
 - **Work before the event (2026, explicit).** The 2026 Participant FAQ states that "Teams are not allowed to begin working on the challenges prior to the hackathon" ([Participant FAQs](https://www.spaceappschallenge.org/resources/participant-faqs/); retrieved via search index on 13 Nov, verify on the page). Team formation and contact with Local Leads before the event are allowed. The 2022 FAQ said the same in softer terms ([legacy FAQ](https://legacy.spaceappschallenge.org/resources/faq/)). Other teams' public pre-event code is not permission. Implications:
   - Write all product code (engines, UI, the precompute notebook) from the start of the hackathon.
-  - This repo already contains pre-event material: this handoff, a rules checklist, a references file and a data-access smoke test (commit of 9 Nov). Ask the Local Lead in writing on 13 Nov whether that is acceptable, and **disclose it in the submission** (see the README's pre-event log). Don't hide or backdate it.
+  - This repo already contains pre-event material: this handoff, a rules checklist, a references file and a data-access smoke test (commit of 9 Nov). The Local Lead's email does not address this, so ask in writing (email or Discord) whether that is acceptable, and **disclose it in the submission** (see the README's pre-event log). Don't hide or backdate it.
   - Unless the Local Lead says otherwise, don't build the submitted pipeline on top of `prep/check_access.py`; treat it as setup tooling.
-- **Submission mechanics (2025 guide; confirm for 2026).** The Project tab on the team page appears only when the hackathon begins. Every team must submit a Project Demo. Submissions are final after the deadline, with no edits. Submitting is required for a participant certificate and for Global Judging.
-- **Demo format.** In 2022 the demo was either a video of up to 30 seconds or a deck of up to 7 slides, and judges stopped reviewing at the limit ([2022 Submission Guide](https://spaceapps-prod.s3.amazonaws.com/media/documents/Space_Apps_2022_Project_Submission_Guide.pdf)). Plan both a 30-second cut and the longer local pitch.
-- **NASA data.** Projects had to use some open data from NASA or a partner space agency and explain how in a "Space Agency Data" field.
-- **References.** All data, code, text, images and tools had to be listed. List the AI tools used as well.
-- **Team size.** 1–6 members in 2024 ([Judging & Awards Guide](https://spaceappschallenge.org/resources/judging-awards-guide)).
+- **Submission fields (2026, confirmed).**
+  - **Project Summary:** the solution, the problem it addresses and its impact.
+  - **Project Demo:** a 30-second video **or** a 7-slide presentation.
+  - **Final Project Link:** a publicly accessible link to the project or supporting materials. If this is the GitHub repo, it must be made public before submitting; review `docs/` first (README).
+  - **Project Details:** approach, tools, technologies and NASA datasets used.
+  - Submissions are final after the deadline (2025 guide). Don't leave it to the last minute.
+- **NASA data (2026, confirmed).** At least one NASA dataset is mandatory for Global Awards eligibility. Name each NASA dataset, give its source link and explain how it supports the solution. Imagery, CSV/JSON, processed datasets and charts all count. **A live NASA API connection is not required**, and other sources may complement NASA data. Some challenges specify particular datasets: check the Field Shift Resources tab.
+- **Prototype standard (2026, confirmed).** "A fully functional application is not required. A well-presented concept or prototype demonstrating meaningful NASA data usage is acceptable." Precomputed demo fields (§14) are within the rules.
+- **References and AI tools.** Not mentioned in the Local Lead's email. Keep listing all data, code and AI tools in `REFERENCES.md` and put them in Project Details.
+- **Team size (2026, confirmed).** 1–6 members; solo participation welcome.
 
 ### 1.5 Judging criteria
 
-The questions below are from the 2024 guide ([Judging & Awards Guide](https://spaceappschallenge.org/resources/judging-awards-guide)). The 2025 Project Submission Guide names the five criteria **Impact, Creativity, Validity, Relevance and Presentation**. Confirm the 2026 names and questions.
+Confirmed for 2026 by the Singapore Local Lead (13 Nov). Each criterion is **scored 1–5**. Selected Singapore projects go forward as Global Nominees.
 
-| Criterion | Judges' question (2024) | What it means for us |
+| Criterion | Judges' question (2026) | What it means for us |
 |---|---|---|
-| Impact (2025; "Influence" in 2024) | How much influence can this project have? (2024) | Show how the pipeline transfers beyond one US field (§19) |
-| Creativity | Is the approach novel? | Field-scale history from 30 m data, where most tools use coarse grids |
-| Validity | Is the solution scientifically valid? Can it work in the real world? | A validation chart, stated limits, honesty about resolution (§15) |
-| Relevance | Is the project responsive to the challenge? Is it complete and feasible? | Every screen maps to a phrase in the brief (§1.2) |
-| Presentation | Did the team tell the story well? | One farmer, one field, one rotation decision |
+| Impact | What problem are you solving, and why does it matter? | Lead with the problem: soil without living cover for about seven months a year, and stress that recurs at silking, on a field whose rotation decision is made every November. Diversified rotations cut drought-year losses by 14–90% (Bowles et al. 2020). Transfer beyond Iowa is supporting, not the headline |
+| Creativity | How innovative or original is your approach? | Field-scale history from 30 m HLS, where most tools use coarse grids |
+| Validity | Is your solution supported by relevant evidence and appropriate data? | Validation chart (V3, V4, V6), every number traced to a NASA dataset and date, stated limits and resolution (§15) |
+| Relevance | How well does your project address the challenge you've selected? | Every screen maps to a phrase in the brief (§1.2) |
+| Presentation | How clearly and effectively do you communicate your solution? | One farmer, one field, one rotation decision |
 
 ---
 
@@ -584,7 +604,7 @@ Use "better / similar / worse for your priority", not scores. Put numbers in con
 
 | In | Stretch | Out |
 |---|---|---|
-| 1–3 precomputed Iowa fields, 2016–2025 | Draw any Iowa field (live extraction) | Yield or profit forecasts |
+| 1–3 precomputed Iowa fields, 2016–2025 (no live API needed, §1.4) | Draw any Iowa field (live extraction) | Yield or profit forecasts |
 | CDL crop sequence; HLS NDVI/EVI; POWER; SMAP L4; SSURGO | Residue proxy (NDTI/NBR2) | Soil chemistry from space |
 | Three candidate rotations; rule-based comparison | NEX-GDDP-CMIP6 projection panel | In-season alerts |
 | Validation chart (§15) | LLM summary; a second region for transferability | ML crop classification |
@@ -772,7 +792,9 @@ If the 2026 rules restrict work before the event, keep this period to learning, 
 
 ## 19. Demo narrative
 
-### 19.1 Global submission (2022 format: 30-second video or 7 slides; confirm for 2026)
+### 19.1 Project Demo (2026: a 30-second video **or** a 7-slide deck)
+
+**Recommendation: submit the 7 slides.** Validity is scored on evidence, and our evidence (the season strip, the validation chart, the trade-off table, the limits) is dense. Thirty seconds can't show it, and a polished video costs hours we need for the pipeline. Make the video only if the slides are done by Sunday 6:00 pm SGT.
 
 **Seven slides:**
 
@@ -792,7 +814,9 @@ If the 2026 rules restrict work before the event, keep this period to learning, 
 - 20–27 s: three rotations compared against the farmer's priorities.
 - 27–30 s: the NASA datasets used and what the tool doesn't claim.
 
-### 19.2 Local three-minute pitch
+### 19.2 Three-minute pitch (optional)
+
+No live pitch was announced for the virtual Singapore event. Keep this as the script for a Zoom Q&A or a Global Nominee follow-up.
 
 - **0:00–0:20** It's November. A central Iowa farmer is planning next year's rotation.
 - **0:20–0:50** The field's history: ten seasons on one strip, showing the crop and living cover.
