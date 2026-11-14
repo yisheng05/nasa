@@ -86,25 +86,28 @@ def bundle(task_id: str) -> list[dict]:
     return r.json()["files"]
 
 
-def download(task_id: str, dest: Path, patterns: tuple[str, ...] = ("*",)) -> list[Path]:
-    """Download bundle files matching any glob pattern; skip files already present."""
+def _fetch(task_id: str, f: dict, out: Path) -> Path:
+    if out.exists() and out.stat().st_size == f.get("file_size", -1):
+        return out
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with requests.get(f"{API}/bundle/{task_id}/{f['file_id']}", headers=_h(), stream=True, timeout=TIMEOUT) as r:
+        r.raise_for_status()
+        tmp = out.with_suffix(out.suffix + ".part")
+        with open(tmp, "wb") as fh:
+            fh.writelines(r.iter_content(1 << 20))
+        tmp.rename(out)
+    return out
+
+
+def download(task_id: str, dest: Path, patterns: tuple[str, ...] = ("*",), workers: int = 12) -> list[Path]:
+    """Download bundle files matching any glob pattern, in parallel; skip files already present."""
+    from concurrent.futures import ThreadPoolExecutor
+
     dest.mkdir(parents=True, exist_ok=True)
-    got = []
-    for f in bundle(task_id):
-        name = f["file_name"]
-        if not any(fnmatch(name, p) for p in patterns):
-            continue
-        out = dest / name
-        if not out.exists() or out.stat().st_size != f.get("file_size", -1):
-            out.parent.mkdir(parents=True, exist_ok=True)
-            with requests.get(f"{API}/bundle/{task_id}/{f['file_id']}", headers=_h(), stream=True, timeout=TIMEOUT) as r:
-                r.raise_for_status()
-                tmp = out.with_suffix(out.suffix + ".part")
-                with open(tmp, "wb") as fh:
-                    fh.writelines(r.iter_content(1 << 20))
-                tmp.rename(out)
-        got.append(out)
-    return got
+    token()  # log in once before the threads start
+    wanted = [f for f in bundle(task_id) if any(fnmatch(f["file_name"], p) for p in patterns)]
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return list(pool.map(lambda f: _fetch(task_id, f, dest / f["file_name"]), wanted))
 
 
 # --------------------------------------------------------------------------

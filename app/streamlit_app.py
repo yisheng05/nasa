@@ -117,7 +117,8 @@ with t_hist:
     if hls is not None:
         st.subheader("Field greenness, every clear satellite pass")
         st.altair_chart(charts.ndvi_scatter(hls), width="stretch", theme=None)
-        st.caption("Median NDVI over the field interior, NASA HLS v2.0 (Landsat + ESA Sentinel-2), 30 m. Faded points had fewer than 50 valid pixels after cloud masking (V1).")
+        cov = ", ".join(f"{s} {g.date.dt.year.min()}–{g.date.dt.year.max()}" for s, g in hls.groupby("sensor"))
+        st.caption(f"Median NDVI over the field interior, NASA HLS v2.0, 30 m. Coverage so far: {cov} (L30 = Landsat, S30 = ESA Sentinel-2; other AppEEARS tasks still processing). Faded points had fewer than 50 valid pixels after cloud masking (V1).")
     else:
         st.info("Satellite greenness (NASA HLS, 30 m) is still processing in AppEEARS. Once it lands, this tab shows every clear pass since 2016, then the cover days and spring-cover flags from Engine 1.")
     with st.expander("Show data"):
