@@ -78,7 +78,8 @@ def smooth_daily(obs: pd.DataFrame, start: str, end: str, lam: float = WHITTAKER
     w2[(w2 > 0) & (resid < -ROBUST_DROP)] = ROBUST_WEIGHT
     z = whittaker(y.to_numpy(), w2, lam)
     local_max = o.reindex(days).rolling(2 * PEAK_CAP_DAYS + 1, center=True, min_periods=1).max()
-    cap = (local_max + PEAK_CAP_TOL).fillna(1.0).to_numpy()
+    # Gaps longer than the window (record edges, long winters) take the nearest valid cap, never "no cap".
+    cap = (local_max + PEAK_CAP_TOL).ffill().bfill().fillna(1.0).to_numpy()
     z = np.minimum(z, cap)
     return pd.Series(np.clip(z, -0.2, 1.0), index=days, name="ndvi_smooth")
 

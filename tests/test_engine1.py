@@ -90,6 +90,14 @@ def test_no_overshoot_across_cloudy_peak():
     assert not next(s for s in seasons if s.season == 2018).peak_uncertain
 
 
+def test_no_spike_at_record_start_before_first_observation():
+    """No clear scene in the first weeks of the record: the curve must not run up to the 1.0 clip."""
+    o = _obs()
+    o = o[o.date >= "2018-03-01"]
+    _, z = E.run(o, CROPS, YEARS)
+    assert z["2018-01-01":"2018-02-28"].max() <= o.ndvi_median.iloc[:3].max() + E.PEAK_CAP_TOL + 1e-9
+
+
 def test_v7_deterministic():
     a, za = E.run(_obs(rye=True), CROPS, YEARS)
     b, zb = E.run(_obs(rye=True), CROPS, YEARS)

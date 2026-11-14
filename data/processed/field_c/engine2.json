@@ -1,6 +1,6 @@
 {
  "field_id": "field_c",
- "generated": "2026-11-14T09:11:06Z",
+ "generated": "2026-11-14T09:17:17Z",
  "engine": "Engine 2: Stress Recurrence (handoff \u00a78.2)",
  "source": "NASA POWER daily (community AG), NASA LaRC; NASA POWER GWETROOT (from NASA GMAO MERRA-2), modelled; timing from Engine 1 (NASA HLS)",
  "method": {
