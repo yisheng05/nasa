@@ -1,8 +1,8 @@
 {
  "field_id": "field_b",
- "generated": "2026-11-14T10:41:45Z",
+ "generated": "2026-11-14T13:28:46Z",
  "engine": "Engine 2: Stress Recurrence (handoff \u00a78.2)",
- "source": "NASA POWER daily (community AG), NASA LaRC; NASA POWER GWETROOT (from NASA GMAO MERRA-2), modelled; NASA ECOSTRESS ECO_L4T_ESI v002, LP DAAC via AppEEARS; timing from Engine 1 (NASA HLS)",
+ "source": "NASA POWER daily (community AG), NASA LaRC; NASA POWER GWETROOT (from NASA GMAO MERRA-2), modelled; NASA SMAP L4 SPL4SMGP v008 root-zone soil moisture, modelled/assimilated; NASA ECOSTRESS ECO_L4T_ESI v002, LP DAAC via AppEEARS; timing from Engine 1 (NASA HLS)",
  "method": {
   "silk_gdd_from_greenup_c": 400.0,
   "corn_window_days": 14,
@@ -39,8 +39,8 @@
    "stress_flag": false,
    "drivers": [],
    "base_rate": 0.3,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 0,
+   "smap_agrees": true,
    "esi_scenes": null,
    "esi_median": null,
    "esi_field_median": null,
@@ -75,8 +75,8 @@
     "Tmax above 80th percentile on 9 of 14 days"
    ],
    "base_rate": 0.267,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 12,
+   "smap_agrees": true,
    "esi_scenes": null,
    "esi_median": null,
    "esi_field_median": null,
@@ -108,8 +108,8 @@
    "stress_flag": false,
    "drivers": [],
    "base_rate": 0.233,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 0,
+   "smap_agrees": true,
    "esi_scenes": 8,
    "esi_median": 0.544,
    "esi_field_median": 0.54,
@@ -141,8 +141,8 @@
    "stress_flag": false,
    "drivers": [],
    "base_rate": 0.3,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 0,
+   "smap_agrees": true,
    "esi_scenes": 1,
    "esi_median": null,
    "esi_field_median": 0.54,
@@ -174,8 +174,8 @@
    "stress_flag": false,
    "drivers": [],
    "base_rate": 0.267,
-   "smap_dry_days": null,
-   "smap_agrees": null,
+   "smap_dry_days": 11,
+   "smap_agrees": true,
    "esi_scenes": 8,
    "esi_median": 0.487,
    "esi_field_median": 0.54,
@@ -375,7 +375,7 @@
    ],
    "expected_stress_seasons": 2.7,
    "chance_at_least_observed": 0.264,
-   "note": "same regional weather for all fields in one POWER cell: which crop is hit depends on rotation phase"
+   "note": "regional weather (NASA POWER ~0.5\u00b0 cells; nearby fields see near-identical conditions): which crop is hit depends on rotation phase"
   },
   "esi": {
    "assessed_seasons": 5,
@@ -395,6 +395,19 @@
     2023,
     2024
    ]
+  },
+  "smap": {
+   "checked_seasons": 5,
+   "agree": 5,
+   "years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020
+   ],
+   "disagree_years": [],
+   "note": "SMAP L4 is 9 km and assimilated: it cross-checks POWER's modelled wetness, it is not a field measurement"
   },
   "corn": {
    "seasons": 5,

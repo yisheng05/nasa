@@ -145,3 +145,26 @@ def test_esi_needs_enough_scenes_and_years():
     by = {s.season: s for s in st}
     assert by[2022].esi_status == "insufficient"
     assert by[2016].esi_status is None  # before ECOSTRESS (July 2018)
+
+
+def _smap(dry_years=()) -> pd.Series:
+    days = pd.date_range("2015-04-01", "2025-10-31", freq="D")
+    s = pd.Series(0.30, index=days)
+    for y in dry_years:
+        s[f"{y}-07-01":f"{y}-08-31"] = 0.10
+    return s
+
+
+def test_smap_cross_check_agreement_and_disagreement():
+    seasons = [_e1(2022, "corn", "2022-06-20", "2022-07-25"), _e1(2024, "corn", "2024-06-20", "2024-07-25")]
+    st, summ = E2.run(seasons, _power(dry_year=2022), smap=_smap(dry_years=[2022, 2024]))
+    by = {s.season: s for s in st}
+    assert by[2022].stress_flag and by[2022].smap_agrees is True
+    assert not by[2024].stress_flag and by[2024].smap_agrees is False
+    assert summ["smap"] == {**summ["smap"], "checked_seasons": 2, "agree": 1, "years": [2022, 2024], "disagree_years": [2024]}
+
+
+def test_smap_missing_window_is_not_checked():
+    seasons = [_e1(2014, "corn", "2014-06-20", "2014-07-25")]  # before SMAP's record
+    st, summ = E2.run(seasons, _power(), smap=_smap())
+    assert st[0].smap_agrees is None and summ["smap"]["checked_seasons"] == 0

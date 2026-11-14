@@ -274,7 +274,7 @@ def summarise(seasons: list[StressSeason]) -> dict:
         "stress_years": flagged,
         "expected_stress_seasons": round(sum(s.base_rate or 0 for s in windows), 1),
         "chance_at_least_observed": round(chance_at_least(len(flagged), [s.base_rate or 0 for s in windows]) or 0, 3),
-        "note": "same regional weather for all fields in one POWER cell: which crop is hit depends on rotation phase",
+        "note": "regional weather (NASA POWER ~0.5° cells; nearby fields see near-identical conditions): which crop is hit depends on rotation phase",
     }
     assessed = [s for s in windows if s.esi_status in ("low", "not low")]
     res["esi"] = {
@@ -284,6 +284,14 @@ def summarise(seasons: list[StressSeason]) -> dict:
         "unconfirmed_flags": [s.season for s in assessed if s.stress_flag and s.esi_status == "not low"],
         "field_only_low": [s.season for s in assessed if not s.stress_flag and s.esi_status == "low"],
         "insufficient": [s.season for s in windows if s.esi_status == "insufficient"],
+    }
+    checked = [s for s in windows if s.smap_agrees is not None]
+    res["smap"] = {
+        "checked_seasons": len(checked),
+        "agree": sum(bool(s.smap_agrees) for s in checked),
+        "years": [s.season for s in checked],
+        "disagree_years": [s.season for s in checked if not s.smap_agrees],
+        "note": "SMAP L4 is 9 km and assimilated: it cross-checks POWER's modelled wetness, it is not a field measurement",
     }
     for crop in sorted({s.crop for s in seasons if s.crop and s.window_start}):
         cs = [s for s in seasons if s.crop == crop and s.window_start]

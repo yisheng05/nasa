@@ -200,10 +200,19 @@ with t_cond:
                 f"Low at field scale with no regional flag: {', '.join(map(str, esi['field_only_low'])) or 'none'}."
             )
             st.caption("ECOSTRESS evaporative stress index (actual over potential evapotranspiration; lower means more stress) from 10 days before to 10 days after each window, against this field’s own 15 June–31 August median. Overpass times vary, so read single seasons with care. A confirmed flag raises confidence to moderate–high.")
+        sm = e2["summary"].get("smap") or {}
+        if sm.get("checked_seasons"):
+            st.markdown(
+                f"**Moisture cross-check (NASA SMAP L4, 9 km, assimilated):** agrees with the POWER dry / not-dry call in "
+                f"{sm['agree']} of {sm['checked_seasons']} seasons checked ({min(sm['years'])}–{max(sm['years'])})"
+                + (f"; disagrees in {', '.join(map(str, sm['disagree_years']))}." if sm["disagree_years"] else ".")
+            )
+        else:
+            st.caption("Moisture cross-check (NASA SMAP L4): pending.")
         st.caption(
             "Corn window: 14 days around silking, estimated at 400 °C capped GDD after green-up (cross-checked against the NDVI peak). Soybean window: NDVI peak −14 to +21 days. "
             "Flag: root-zone wetness below the 20th percentile on half the window, or Tmax above the 80th percentile on 5 of 14 days (provisional). "
-            f"All three demo fields share one POWER cell, so they see the same weather; which crop is hit depends on rotation phase. Confidence capped at moderate. {'SMAP L4 confirmation pending.' if 'SMAP' not in e2['source'] else ''}"
+            "NASA POWER weather is regional (~0.5° cells), so nearby fields see near-identical conditions; which crop is hit depends on rotation phase. Confidence capped at moderate."
         )
         cols2 = ["season", "crop", "window_start", "window_end", "dry_days", "hot_days", "window_days", "base_rate", "esi_median", "esi_status", "vigour", "scenario", "confidence"]
         st.dataframe(pd.DataFrame(e2["seasons"])[cols2], hide_index=True, width="stretch")

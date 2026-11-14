@@ -21,7 +21,8 @@ def load_points(folders: list[Path]) -> dict[str, pd.Series]:
     if not frames:
         return {}
     df = pd.concat(frames)
-    df["Date"] = pd.to_datetime(df["Date"]).dt.normalize()
+    # AppEEARS writes "2015-04-01 01:30:00 UTC": parse as UTC, drop the zone, daily mean by UTC date
+    df["Date"] = pd.to_datetime(df["Date"], utc=True).dt.tz_convert(None).dt.normalize()
     df = df[df["sm"] > -1]  # drop fill values
     daily = df.groupby(["ID", "Date"])["sm"].mean()
     return {fid: s.droplevel(0).rename("smap_rootzone") for fid, s in daily.groupby(level=0)}

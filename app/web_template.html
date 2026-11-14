@@ -159,6 +159,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
       <div class="grid3" id="e2tiles"></div>
       <p id="e2crops"></p>
       <p id="e2esi"></p>
+      <p id="e2smap"></p>
       <p class="small">Corn: 14 days around silking, estimated from capped growing degree days after green-up. Soybean: from 14 days before to 21 days after the greenness peak. Flag: root-zone wetness below the 20th percentile on half the window, or daily maximum above the 80th percentile on 5 of 14 days (provisional). All three fields share one regional weather cell, so the same years recur; which crop is hit depends on the rotation’s phase. Confidence is capped at moderate, or moderate–high where the field-scale ECOSTRESS stress index (actual over potential evapotranspiration, 70 m, within 10 days of the window, against this field’s own summer median) confirms a flag. ECOSTRESS overpass times vary, so read single seasons with care.</p>
       <div class="scroll"><table id="e2table"></table></div>
     </section>
@@ -209,7 +210,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
 
   <footer>
     <span id="built"></span>
-    <span>Data: NASA HLS v2.0 (Landsat + ESA Sentinel-2), NASA POWER (incl. MERRA-2 root-zone wetness), NASADEM, USDA CDL and SSURGO. Code: github.com/yisheng05/nasa.</span>
+    <span>Data: NASA HLS v2.0 (Landsat + ESA Sentinel-2), NASA POWER (incl. MERRA-2 root-zone wetness), NASA ECOSTRESS, NASA SMAP L4, NASADEM, USDA CDL and SSURGO. Code: github.com/yisheng05/nasa.</span>
   </footer>
 </div>
 
@@ -311,6 +312,8 @@ function renderConditions() {
   $("e2crops").innerHTML = ["corn", "soybeans"].filter(c => f.e2.summary[c]).map(c => { const d = f.e2.summary[c]; return `<b>${c === "corn" ? "Corn" : "Soybeans"}:</b> ${d.stress_seasons} of ${d.seasons} seasons flagged (${d.stress_years.join(", ") || "none"}), expected ${d.expected_stress_seasons}.`; }).join(" ");
   $("e2table").innerHTML = `<tr><th>Season</th><th>Crop</th><th>Window</th><th>Dry days</th><th>Hot days</th><th>Typical-year flag rate</th><th>Field-scale ECOSTRESS</th><th>Vigour</th><th>Reading</th><th>Confidence</th></tr>` +
     f.e2.seasons.filter(s => s.window_start).map(s => `<tr><td class="num">${s.season}</td><td>${esc(s.crop)}</td><td class="num">${s.window_start.slice(5)} to ${s.window_end.slice(5)}</td><td class="num">${s.dry_days} / ${s.window_days}</td><td class="num">${s.hot_days} / ${s.window_days}</td><td class="num">${pct(s.base_rate)}</td><td>${s.esi_status == null ? "before ECOSTRESS" : s.esi_status === "insufficient" ? "too few scenes" : `${s.esi_median} (${s.esi_status})${s.esi_agrees ? "" : ", differs"}`}</td><td>${esc(s.vigour)}</td><td>${esc(s.scenario)}</td><td>${esc(s.confidence)}</td></tr>`).join("");
+  const sm = f.e2.summary.smap;
+  $("e2smap").innerHTML = sm && sm.checked_seasons ? `<b>Moisture cross-check (NASA SMAP L4, 9 km, assimilated):</b> agrees with the regional dry / not-dry call in ${sm.agree} of ${sm.checked_seasons} seasons checked (${Math.min(...sm.years)}–${Math.max(...sm.years)})${sm.disagree_years.length ? "; disagrees in " + sm.disagree_years.join(", ") : ""}.` : "Moisture cross-check (NASA SMAP L4): pending.";
   const esi = f.e2.summary.esi;
   $("e2esi").innerHTML = esi && esi.assessed_seasons ? `<b>Field-scale check (NASA ECOSTRESS, 70 m):</b> agrees with the regional reading in ${esi.agree} of ${esi.assessed_seasons} seasons with enough clear scenes. Flags confirmed: ${esi.confirmed_flags.join(", ") || "none"}. Not confirmed: ${esi.unconfirmed_flags.join(", ") || "none"}. Low at field scale with no regional flag: ${esi.field_only_low.join(", ") || "none"}.` : "";
   const box = $("trends"); box.innerHTML = "";
