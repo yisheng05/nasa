@@ -7,7 +7,10 @@ living cover.
 Method (all thresholds provisional, for the team and an agronomist to agree):
 - Smooth the whole multi-year record on a daily grid with a weighted Whittaker
   smoother (second differences), with one robust pass that down-weights
-  observations far below the curve (residual cloud or shadow).
+  observations far below the curve (residual cloud or shadow). The curve is then
+  capped at the highest clear observation within +/-PEAK_CAP_DAYS (+ PEAK_CAP_TOL):
+  a cloudy gap at the peak otherwise makes the smoother overshoot (2021 on Field A
+  read 1.00 against a maximum observation of 0.91).
 - Per season: peak = maximum of the smoothed curve between 1 Apr and 31 Oct.
   Green-up = first day on the rising limb at 50% of the spring amplitude (the same
   definition as MSLSP30NA's 50PCGI layer, for V3). Decline = last day on the falling
@@ -48,6 +51,8 @@ ROBUST_WEIGHT = 0.3
 MIN_SEASON_OBS = 8  # V2
 MAX_GAP_HIGH_CONF = 30  # days, April-October
 SUPPORT_DAYS = 30  # a living-cover day needs a clear observation >= threshold this close
+PEAK_CAP_DAYS = 45
+PEAK_CAP_TOL = 0.02
 
 
 def whittaker(y: np.ndarray, w: np.ndarray, lam: float = WHITTAKER_LAMBDA) -> np.ndarray:
@@ -71,6 +76,9 @@ def smooth_daily(obs: pd.DataFrame, start: str, end: str, lam: float = WHITTAKER
     w2 = w.to_numpy().copy()
     w2[(w2 > 0) & (resid < -ROBUST_DROP)] = ROBUST_WEIGHT
     z = whittaker(y.to_numpy(), w2, lam)
+    local_max = o.reindex(days).rolling(2 * PEAK_CAP_DAYS + 1, center=True, min_periods=1).max()
+    cap = (local_max + PEAK_CAP_TOL).fillna(1.0).to_numpy()
+    z = np.minimum(z, cap)
     return pd.Series(np.clip(z, -0.2, 1.0), index=days, name="ndvi_smooth")
 
 

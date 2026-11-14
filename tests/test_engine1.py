@@ -78,6 +78,15 @@ def test_no_cover_invented_across_winter_gap():
     assert not living["2019-01-05":"2019-04-15"].any()
 
 
+def test_no_overshoot_across_cloudy_peak():
+    """A 40-day gap at the peak must not push the curve above the clear observations (2021 on Field A)."""
+    o = _obs(every=7)
+    o = o[~((o.date >= "2019-06-25") & (o.date <= "2019-08-05"))]
+    _, z = E.run(o, CROPS, YEARS)
+    seen = o[o.date.dt.year == 2019].ndvi_median.max()
+    assert z["2019-04-01":"2019-10-31"].max() <= seen + E.PEAK_CAP_TOL + 1e-9
+
+
 def test_v7_deterministic():
     a, za = E.run(_obs(rye=True), CROPS, YEARS)
     b, zb = E.run(_obs(rye=True), CROPS, YEARS)
