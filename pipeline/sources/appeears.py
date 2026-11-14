@@ -189,13 +189,25 @@ def esi_task(name: str, feature_collection: dict) -> dict:
     }
 
 
-def smap_point_task(name: str, points: list[dict], start="04-01-2015", end="12-31-2025") -> dict:
+def smap_point_task(
+    name: str, points: list[dict], years: tuple[int, int] = (2015, 2025), months: tuple[str, str] = ("04-01", "10-31")
+) -> dict:
+    """SMAP L4 root-zone soil moisture at points, for a recurring window each year.
+
+    The first all-year 2015-2025 request sat in "processing" for ~4 h on 14 Nov and
+    was deleted; requests are now April-October only (the windows Engine 2 and V11
+    use) and split by period (see smap_tasks).
+    """
     return {
         "task_type": "point",
         "task_name": name,
         "params": {
-            "dates": _dates(start, end),
+            "dates": _dates(months[0], months[1], recurring=years),
             "layers": [{"product": "SPL4SMGP.008", "layer": "Geophysical_Data_sm_rootzone"}],
             "coordinates": points,
         },
     }
+
+
+def smap_tasks(points: list[dict], periods=((2015, 2020), (2021, 2025)), version="v2") -> list[dict]:
+    return [smap_point_task(f"fieldshift_smap_l4_{y0}_{y1}_{version}", points, years=(y0, y1)) for y0, y1 in periods]
