@@ -67,6 +67,22 @@ python prep/check_access.py --ancillary
 
 The last command checks every NASA data path for central Iowa and prints PASS / WARN / FAIL / SKIP. See [`prep/README.md`](prep/README.md).
 
+Precompute the demo fields, then start the app:
+
+```bash
+python -m jupyter nbconvert --to notebook --execute --inplace notebooks/01_precompute.ipynb
+```
+
+```bash
+streamlit run app/streamlit_app.py
+```
+
+Run the tests (V10 GDD, app smoke tests incl. V9 ordering):
+
+```bash
+python -m pytest -q
+```
+
 ## Repo map
 
 | Path | What goes here | Handoff section |
@@ -76,8 +92,8 @@ The last command checks every NASA data path for central Iowa and prints PASS / 
 | `notebooks/` | Offline precompute of the demo fields → evidence JSON/Parquet | §14 |
 | `pipeline/` | Engine 1 Field History, Engine 2 Stress Recurrence, Engine 3 Rotation Comparison | §8 |
 | `app/` | Streamlit UI: season strip, trend panel, trade-off table, one-page summary | §13.1 |
-| `tests/` | Acceptance tests V1–V10 | §15 |
-| `data/` | Raw extracts and precomputed evidence (git-ignored) | §14 |
+| `tests/` | Acceptance tests (V10 GDD, V9 ordering in the app shell; more to come) | §15 |
+| `data/` | Raw extracts (git-ignored) and `data/processed/` evidence read by the app (committed) | §14 |
 | `REFERENCES.md` | Data, papers, code and AI tools used, for the submission form | §1.4 |
 
 ## Pre-event checklist (handoff §18.2)

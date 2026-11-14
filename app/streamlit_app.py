@@ -1,0 +1,257 @@
+"""Field Shift: Streamlit shell (handoff §13.1).
+
+Reads only precomputed files in data/processed/. Views that depend on Engines 1-3
+show a clear "pending" state instead of placeholder numbers.
+
+Run from the repo root:  streamlit run app/streamlit_app.py
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pandas as pd
+import pydeck as pdk
+import streamlit as st
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from app import charts
+from app import data as D
+
+st.set_page_config(page_title="Field Shift", page_icon="🌱", layout="wide")
+
+
+# ---------------------------------------------------------------- loaders
+@st.cache_data
+def _static(fid: str) -> dict:
+    return D.load_static(fid)
+
+
+@st.cache_data
+def _power(fid: str) -> pd.DataFrame:
+    return D.load_power(fid)
+
+
+@st.cache_data
+def _hls(fid: str) -> pd.DataFrame | None:
+    return D.load_hls(fid)
+
+
+@st.cache_data
+def _props() -> dict:
+    return D.demo_props()
+
+
+FIELDS = D.field_ids()
+if not FIELDS:
+    st.error("No precomputed fields in data/processed/. Run notebooks/01_precompute.ipynb first.")
+    st.stop()
+PROPS = _props()
+
+# ---------------------------------------------------------------- sidebar
+with st.sidebar:
+    st.title("Field Shift")
+    st.caption("Rotation options from a field's own history")
+    fid = st.selectbox("Field", FIELDS, format_func=lambda f: D.field_label(f, _static(f), PROPS.get(f, {})))
+    st.subheader("Your priorities")
+    priorities = st.multiselect(
+        "Pick in order of importance",
+        D.PRIORITIES,
+        default=["Soil protection", "Water and stress risk", "Workload and simplicity"],
+        help="The order you pick sets the row order in Rotation options. It never changes the evidence or the ratings (test V9).",
+    )
+    st.subheader("Constraints")
+    active = {k for k, label in D.CONSTRAINTS.items() if st.checkbox(label, key=f"c_{k}")}
+    rented = st.checkbox(D.LONG_TERM_NOTE)
+
+static, power, hls = _static(fid), _power(fid), _hls(fid)
+props = PROPS.get(fid, {})
+
+# farmer edits take precedence over CDL (handoff §8.1)
+seq_key = f"seq_{fid}"
+if seq_key not in st.session_state:
+    st.session_state[seq_key] = D.crop_sequence(static)[["season", "crop", "source"]]
+seq = st.session_state[seq_key]
+
+with st.sidebar:
+    st.subheader("Data status")
+    status = [
+        ("Crop history", "USDA CDL 2016–2025", True),
+        ("Soil", "USDA SSURGO", True),
+        ("Slope", "NASADEM (NASA SRTM), V12 passed", True),
+        ("Weather and root-zone wetness", "NASA POWER 1981–2025", True),
+        ("Greenness", "NASA HLS 30 m via AppEEARS", hls is not None),
+        ("Engine 1 · cover days", "HLS", False),
+        ("Engine 2 · stress windows", "POWER, SMAP L4", False),
+        ("Engine 3 · ratings", "Engines 1–2, soil, catalogue", False),
+    ]
+    for name, src, ok in status:
+        st.markdown(f"{'✅' if ok else '⏳'} **{name}**  \n<span style='color:#52514e;font-size:0.85em'>{src}</span>", unsafe_allow_html=True)
+
+# ---------------------------------------------------------------- header
+letter = fid.split("_")[-1].upper()
+st.title(f"Field {letter}, {props.get('county', '')}")
+st.markdown("It's November. This field has alternated corn and soybean for ten seasons, and the farmer is planning the next ones.")
+
+soil = static["soil"]
+terrain = static["terrain"]
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Area", f"{static['area_ha']['value']} ha", help=static["area_ha"]["source"])
+c2.metric("Interior pixels (30 m)", f"~{static['interior_pixels_approx']['value']}", help="After a one-pixel inward buffer. V1 needs ≥ 50 valid pixels per date.")
+c3.metric("Mean slope", f"{terrain['mean_slope_pct']['value']}%", help=f"{terrain['mean_slope_pct']['source']}. Smoothed (σ 1.5 px); 3DEP lidar reference {terrain['ref_3dep_10m_pct']['value']}%.")
+c4.metric("Available water, top 100 cm", f"{soil['aws0100wta']['value']:.1f} cm", help=soil["aws0100wta"]["source"])
+st.caption(
+    f"Soil: {soil['muname']['value']} is the largest map unit ({soil['dominant_share']['value']:.0%}); "
+    f"drainage by area: {soil['drclassdcd']['value'].lower()}. Source: {soil['muname']['source']}."
+)
+
+t_hist, t_cond, t_rot, t_inputs, t_sum = st.tabs(["Field history", "Changing conditions", "Rotation options", "Your inputs", "Summary"])
+
+# ---------------------------------------------------------------- field history
+with t_hist:
+    st.subheader("Ten seasons on one strip")
+    st.altair_chart(charts.season_strip(seq), width="stretch", theme=None)
+    st.caption("Crop from the USDA Cropland Data Layer unless you edited it under Your inputs. Living cover (Engine 1) and stress at the sensitive stage (Engine 2) are not computed yet.")
+    if hls is not None:
+        st.subheader("Field greenness, every clear satellite pass")
+        st.altair_chart(charts.ndvi_scatter(hls), width="stretch", theme=None)
+        st.caption("Median NDVI over the field interior, NASA HLS v2.0 (Landsat + ESA Sentinel-2), 30 m. Faded points had fewer than 50 valid pixels after cloud masking (V1).")
+    else:
+        st.info("Satellite greenness (NASA HLS, 30 m) is still processing in AppEEARS. Once it lands, this tab shows every clear pass since 2016, then the cover days and spring-cover flags from Engine 1.")
+    with st.expander("Show data"):
+        st.dataframe(seq, hide_index=True, width="stretch")
+
+# ---------------------------------------------------------------- changing conditions
+with t_cond:
+    st.subheader("How conditions are changing here")
+    st.caption(
+        "Regional context, not field measurements: NASA POWER covers a ~0.5° cell, and root-zone wetness is modelled (GMAO MERRA-2). "
+        "The window 15 Jun–15 Aug is a calendar stand-in for the maize sensitive period; Engine 2 will use each season's estimated silking date. "
+        "Grey band: middle 60% of 1991–2020."
+    )
+    metrics = D.window_metrics(power)
+    corn_years = seq.loc[seq.crop == "corn", "season"].tolist()
+    cols = st.columns(2)
+    for i, (col, (title, unit, src)) in enumerate(D.METRICS.items()):
+        with cols[i % 2]:
+            band = D.baseline_band(metrics, col)
+            st.altair_chart(charts.trend_chart(metrics, col, title, unit, band, corn_years), width="stretch", theme=None)
+            st.caption(f"Linear trend 1981–2025: {D.trend_per_decade(metrics, col):+.2f} {unit} per decade (not tested for significance). Source: {src}.")
+    st.subheader("This field's corn seasons against 1991–2020")
+    ctx = D.corn_season_context(metrics, seq)
+    if ctx.empty:
+        st.write("No corn seasons in the crop history.")
+    else:
+        dry = int((ctx.rain_pctile <= 20).sum())
+        st.markdown(f"Window rainfall was in the driest fifth of 1991–2020 in **{dry} of {len(ctx)}** corn seasons on this field (regional, calendar window).")
+        st.dataframe(
+            ctx.rename(columns={"season": "Corn season", "rain_mm": "Rain (mm)", "rain_pctile": "Rain percentile", "gwetroot": "Root-zone wetness", "gwetroot_pctile": "Wetness percentile", "hot_days": "Days > 30 °C"}),
+            hide_index=True,
+            width="stretch",
+        )
+    with st.expander("Show data"):
+        st.dataframe(metrics.round(2), width="stretch")
+
+# ---------------------------------------------------------------- rotation options
+with t_rot:
+    st.subheader("Rotation options against your priorities")
+    kept, dropped = D.apply_constraints(active)
+    for name, why in dropped:
+        st.warning(f"**{name}** removed: {why}.")
+    crit = D.ordered_criteria(priorities)
+    table = pd.DataFrame(
+        {c["name"]: [("baseline" if i == 0 else "pending") for _ in crit] + ["—" if i == 0 else "pending"] for i, c in enumerate(kept)},
+        index=pd.Index([*crit, "Confidence"], name="Criterion (your priority order)"),
+    )
+    st.dataframe(table, width="stretch")
+    order_txt = " → ".join(priorities) if priorities else "no priorities chosen (default order)"
+    st.caption(f"Rows follow your priorities: {order_txt}. Ratings will be better / similar / worse relative to the current rotation, each with its evidence and confidence (Engine 3, not built yet). Changing priorities reorders rows; it never changes a rating (V9).")
+    if rented:
+        st.info("On a short lease, the benefits of cover crops and longer rotations build over years and may not reach the person farming. Check lease terms before choosing.")
+    with st.expander("What each rating will use"):
+        for k in crit:
+            st.markdown(f"**{k}.** {D.CRITERION_EVIDENCE[k]}")
+    with st.expander("What this tool cannot establish"):
+        st.markdown(
+            "- Yield or profit effects on this field.\n- Soil organic carbon, nitrogen, phosphorus, pH, compaction or biology.\n"
+            "- Whether winter green is a cover crop or weeds: confirm before crediting it.\n- Field-level moisture: drivers are regional (9 km and ~0.5°)."
+        )
+
+# ---------------------------------------------------------------- inputs
+with t_inputs:
+    left, right = st.columns([3, 2])
+    with left:
+        st.subheader("Crop history")
+        st.caption("Prefilled from CDL. Your entries take precedence and are marked as yours.")
+        edited = st.data_editor(
+            seq,
+            hide_index=True,
+            width="stretch",
+            disabled=["season", "source"],
+            column_config={"crop": st.column_config.SelectboxColumn("crop", options=D.CROP_OPTIONS, required=True)},
+            key=f"editor_{fid}",
+        )
+        cdl = D.crop_sequence(static).set_index("season")["crop"]
+        edited["source"] = ["CDL" if cdl.get(s) == c else "farmer" for s, c in zip(edited.season, edited.crop, strict=True)]
+        if not edited.equals(st.session_state[seq_key]):
+            st.session_state[seq_key] = edited
+            st.rerun()
+        st.subheader("Soil")
+        st.caption("Area-weighted from USDA SSURGO. Replace with your own soil-test values where you have them (not saved yet).")
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {"Property": "Available water, top 100 cm (cm)", "Value": soil["aws0100wta"]["value"]},
+                    {"Property": "Surface organic matter (%)", "Value": soil["om_r"]["value"]},
+                    {"Property": "Erodibility K factor", "Value": soil["kwfact"]["value"]},
+                    {"Property": "Slope, survey (%)", "Value": soil["slopegradwta"]["value"]},
+                    {"Property": "Slope, NASADEM smoothed (%)", "Value": terrain["mean_slope_pct"]["value"]},
+                ]
+            ),
+            hide_index=True,
+            width="stretch",
+        )
+    with right:
+        st.subheader("Where")
+        ring = static["geometry"]["coordinates"][0]
+        lon = sum(p[0] for p in ring) / len(ring)
+        lat = sum(p[1] for p in ring) / len(ring)
+        st.pydeck_chart(
+            pdk.Deck(
+                layers=[pdk.Layer("PolygonLayer", data=[{"polygon": ring}], get_polygon="polygon", get_fill_color=[42, 120, 214, 50], get_line_color=[42, 120, 214], line_width_min_pixels=2)],
+                initial_view_state=pdk.ViewState(latitude=lat, longitude=lon, zoom=13.3),
+                map_provider="carto",
+                map_style="light",
+            ),
+            height=320,
+        )
+        st.caption(f"{props.get('naip_note', '')}. Selected because CDL shows strict corn/soybean alternation 2016–2025; checked on NAIP 2025.")
+
+# ---------------------------------------------------------------- summary
+with t_sum:
+    st.subheader("One page for the agronomist conversation")
+    seq_txt = " ".join("C" if c == "corn" else "S" if c == "soybeans" else c[:3] for c in seq.crop)
+    md = [
+        f"# Field {letter}, {props.get('county', '')}",
+        "",
+        f"- Area: {static['area_ha']['value']} ha (~{static['interior_pixels_approx']['value']} interior 30 m pixels)",
+        f"- Crop sequence 2016–2025: {seq_txt} (USDA CDL{', with farmer edits' if (seq.source == 'farmer').any() else ''})",
+        f"- Soil: {soil['muname']['value']} (largest unit); drainage {soil['drclassdcd']['value'].lower()}; available water {soil['aws0100wta']['value']:.1f} cm in the top 100 cm (USDA SSURGO)",
+        f"- Mean slope: {terrain['mean_slope_pct']['value']}% (NASADEM, smoothed; lidar reference {terrain['ref_3dep_10m_pct']['value']}%)",
+        "",
+        "## Your priorities",
+        ", ".join(f"{i + 1} {p.lower()}" for i, p in enumerate(priorities)) or "Not set",
+        "",
+        "## Pending",
+        "- Living cover and bare periods per season (Engine 1, NASA HLS 30 m)",
+        "- Stress at the sensitive stage, and how often it recurs (Engine 2)",
+        "- Rotation ratings with evidence and confidence (Engine 3)",
+        "",
+        "## Not established by this tool",
+        "Yield or profit effects on this field; change in soil carbon or nutrients.",
+    ]
+    text = "\n".join(md)
+    st.markdown(text)
+    st.download_button("Download summary (.md)", text, file_name=f"fieldshift_{fid}_summary.md", mime="text/markdown")

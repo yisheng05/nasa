@@ -1,0 +1,46 @@
+"""App smoke tests: the shell renders on the committed processed data, and the constraint/priority rules hold."""
+
+from pathlib import Path
+
+import pytest
+
+pytest.importorskip("streamlit")
+from streamlit.testing.v1 import AppTest
+
+APP = str(Path(__file__).resolve().parent.parent / "app" / "streamlit_app.py")
+
+
+def _run() -> AppTest:
+    return AppTest.from_file(APP, default_timeout=60).run()
+
+
+def _option_table(at: AppTest):
+    return next(d.value for d in at.dataframe if "Corn–soybean (current)" in d.value.columns)
+
+
+def test_app_renders_without_exceptions():
+    at = _run()
+    assert not at.exception, at.exception
+    titles = [t.value for t in at.title]
+    assert "Field Shift" in titles
+    assert any(v.startswith("Field A") for v in titles)
+
+
+def test_constraint_removes_small_grain_option():
+    at = _run()
+    at.checkbox(key="c_small_grain_market").check().run()
+    assert not at.exception
+    assert any("oats/clover" in w.value for w in at.warning)
+    assert "Corn–soybean–oats/clover" not in _option_table(at).columns
+
+
+def test_v9_priorities_reorder_columns_not_ratings():
+    at = _run()
+    before = _option_table(at)
+    at.multiselect[0].set_value(["Crop diversity", "Soil protection"]).run()
+    assert not at.exception
+    after = _option_table(at)
+    assert after.index[0] == "Crop diversity"
+    assert set(after.index) == set(before.index)
+    for row in before.index:
+        assert list(before.loc[row]) == list(after.loc[row])
