@@ -1,8 +1,8 @@
 {
  "field_id": "field_a",
- "generated": "2026-11-14T09:58:06Z",
+ "generated": "2026-11-14T10:41:45Z",
  "engine": "Engine 2: Stress Recurrence (handoff \u00a78.2)",
- "source": "NASA POWER daily (community AG), NASA LaRC; NASA POWER GWETROOT (from NASA GMAO MERRA-2), modelled; timing from Engine 1 (NASA HLS)",
+ "source": "NASA POWER daily (community AG), NASA LaRC; NASA POWER GWETROOT (from NASA GMAO MERRA-2), modelled; NASA ECOSTRESS ECO_L4T_ESI v002, LP DAAC via AppEEARS; timing from Engine 1 (NASA HLS)",
  "method": {
   "silk_gdd_from_greenup_c": 400.0,
   "corn_window_days": 14,
@@ -18,7 +18,8 @@
   ],
   "pool_half_days": 7,
   "vigour": "peak NDVI +/-0.03 or integrated NDVI +/-10% vs field median for the crop",
-  "confidence_cap": "moderate (regional drivers)"
+  "confidence_cap": "moderate (regional drivers); moderate\u2013high where field-scale ECOSTRESS ESI confirms a flag",
+  "esi_check": "usable ECOSTRESS scenes within 10 days of the window; low if the median is 0.05 or more below the field's 15 Jun-31 Aug median; needs >= 2 scenes"
  },
  "seasons": [
   {
@@ -40,6 +41,11 @@
    "base_rate": 0.2,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": null,
+   "esi_median": null,
+   "esi_field_median": null,
+   "esi_status": null,
+   "esi_agrees": null,
    "peak_ndvi": 0.818,
    "crop_median_peak": 0.884,
    "integrated_rel": null,
@@ -70,6 +76,11 @@
    "base_rate": 0.3,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": null,
+   "esi_median": null,
+   "esi_field_median": null,
+   "esi_status": null,
+   "esi_agrees": null,
    "peak_ndvi": 0.937,
    "crop_median_peak": 0.937,
    "integrated_rel": -0.016,
@@ -98,6 +109,11 @@
    "base_rate": 0.267,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": 1,
+   "esi_median": null,
+   "esi_field_median": 0.557,
+   "esi_status": "insufficient",
+   "esi_agrees": null,
    "peak_ndvi": 0.875,
    "crop_median_peak": 0.884,
    "integrated_rel": 0.026,
@@ -126,6 +142,11 @@
    "base_rate": 0.3,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": 4,
+   "esi_median": 0.485,
+   "esi_field_median": 0.557,
+   "esi_status": "low",
+   "esi_agrees": false,
    "peak_ndvi": 0.933,
    "crop_median_peak": 0.937,
    "integrated_rel": -0.188,
@@ -133,7 +154,7 @@
    "vigour": "below",
    "scenario": "C: lower vigour without a stress signal (field check)",
    "confidence": "moderate",
-   "note": ""
+   "note": "field-scale ESI was low with no regional flag: field-level stress the regional data missed"
   },
   {
    "season": 2020,
@@ -154,6 +175,11 @@
    "base_rate": 0.333,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": 5,
+   "esi_median": 0.542,
+   "esi_field_median": 0.557,
+   "esi_status": "not low",
+   "esi_agrees": true,
    "peak_ndvi": 0.747,
    "crop_median_peak": 0.884,
    "integrated_rel": -0.328,
@@ -185,13 +211,18 @@
    "base_rate": 0.233,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": 10,
+   "esi_median": 0.438,
+   "esi_field_median": 0.557,
+   "esi_status": "low",
+   "esi_agrees": true,
    "peak_ndvi": 0.935,
    "crop_median_peak": 0.937,
    "integrated_rel": 0.0,
    "crop_n": 5,
    "vigour": "similar",
    "scenario": "B: regional stress, field vigour held (buffered)",
-   "confidence": "moderate",
+   "confidence": "moderate\u2013high",
    "note": ""
   },
   {
@@ -216,6 +247,11 @@
    "base_rate": 0.3,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": 4,
+   "esi_median": 0.549,
+   "esi_field_median": 0.557,
+   "esi_status": "not low",
+   "esi_agrees": false,
    "peak_ndvi": 0.893,
    "crop_median_peak": 0.884,
    "integrated_rel": -0.026,
@@ -223,7 +259,7 @@
    "vigour": "similar",
    "scenario": "B: regional stress, field vigour held (buffered)",
    "confidence": "moderate",
-   "note": ""
+   "note": "field-scale ESI did not show stress in this window (regional flag not confirmed at 70 m)"
   },
   {
    "season": 2023,
@@ -247,6 +283,11 @@
    "base_rate": 0.3,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": 7,
+   "esi_median": 0.558,
+   "esi_field_median": 0.557,
+   "esi_status": "not low",
+   "esi_agrees": false,
    "peak_ndvi": 0.942,
    "crop_median_peak": 0.937,
    "integrated_rel": 0.085,
@@ -254,7 +295,7 @@
    "vigour": "similar",
    "scenario": "B: regional stress, field vigour held (buffered)",
    "confidence": "moderate",
-   "note": ""
+   "note": "field-scale ESI did not show stress in this window (regional flag not confirmed at 70 m)"
   },
   {
    "season": 2024,
@@ -275,6 +316,11 @@
    "base_rate": 0.333,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": 0,
+   "esi_median": null,
+   "esi_field_median": 0.557,
+   "esi_status": "insufficient",
+   "esi_agrees": null,
    "peak_ndvi": 0.905,
    "crop_median_peak": 0.884,
    "integrated_rel": 0.154,
@@ -303,6 +349,11 @@
    "base_rate": 0.3,
    "smap_dry_days": null,
    "smap_agrees": null,
+   "esi_scenes": 9,
+   "esi_median": 0.414,
+   "esi_field_median": 0.557,
+   "esi_status": "low",
+   "esi_agrees": false,
    "peak_ndvi": 0.941,
    "crop_median_peak": 0.937,
    "integrated_rel": 0.045,
@@ -310,7 +361,7 @@
    "vigour": "similar",
    "scenario": "no stress signal",
    "confidence": "moderate",
-   "note": ""
+   "note": "field-scale ESI was low with no regional flag: field-level stress the regional data missed"
   }
  ],
  "summary": {
@@ -326,6 +377,25 @@
    "expected_stress_seasons": 2.9,
    "chance_at_least_observed": 0.315,
    "note": "same regional weather for all fields in one POWER cell: which crop is hit depends on rotation phase"
+  },
+  "esi": {
+   "assessed_seasons": 6,
+   "agree": 2,
+   "confirmed_flags": [
+    2021
+   ],
+   "unconfirmed_flags": [
+    2022,
+    2023
+   ],
+   "field_only_low": [
+    2019,
+    2025
+   ],
+   "insufficient": [
+    2018,
+    2024
+   ]
   },
   "corn": {
    "seasons": 5,

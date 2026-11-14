@@ -106,3 +106,42 @@ def test_chance_at_least():
     assert E2.chance_at_least(0, [0.3, 0.3]) == pytest.approx(1.0)
     assert E2.chance_at_least(2, [0.5, 0.5]) == pytest.approx(0.25)
     assert E2.chance_at_least(3, [0.27] * 5) == pytest.approx(0.126, abs=0.005)
+
+
+def _esi(year_values: dict[int, float], base: float = 0.55) -> pd.DataFrame:
+    """Usable ESI scenes every 4 days, Jun-Sep 2018-2025; chosen years get their value from 20 Jul to 10 Aug."""
+    rows = []
+    for y in range(2018, 2026):
+        for d in pd.date_range(f"{y}-06-01", f"{y}-09-15", freq="4D"):
+            v = year_values.get(y, base) if pd.Timestamp(f"{y}-07-15") <= d <= pd.Timestamp(f"{y}-08-10") else base
+            rows.append({"date": d, "esi": v, "usable": True})
+    return pd.DataFrame(rows)
+
+
+def test_esi_confirms_flag_and_raises_confidence():
+    seasons = [_e1(2022, "corn", "2022-06-20", "2022-07-25"), _e1(2024, "corn", "2024-06-20", "2024-07-25")]
+    st, summ = E2.run(seasons, _power(dry_year=2022), esi=_esi({2022: 0.35}))
+    by = {s.season: s for s in st}
+    assert by[2022].stress_flag and by[2022].esi_status == "low" and by[2022].esi_agrees
+    assert by[2022].confidence == "moderate–high"
+    assert by[2024].esi_status == "not low" and by[2024].esi_agrees and by[2024].confidence == "moderate"
+    assert summ["esi"]["confirmed_flags"] == [2022] and summ["esi"]["agree"] == 2
+
+
+def test_esi_disagreement_is_reported_not_hidden():
+    seasons = [_e1(2022, "corn", "2022-06-20", "2022-07-25"), _e1(2024, "corn", "2024-06-20", "2024-07-25")]
+    st, summ = E2.run(seasons, _power(dry_year=2022), esi=_esi({2024: 0.35}))
+    by = {s.season: s for s in st}
+    assert by[2022].stress_flag and by[2022].esi_status == "not low" and by[2022].esi_agrees is False
+    assert by[2022].confidence == "moderate" and "not confirmed" in by[2022].note
+    assert by[2024].esi_status == "low" and "missed" in by[2024].note
+    assert summ["esi"]["unconfirmed_flags"] == [2022] and summ["esi"]["field_only_low"] == [2024]
+
+
+def test_esi_needs_enough_scenes_and_years():
+    seasons = [_e1(2022, "corn", "2022-06-20", "2022-07-25"), _e1(2016, "corn", "2016-06-20", "2016-07-25")]
+    sparse = _esi({}).iloc[::9].reset_index(drop=True)
+    st, _ = E2.run(seasons, _power(dry_year=2022), esi=sparse)
+    by = {s.season: s for s in st}
+    assert by[2022].esi_status == "insufficient"
+    assert by[2016].esi_status is None  # before ECOSTRESS (July 2018)

@@ -29,6 +29,12 @@ Provisional choices, for the team and an agronomist to agree:
   (With these rules a flag is not rare: the heat rule alone fires in roughly 1 year in 8
   under independent days, more with persistent weather.)
 - Confidence is capped at "moderate": the drivers are regional (POWER ~0.5°, SMAP 9 km).
+- Field-scale check (step 6): usable ECOSTRESS ESI scenes (70 m) from 10 days before to
+  10 days after the window. With at least ESI_MIN_SCENES, the season's median ESI is
+  "low" when it sits ESI_LOW_DROP or more below this field's own median for all usable
+  scenes 15 Jun-31 Aug. A low ESI that agrees with a regional flag raises confidence to
+  "moderate-high"; disagreement keeps it at "moderate" and is reported. A low ESI with no
+  regional flag is reported as field-level stress the regional data missed.
 """
 
 from __future__ import annotations
@@ -50,6 +56,9 @@ VIGOUR_BAND = 0.03
 INTEGRATED_BAND = 0.10  # relative
 POOL_HALF_DAYS = 7
 CONF_ORDER = ["low", "moderate", "high"]
+ESI_PAD_DAYS = 10
+ESI_MIN_SCENES = 2
+ESI_LOW_DROP = 0.05
 
 
 def _noleap_doy(idx: pd.DatetimeIndex) -> np.ndarray:
@@ -97,6 +106,11 @@ class StressSeason:
     base_rate: float | None = None  # share of 1991-2020 years flagged for the same calendar window
     smap_dry_days: int | None = None
     smap_agrees: bool | None = None
+    esi_scenes: int | None = None
+    esi_median: float | None = None
+    esi_field_median: float | None = None
+    esi_status: str | None = None  # "low", "not low", "insufficient"; None if no ECOSTRESS for the year
+    esi_agrees: bool | None = None
     peak_ndvi: float | None = None
     crop_median_peak: float | None = None
     integrated_rel: float | None = None  # (integrated NDVI - crop median) / crop median
@@ -139,8 +153,20 @@ def _base_rate(wet_pct: pd.Series, tmax_pct: pd.Series, w0: pd.Timestamp, w1: pd
     return float(np.mean(flags))
 
 
-def run(e1_seasons: list[dict], power: pd.DataFrame, smap: pd.Series | None = None) -> tuple[list[StressSeason], dict]:
-    """Engine 2 for one field. power: POWER daily (T2M_MAX, T2M_MIN, PRECTOTCORR, GWETROOT)."""
+def run(
+    e1_seasons: list[dict], power: pd.DataFrame, smap: pd.Series | None = None, esi: pd.DataFrame | None = None
+) -> tuple[list[StressSeason], dict]:
+    """Engine 2 for one field. power: POWER daily (T2M_MAX, T2M_MIN, PRECTOTCORR, GWETROOT).
+
+    esi: optional ECOSTRESS scenes (sources.ecostress.field_scenes): date, esi, usable.
+    """
+    esi_ok = esi[esi["usable"]] if esi is not None and len(esi) else None
+    esi_years = set(esi["date"].dt.year) if esi is not None and len(esi) else set()
+    esi_base = None
+    if esi_ok is not None and len(esi_ok):
+        md = esi_ok["date"].dt.month * 100 + esi_ok["date"].dt.day
+        summer = esi_ok[(md >= 615) & (md <= 831)]
+        esi_base = float(summer["esi"].median()) if len(summer) else None
     wet_pct = doy_percentile(power["GWETROOT"].rename("gwetroot"))
     tmax_pct = doy_percentile(power["T2M_MAX"].rename("tmax"))
     smap_pct = doy_percentile(smap.rename("smap"), baseline=(2015, 2025)) if smap is not None and len(smap) else None
@@ -208,6 +234,22 @@ def run(e1_seasons: list[dict], power: pd.DataFrame, smap: pd.Series | None = No
             st.scenario = "no stress signal"
         e1_conf = e1.get("confidence", "low")
         st.confidence = CONF_ORDER[min(CONF_ORDER.index(e1_conf), CONF_ORDER.index("moderate"))]
+        if esi_base is not None and st.season in esi_years:
+            near = esi_ok[(esi_ok["date"] >= w0 - pd.Timedelta(days=ESI_PAD_DAYS)) & (esi_ok["date"] <= w1 + pd.Timedelta(days=ESI_PAD_DAYS))]
+            st.esi_scenes, st.esi_field_median = len(near), round(esi_base, 3)
+            if len(near) >= ESI_MIN_SCENES:
+                st.esi_median = round(float(near["esi"].median()), 3)
+                low = st.esi_median <= esi_base - ESI_LOW_DROP
+                st.esi_status = "low" if low else "not low"
+                st.esi_agrees = low == st.stress_flag
+                if st.stress_flag and low and e1_conf != "low":
+                    st.confidence = "moderate–high"
+                elif st.stress_flag and not low:
+                    st.note = "field-scale ESI did not show stress in this window (regional flag not confirmed at 70 m)"
+                elif not st.stress_flag and low:
+                    st.note = "field-scale ESI was low with no regional flag: field-level stress the regional data missed"
+            else:
+                st.esi_status = "insufficient"
         out.append(st)
     return out, summarise(out)
 
@@ -233,6 +275,15 @@ def summarise(seasons: list[StressSeason]) -> dict:
         "expected_stress_seasons": round(sum(s.base_rate or 0 for s in windows), 1),
         "chance_at_least_observed": round(chance_at_least(len(flagged), [s.base_rate or 0 for s in windows]) or 0, 3),
         "note": "same regional weather for all fields in one POWER cell: which crop is hit depends on rotation phase",
+    }
+    assessed = [s for s in windows if s.esi_status in ("low", "not low")]
+    res["esi"] = {
+        "assessed_seasons": len(assessed),
+        "agree": sum(bool(s.esi_agrees) for s in assessed),
+        "confirmed_flags": [s.season for s in assessed if s.stress_flag and s.esi_status == "low"],
+        "unconfirmed_flags": [s.season for s in assessed if s.stress_flag and s.esi_status == "not low"],
+        "field_only_low": [s.season for s in assessed if not s.stress_flag and s.esi_status == "low"],
+        "insufficient": [s.season for s in windows if s.esi_status == "insufficient"],
     }
     for crop in sorted({s.crop for s in seasons if s.crop and s.window_start}):
         cs = [s for s in seasons if s.crop == crop and s.window_start]

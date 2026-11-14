@@ -48,6 +48,16 @@ def _cover_cell(rec: dict | None) -> tuple[str, str, str]:
     return label, COMPUTED, tip
 
 
+def _esi_text(rec: dict) -> str:
+    s = rec.get("esi_status")
+    if s is None:
+        return ""
+    if s == "insufficient":
+        return f"Field-scale ECOSTRESS: too few clear scenes ({rec.get('esi_scenes', 0)}). "
+    agree = "agrees with" if rec.get("esi_agrees") else "differs from"
+    return f"Field-scale ECOSTRESS stress index {rec['esi_median']} over {rec['esi_scenes']} scenes ({s} against this field's {rec['esi_field_median']}); {agree} the regional flag. "
+
+
 def _stress_cell(rec: dict | None) -> tuple[str, str, str]:
     if rec is None:
         return "pending", PENDING, "Engine 2 not run for this season yet"
@@ -59,7 +69,8 @@ def _stress_cell(rec: dict | None) -> tuple[str, str, str]:
         f"Sensitive window {rec['window_start']} to {rec['window_end']} ({rec['window_basis']}). "
         f"Root-zone wetness < p20 on {rec['dry_days']} of {rec['window_days']} days; Tmax > p80 on {rec['hot_days']}. "
         f"Flagged in {rec['base_rate']:.0%} of 1991–2020 years for the same dates. Vigour {rec['vigour']}. {rec['scenario']}. "
-        f"Confidence {rec['confidence']} (regional drivers)."
+        + _esi_text(rec)
+        + f"Confidence {rec['confidence']}."
     )
     return label, COMPUTED, tip
 
