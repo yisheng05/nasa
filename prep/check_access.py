@@ -50,10 +50,13 @@ COLLECTIONS = {
     "HLSS30_VI": "2.0",
     "MSLSP30NA": "011",
     "SPL4SMGP": None,  # take whatever version CMR returns; report it
+    "SRTMGL1_NC": "003",
+    "ECO_L4T_ESI": "002",
+    "GPM_3IMERGDF": "07",
 }
 
-APPEEARS_PRODUCTS = ("HLSL30_VI", "HLSS30_VI", "SPL4SMGP")
-POWER_PARAMS = ("T2M_MAX", "T2M_MIN", "PRECTOTCORR")
+APPEEARS_PRODUCTS = ("HLSL30_VI", "HLSS30_VI", "SPL4SMGP", "SRTMGL1_NC", "ECO_L4T_ESI")
+POWER_PARAMS = ("T2M_MAX", "T2M_MIN", "PRECTOTCORR", "GWETROOT")
 VI_COVERAGE_MIN = 0.95
 TILE_RE = re.compile(r"^HLS\.[LS]30\.(T\d{2}[A-Z]{3})\.")
 

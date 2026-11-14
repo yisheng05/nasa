@@ -8,11 +8,11 @@ python prep/check_access.py --ancillary --json prep/reports/access.json
 
 | Check | Host | Pass condition | Needs login |
 |---|---|---|---|
-| CMR collections | cmr.earthdata.nasa.gov | HLSL30/S30 v2.0, HLSL30/S30_VI v2.0, MSLSP30NA v011, SPL4SMGP all listed | No |
+| CMR collections | cmr.earthdata.nasa.gov | HLSL30/S30 v2.0, HLSL30/S30_VI v2.0, MSLSP30NA v011, SPL4SMGP, SRTMGL1_NC v003, ECO_L4T_ESI v002, GPM_3IMERGDF v07 all listed | No |
 | HLS VI coverage | cmr.earthdata.nasa.gov | VI granules ≥ 95% of surface-reflectance granules, per sensor per year (otherwise WARN: compute indices from SR) | No |
 | MSLSP30NA granules | cmr.earthdata.nasa.gov | One or more granules at the point for each year 2016–2019 | No |
-| NASA POWER daily | power.larc.nasa.gov | Every day present for T2M_MAX, T2M_MIN, PRECTOTCORR; no fill values | No |
-| AppEEARS products | appeears.earthdatacloud.nasa.gov | HLSL30_VI, HLSS30_VI, SPL4SMGP offered | No |
+| NASA POWER daily | power.larc.nasa.gov | Every day present for T2M_MAX, T2M_MIN, PRECTOTCORR, GWETROOT; no fill values | No |
+| AppEEARS products | appeears.earthdatacloud.nasa.gov | HLSL30_VI, HLSS30_VI, SPL4SMGP, SRTMGL1_NC, ECO_L4T_ESI offered | No |
 | Earthdata login (AppEEARS) | appeears.earthdatacloud.nasa.gov | Token issued, then revoked. SKIP without credentials | **Yes** |
 | SSURGO *(`--ancillary`)* | sdmdataaccess.sc.egov.usda.gov | Map unit returned for the point. WARN only | No |
 | CDL *(`--ancillary`)* | nassgeodata.gmu.edu | County stats returned. WARN only | No |

@@ -1,6 +1,6 @@
 # NASA Space Apps 2026: Field Shift Hackathon Handoff (v2)
 
-**Version:** v2.2, 14 November 2026 (v2.1: 13 Nov; v2: 6 Nov). Replaces v1 (in-season crop monitoring and alerting). Changes are listed in §0.1 (v2.1) and §0.2 (v2.2).
+**Version:** v2.3, 14 November 2026 (v2.2 and v2.1: 13–14 Nov; v2: 6 Nov). Replaces v1 (in-season crop monitoring and alerting). Changes are listed in §0.1 (v2.1), §0.2 (v2.2) and §0.3 (v2.3).
 **Challenge page:** [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/?tab=details)
 **Hackathon:** Saturday 14 – Sunday 15 November 2026
 
@@ -55,7 +55,23 @@ Source: the Singapore Local Lead's email to participants (Cory Meilany, 13 Nov).
 | Judging criteria confirmed for 2026, each **scored 1–5**, with new questions. "Impact" is now about the problem and why it matters, not scale of influence. | §1.5 |
 | Demo choice: **7 slides recommended** over the 30-second video. | §19.1 |
 | No live pitch was announced for the virtual event; §19.2 is optional. | §19.2 |
-| Still open: the pre-work rule is not mentioned in the email, so the question about this repo's pre-event material still needs a written answer from the Local Lead. | §1.4 |
+
+### 0.3 Changes in v2.3 (14 November 2026)
+
+Source: the Field Shift **Resources** tab (pasted by the team, 14 Nov). It recommends datasets but makes none mandatory. Every resource is mapped in §10.1.
+
+| Change | Why | Sections |
+|---|---|---|
+| **SRTM 30 m slope added to scope.** Field mean slope feeds the erosion-protection rating, cross-checked against the SSURGO slope class. | Listed NASA resource; replaces a survey class with a measured field value. One AppEEARS request (SRTMGL1_NC v003). | §8.3, §10, §13.2, §14 |
+| **POWER root-zone soil wetness (GWETROOT, 1981 onward) added as the long-record moisture baseline.** SMAP L4 stays as the satellite-assimilated record for 2016–2025. | Fixes the main Engine 2 limit: SMAP's record is too short for a climatology or a trend. Same POWER API call, no login. Both are modelled or assimilated products, labelled as such. | §8.2, §9, §10, §14, §15 (V11) |
+| New acceptance test **V11**: SMAP L4 and POWER GWETROOT percentiles agree in the sensitive window. | Two partly independent moisture estimates agreeing is evidence for Validity. | §15 |
+| Stretch: **ECOSTRESS Evaporative Stress Index** (70 m, from July 2018) as a field-scale stress check around silking. | The only listed resource that gives a stress signal near field scale. Usable scenes vary: 5–35 per mid-June–mid-August window at the demo point, sparse in 2019 and 2024. | §8.2, §13.2 |
+| Stretch: **GPM IMERG** heavy-rain days (erosion context); **PRISM** as a cross-check of POWER temperature and GDD; **NASS QuickStats** county oat acreage as a market proxy. | Listed resources with a clear role; none is on the critical path. | §10.1, §13.2 |
+| **NAIP** used to draw demo field polygons, not for V6. | NAIP is flown during the growing season, so it can't check off-season cover. | §10.1, §23 |
+| NLDAS noted as an alternative, not used. | NASA retired the Hydrology Data Rods point service (from 31 Oct 2025), so NLDAS needs heavier subsetting; POWER GWETROOT covers the need. | §10.1 |
+| **Sentinel-2 is credited as ESA partner data**, because HLS S30 is built from it. Copernicus attribution added. | Resources list Sentinel-2 under Space Agency Partner Resources. | §10, `REFERENCES.md` |
+| The Resources text uses "SI" where earlier years said "AI". Our design keeps any model out of evidence and ratings (§12); the term doesn't change that. | Terminology only. | §12 |
+| Pre-event material follow-up dropped (team decision). It remains logged in the README. | — | §1.4, §18.2 |
 
 ---
 
@@ -97,10 +113,7 @@ Source: the Singapore Local Lead's email to participants (Cory Meilany, 13 Nov).
 
 Submission, data and team rules below are confirmed by the Singapore Local Lead's email (13 Nov). The pre-work rule is from the 2026 FAQ.
 
-- **Work before the event (2026, explicit).** The 2026 Participant FAQ states that "Teams are not allowed to begin working on the challenges prior to the hackathon" ([Participant FAQs](https://www.spaceappschallenge.org/resources/participant-faqs/); retrieved via search index on 13 Nov, verify on the page). Team formation and contact with Local Leads before the event are allowed. The 2022 FAQ said the same in softer terms ([legacy FAQ](https://legacy.spaceappschallenge.org/resources/faq/)). Other teams' public pre-event code is not permission. Implications:
-  - Write all product code (engines, UI, the precompute notebook) from the start of the hackathon.
-  - This repo already contains pre-event material: this handoff, a rules checklist, a references file and a data-access smoke test (commit of 9 Nov). The Local Lead's email does not address this, so ask in writing (email or Discord) whether that is acceptable, and **disclose it in the submission** (see the README's pre-event log). Don't hide or backdate it.
-  - Unless the Local Lead says otherwise, don't build the submitted pipeline on top of `prep/check_access.py`; treat it as setup tooling.
+- **Work before the event (2026, explicit).** The 2026 Participant FAQ states that "Teams are not allowed to begin working on the challenges prior to the hackathon" ([Participant FAQs](https://www.spaceappschallenge.org/resources/participant-faqs/); retrieved via search index on 13 Nov, verify on the page). Team formation and contact with Local Leads before the event are allowed. The 2022 FAQ said the same in softer terms ([legacy FAQ](https://legacy.spaceappschallenge.org/resources/faq/)). Product code starts at the hackathon. Pre-event material (this handoff, setup and data-access checks) is logged in the README.
 - **Submission fields (2026, confirmed).**
   - **Project Summary:** the solution, the problem it addresses and its impact.
   - **Project Demo:** a 30-second video **or** a 7-slide presentation.
@@ -416,16 +429,18 @@ The pipeline has three deterministic engines and an optional explanation layer. 
 
 - Engine 1 outputs;
 - daily maximum and minimum temperature and precipitation (NASA POWER, 1981 onward);
-- root-zone soil moisture (SMAP L4, 2015 onward);
+- root-zone soil moisture: SMAP L4 (9 km, 2015 onward) for the season flags, and POWER root-zone soil wetness (GWETROOT, MERRA-2, ~0.5°, 1981 onward) for the 1991–2020 climatology and trends;
+- stretch: ECOSTRESS Evaporative Stress Index (ECO_L4T_ESI v002, 70 m, July 2018 onward) at the field;
 - a table of sensitive stages for each crop.
 
 **Processing:**
 
 1. Estimate stage dates. For corn, use capped GDD from green-up, cross-checked against the NDVI peak. For soybean, use the trajectory and the calendar.
-2. Compute anomalies against the location's own climatology for the same day of year, as percentiles. Use POWER's long record for temperature and rainfall trends. SMAP's 2015–2025 record is too short on its own to support trend claims.
+2. Compute anomalies against the location's own climatology for the same day of year, as percentiles. Use POWER's long record (1991–2020 baseline) for temperature, rainfall and root-zone wetness percentiles and trends. SMAP's 2015–2025 record is too short on its own for a climatology or trend; use it to confirm the season flags (V11).
 3. Flag a **stress-window season** using provisional rules for the team to agree. For example: root-zone soil moisture below the 20th percentile on at least 7 of the 14 days centred on estimated silking, **or** maximum temperature above the 80th percentile on at least 5 of those days.
 4. Compute **relative vigour**: the season's peak and integrated NDVI compared with this field's median for the same crop.
 5. Summarise recurrence, for example "stress-window seasons: k of n corn seasons", along with any trend across the decade.
+6. Stretch: where ECOSTRESS ESI has clear scenes within ±10 days of estimated silking, report the field's ESI. A low ESI that agrees with a regional flag raises that season's confidence to "moderate–high"; disagreement keeps it at "moderate" and is reported (Scenario B, §9).
 
 **Outputs:**
 
@@ -451,7 +466,7 @@ The pipeline has three deterministic engines and an optional explanation layer. 
 1. Drop any candidate that breaks a hard constraint the farmer stated.
 2. For each remaining candidate and each criterion, give an **ordinal rating relative to the current rotation**: better, similar or worse. Each rating cites its evidence and states its confidence.
    - **Soil cover and living roots:** observed no-living-cover days, adjusted by the candidate's practice. For example, a cover crop fills the window from harvest to planting.
-   - **Erosion protection:** cover rating combined with slope class.
+   - **Erosion protection:** cover rating combined with field mean slope from SRTM (30 m), cross-checked against the SSURGO slope class. Stretch: heavy-rain-day frequency from GPM IMERG as context.
    - **Water and stress exposure:** does the sensitive stage of each crop in the rotation overlap this field's recurring stress window, and how often?
    - **Nitrogen needs:** legume credits in the sequence.
    - **Crop diversity:** number of distinct crops and functional groups.
@@ -501,7 +516,7 @@ Income is either left out or entered by the farmer, never predicted.
 
 > This is consistent with a cover crop, but weeds or volunteer plants look the same. Ask the farmer to confirm before crediting it.
 
-> **Resolution caveat.** Vegetation evidence is field-scale (30 m). The drivers are regional: SMAP root-zone moisture at 9 km, POWER weather at about 0.5°. A single SMAP cell can contain many fields with different soils and drainage. Present the drivers as regional context for the field's own signal, never as measurements of the field.
+> **Resolution caveat.** Vegetation evidence is field-scale (30 m). The drivers are regional: SMAP root-zone moisture at 9 km, POWER weather and root-zone wetness at about 0.5°. SMAP L4 and POWER GWETROOT are model or assimilation products, not direct measurements; label them "modelled". ECOSTRESS (70 m, stretch) is the only near-field-scale stress signal. A single SMAP cell can contain many fields with different soils and drainage. Present the drivers as regional context for the field's own signal, never as measurements of the field.
 
 ---
 
@@ -513,8 +528,10 @@ Income is either left out or entered by the farmer, never predicted.
 | **HLS VI v2.0** (HLSL30_VI, HLSS30_VI) | NASA LP DAAC | Nine precomputed indices incl. NDVI, EVI, NBR2 | 30 m | Forward-processed from Dec 2024; archive back-processed | Convenience. **Coverage confirmed 9 Nov for tile T15TVG, 2016–2025** (VI vs SR granules: L30 515/516, S30 958/962). Check again for any other tile |
 | **MSLSP30NA (MuSLI) v1.1** | NASA LP DAAC | Yearly phenology dates from HLS (green-up, peak, decline, amplitude) | 30 m, North America | 2016–2019 (confirmed from CMR metadata, 9 Nov) | **Validation** of Engine 1. Not offered in AppEEARS; download via Earthdata |
 | **SMAP L4** (SPL4SMGP) | NASA GMAO / NSIDC | Surface and root-zone soil moisture, 3-hourly | 9 km | Mar 2015 – present | Root-zone moisture anomaly (regional) |
-| **NASA POWER** | NASA LaRC | Daily max/min temperature, precipitation, solar radiation | ~0.5° | 1981 – present | GDD, heat and rainfall anomalies and trends (regional) |
-| **GPM IMERG** | NASA | Precipitation | 0.1° | 2000 – present | Optional finer rainfall |
+| **NASA POWER** | NASA LaRC | Daily max/min temperature, precipitation, solar radiation, root-zone soil wetness (GWETROOT, from MERRA-2) | ~0.5° | 1981 – present | GDD, heat, rainfall and root-zone wetness anomalies, 1991–2020 baseline and trends (regional) |
+| **SRTM GL1** (SRTMGL1_NC v003) | NASA LP DAAC | Elevation → field mean slope | 30 m | Feb 2000 (static) | **Core:** erosion-protection rating |
+| **ECOSTRESS ESI** (ECO_L4T_ESI v002) | NASA JPL / LP DAAC | Evaporative Stress Index | 70 m | Jul 2018 – present, irregular ISS overpasses | Stretch: field-scale stress check near silking |
+| **GPM IMERG** final daily (GPM_3IMERGDF v07) | NASA GES DISC | Precipitation | 0.1° | 1998 – Sep 2025 (final run lags) | Stretch: heavy-rain days for erosion context |
 | **NEX-GDDP-CMIP6** | NASA | Downscaled daily climate projections | 0.25° | 1950–2100 | Stretch: forward-looking panel |
 | MOD13Q1 | NASA | 16-day NDVI/EVI | 250 m | 2000 – present | Fallback or longer baseline; too coarse for small fields |
 | Cropland Data Layer (CDL) | USDA NASS | Crop type each year | 30 m | National from 2008; 2025 released | Crop sequence and ground truth (US) |
@@ -522,11 +539,45 @@ Income is either left out or entered by the farmer, never predicted.
 | SSURGO / gSSURGO | USDA NRCS | AWC, drainage class, organic matter, slope | Survey map units | — | Soil information (US) |
 | SoilGrids 2.0 | ISRIC | Modelled soil properties with uncertainty | 250 m | — | Soil information outside the US |
 | OpTIS | CTIC / TNC / Regrow | Tillage and cover-crop adoption | Aggregated: district, HUC8 watershed, state | 2005–2019 | Context only; not field-level |
+| NAIP | USDA FPAC | 1 m aerial imagery, growing season | 1 m | Every 2–3 years per state | Draw demo field polygons and check edges. Not for V6: flown in the growing season |
+| PRISM | Oregon State University | Daily temperature and precipitation with terrain effects | 4 km | 1981 – present | Stretch: cross-check POWER temperature and GDD |
+| NASS QuickStats | USDA NASS | County acreage and yields | County | Annual | Stretch: county oat acreage as a proxy for a local small-grain market |
+
+### 10.1 Resources tab coverage (14 Nov)
+
+Every item on the Field Shift Resources tab, and what we do with it. The Resources recommend; they don't require any dataset.
+
+| Resource | Use | Reason |
+|---|---|---|
+| SMAP | **Core** (SMAP L4 root-zone) | Season stress flags (§8.2) |
+| Landsat | **Core** (via HLS L30) | Field history at 30 m |
+| ESA Copernicus Sentinel-2 | **Core** (via HLS S30) | Doubles valid observations; credit as ESA partner data |
+| NASA POWER | **Core** | Temperature, rainfall, root-zone wetness, GDD, long baseline |
+| SRTM | **Core** | Field slope for erosion protection |
+| Cropland Data Layer | **Core** | Crop sequence and ground truth |
+| SSURGO / Web Soil Survey | **Core** | AWC, drainage, organic matter, slope class |
+| ECOSTRESS | Stretch (ESI) | Field-scale stress check |
+| GPM IMERG | Stretch | Heavy-rain days; CoCoRaHS could validate it but is out of scope |
+| PRISM | Stretch | Cross-check of POWER |
+| NASS QuickStats | Stretch | Market proxy for the small-grain constraint |
+| USDA AMS Market News | Link only | Listed under "verify with an agronomist": local market for oats |
+| NAIP | Support | Drawing field polygons |
+| MODIS/VIIRS | Fallback | Too coarse (250–1000 m) for single fields |
+| USDA Ag Data Commons | Possible source | Crop-catalogue values, if extension sources fall short |
+| FAO GAEZ, ERA5 | Transfer story | Crop suitability and climate for the outside-US version (§19) |
+| NLDAS/GLDAS | Not used | POWER GWETROOT covers the long record; NASA retired the Data Rods point service, so NLDAS needs heavier subsetting |
+| OpenET | Not used | The Resources describe it as covering western U.S. states, not Iowa |
+| USGS NWIS | Not used | Groundwater matters for the irrigated (Punjab) variant, not rainfed Iowa |
+| CoCoRaHS | Not used | Only needed if IMERG is used and validated |
+| NLCD, LANDFIRE | Not used | CDL already classifies the field; landscape context is out of scope |
+| GEDI | Not used | Designed for tall vegetation, per the Resources |
+
+**Data-use terms.** The Resources note that NASA does not endorse non-U.S. Government sites and that their data-use terms apply. For us: HLS S30 needs Copernicus attribution ("Contains modified Copernicus Sentinel data [year]"); cite PRISM per its terms if used.
 
 **Access:**
 
-- **AppEEARS:** use it for HLS and SMAP area extractions. It keeps NASA provenance visible for the Space Agency Data field, and HLS VI was added to it in December 2025 ([Earthdata notice](https://www.earthdata.nasa.gov/data/alerts-outages/hls-vegetation-indices-products-available-appeears)).
-- **NASA POWER API:** weather. No login needed.
+- **AppEEARS:** use it for HLS, SMAP, SRTM and ECOSTRESS area extractions. It keeps NASA provenance visible for the Space Agency Data field, and HLS VI was added to it in December 2025 ([Earthdata notice](https://www.earthdata.nasa.gov/data/alerts-outages/hls-vegetation-indices-products-available-appeears)).
+- **NASA POWER API:** weather and root-zone wetness (`T2M_MAX, T2M_MIN, PRECTOTCORR, GWETROOT`, community AG). No login needed.
 - **CropScape:** CDL.
 - **Soil Data Access / Web Soil Survey:** SSURGO.
 - **Google Earth Engine:** faster if the geospatial lead already knows it. Still cite the NASA collections explicitly.
@@ -605,9 +656,9 @@ Use "better / similar / worse for your priority", not scores. Put numbers in con
 | In | Stretch | Out |
 |---|---|---|
 | 1–3 precomputed Iowa fields, 2016–2025 (no live API needed, §1.4) | Draw any Iowa field (live extraction) | Yield or profit forecasts |
-| CDL crop sequence; HLS NDVI/EVI; POWER; SMAP L4; SSURGO | Residue proxy (NDTI/NBR2) | Soil chemistry from space |
+| CDL crop sequence; HLS NDVI/EVI; POWER (incl. GWETROOT); SMAP L4; SSURGO; SRTM slope | Residue proxy (NDTI/NBR2); ECOSTRESS ESI; IMERG heavy-rain days | Soil chemistry from space |
 | Three candidate rotations; rule-based comparison | NEX-GDDP-CMIP6 projection panel | In-season alerts |
-| Validation chart (§15) | LLM summary; a second region for transferability | ML crop classification |
+| Validation chart (§15) | LLM summary; a second region for transferability; PRISM cross-check; QuickStats market proxy | ML crop classification |
 
 ### 13.3 Minimum output
 
@@ -650,8 +701,9 @@ Not established by this tool: yield or profit effects on this field; change in s
 Field polygon + farmer inputs (priorities, constraints, soil tests, history edits)
                               |
                               v
-NASA EO: HLS (+Fmask), SMAP L4, POWER, [NEX-GDDP-CMIP6]
-USDA ancillary: CDL, SSURGO, Crop Progress (validation)
+NASA EO: HLS (+Fmask; Landsat + ESA Sentinel-2), SMAP L4, POWER (+GWETROOT), SRTM,
+         [ECOSTRESS ESI], [GPM IMERG], [NEX-GDDP-CMIP6]
+USDA ancillary: CDL, SSURGO, Crop Progress (validation), NAIP (polygons)
                               |
                               v
 Quality control: Fmask, one-pixel inward buffer, minimum valid pixels
@@ -688,9 +740,9 @@ Precompute the demo fields offline, in a notebook that writes Parquet or JSON. T
 5. Smooth each season and extract the phenometrics (V3 against MSLSP30NA).
 6. Compute living-cover days, no-living-cover days and the spring-cover flag (V6).
 7. Pull POWER daily weather. Compute capped GDD (V10) and estimated stage dates (V4 against Crop Progress).
-8. Pull SMAP L4 root-zone moisture and compute day-of-year percentiles.
+8. Pull SMAP L4 root-zone moisture (2015 onward) and POWER GWETROOT (1981 onward); compute day-of-year percentiles against the 1991–2020 POWER baseline, and check agreement (V11).
 9. Apply the stress-window rules; compute relative vigour within each crop and recurrence.
-10. Load the soil, the crop catalogue, the priorities and the constraints; run Engine 3 (V7, V9).
+10. Pull SRTM for the field and compute mean slope. Load the soil, the crop catalogue, the priorities and the constraints; run Engine 3 (V7, V9).
 11. Write the evidence JSON. Render the UI and the summary (V8).
 
 ---
@@ -711,6 +763,7 @@ These are **proposed targets for the team to agree**, not established thresholds
 | V8 | Traceability | Every number in the UI and the LLM text is looked up in the evidence JSON | 100%; the build fails otherwise |
 | V9 | Priority sensitivity | Change the priority order | The ranking may change; no evidence value or rating changes |
 | V10 | GDD unit tests | (Tmax 35, Tmin 18) → 14.0; (25, 5) → 7.5; (8, 2) → 0.0 GDD in °C | All pass |
+| V11 | Moisture agreement | Daily root-zone percentiles, SMAP L4 vs POWER GWETROOT, 15 Jun – 15 Aug, 2016–2025 | Spearman ρ ≥ 0.6, and the two agree on ≥ 70% of season stress flags. Report it either way |
 
 The V4 comparison sets one field against a state-wide distribution, so treat it as a sanity check, not as accuracy.
 
@@ -740,7 +793,8 @@ The V4 comparison sets one field against a state-wide distribution, so treat it 
 - Field boundaries that change across years; CDL errors at field edges.
 - Too few seasons per crop for a crop-specific baseline (about five corn seasons in ten years). Report n next to every crop-specific comparison.
 - One 9 km SMAP cell covering fields with different soils and drainage. Tile drainage complicates moisture behaviour.
-- SMAP's short record (2015 onward) mistaken for a climate trend.
+- SMAP's short record (2015 onward) mistaken for a climate trend. Use POWER's 1991–2020 baseline for trends.
+- Modelled moisture (SMAP L4, MERRA-2) presented as measured. Label it "modelled".
 - Recommendations that can't be acted on: no market for small grains, no equipment, or lease terms that discourage long-term investment.
 - Harvest misread as crop failure, or stress misread as senescence (from v1).
 
@@ -780,9 +834,8 @@ If the 2026 rules restrict work before the event, keep this period to learning, 
 
 ### 18.2 Setup checklist
 
-- [ ] Confirm the challenge text and the **Resources** tab on the challenge page (Resources published 13 Nov; not retrievable by automated fetch on 13 Nov, so read it manually). Plan to use or cite every NASA dataset listed there.
+- [x] Resources tab read (14 Nov) and mapped in §10.1. Challenge Details tab not yet compared with §1.1.
 - [ ] Read the 2026 Project Submission and Judging & Awards guides (13 Nov). Pre-work rule confirmed from the 2026 FAQ (§1.4); demo format, data field and criteria still to confirm.
-- [ ] Ask the Local Lead in writing whether the pre-event material in this repo is acceptable (§1.4).
 - [ ] Earthdata Login and AppEEARS access working for every team member who needs them.
 - [x] Check HLS VI coverage for 2016–2025 on the chosen MGRS tile. Done 9 Nov: complete on T15TVG, so use HLS VI.
 - [ ] Agree the region and the decision (§3.2).
@@ -804,7 +857,7 @@ If the 2026 rules restrict work before the event, keep this period to learning, 
 4. Recurring stress and changing conditions.
 5. Rotation trade-offs against the farmer's priorities.
 6. How we know: validation and limits.
-7. NASA data used, and how it transfers to other regions.
+7. NASA and ESA data used (HLS: Landsat + Sentinel-2; SMAP L4; POWER; SRTM; plus any stretch sets), and how it transfers to other regions (GAEZ, ERA5, SoilGrids).
 
 **30-second script:**
 
@@ -915,9 +968,9 @@ This is deferred because it serves the operational horizon and the brief is stra
 
 **Saturday 14 November:**
 
-5. Fix 1–3 demo fields. Extract HLS for 2016–2025 with Fmask, plus CDL and SSURGO.
+5. Fix 1–3 demo fields: draw polygons on NAIP, check CDL shows a corn–soybean sequence. Submit AppEEARS requests first (HLS VI + Fmask 2016–2025, SMAP L4, SRTM, and ECOSTRESS ESI if attempting the stretch), since they queue. Pull CDL and SSURGO.
 6. Build Engine 1: phenometrics and cover days. Run V1–V3 and V6.
-7. Pull POWER and SMAP L4. Compute capped GDD and build Engine 2. Run V4 and V10.
+7. Pull POWER (incl. GWETROOT) and SMAP L4. Compute capped GDD and build Engine 2. Run V4, V10 and V11.
 
 **Sunday 15 November:**
 

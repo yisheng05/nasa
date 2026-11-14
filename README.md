@@ -6,7 +6,7 @@ NASA Space Apps 2026 · Challenge: [Field Shift: Adapting Farms with NASA Data](
 
 We reconstruct a field's last 6–10 seasons from 30 m NASA HLS imagery: what it grew, when it grew, how long the soil went without living cover, and where stress recurred at sensitive crop stages. We add local climate trends, soil information and the farmer's own priorities. Then we compare 2–4 candidate rotations as explicit trade-offs, each with its evidence and confidence. The tool does not name a single "optimal" rotation, and it does not claim to measure soil carbon or nutrients from space.
 
-The full design is in [`docs/handoff_v2.md`](docs/handoff_v2.md) (v2.2, 14 Nov; changes listed in its §0.1–0.2). Rules: [`docs/rules_check_2026.md`](docs/rules_check_2026.md).
+The full design is in [`docs/handoff_v2.md`](docs/handoff_v2.md) (v2.3, 14 Nov; changes listed in its §0.1–0.3). Rules: [`docs/rules_check_2026.md`](docs/rules_check_2026.md).
 
 ## The six questions the tool answers
 
@@ -41,9 +41,9 @@ At least one NASA dataset is mandatory for Global Awards. A live API is not requ
 | 6 Nov | Design handoff v2 (product concept, method, validation plan) | `docs/handoff_v2.md` |
 | 9 Nov | Repo layout, rules checklist, references, data-access smoke test (no analytics) | commit `21ee8a2` |
 | 13 Nov | Handoff v2.1 (2026 rule updates, terminology and method fixes), rules checklist filled from the 2026 FAQ | commit `d38301c` |
-| 14 Nov, 10:00 am SGT (after start) | Handoff v2.2 and rules checklist updated from the Local Lead's email | — |
+| 14 Nov, after 9:00 am SGT start | Handoff v2.2 (Local Lead email) and v2.3 (Resources tab) | commits `9f36104` onward |
 
-Ask the Local Lead whether this is acceptable, record the answer in `docs/rules_check_2026.md`, and mention it in the submission.
+Kept as a factual record.
 
 ## Setup
 
@@ -82,9 +82,9 @@ The last command checks every NASA data path for central Iowa and prints PASS / 
 
 ## Pre-event checklist (handoff §18.2)
 
-- [ ] Confirm the challenge text and the **Resources** tab (published 13 Nov). Automated fetches of the site failed on 13 Nov, so read them in a browser. Use or cite every NASA dataset listed there.
+- [x] Resources tab read (14 Nov) and mapped in handoff §10.1. None of its datasets is mandatory.
+- [ ] Compare the challenge Details tab with handoff §1.1.
 - [ ] Read the 2026 Project Submission and Judging & Awards guides (13 Nov) and finish `docs/rules_check_2026.md`. The pre-work rule is already confirmed from the 2026 FAQ.
-- [ ] Ask the Local Lead about the pre-event material (see the pre-event log above). Their 13 Nov email doesn't cover it.
 - [x] Submission fields, demo format, NASA-data rule, team size and judging criteria. Confirmed by the Local Lead's email (13 Nov).
 - [ ] Earthdata Login and AppEEARS working for every team member who needs them (`prep/check_access.py` shows PASS on the login check).
 - [x] HLS VI coverage for 2016–2025 on the central Iowa tile (T15TVG). Checked 9 Nov: VI granules match surface reflectance in every year (L30 515/516, S30 958/962), so the precomputed VI products can be used.

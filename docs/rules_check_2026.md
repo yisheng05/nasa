@@ -16,9 +16,11 @@ Confidence key: **Confirmed (LL)** = Local Lead email · **Confirmed (FAQ)** = 2
 | Live API | "A live NASA API connection is not required." | **Confirmed (LL)** | The precomputed demo fields are fine. |
 | Prototype standard | "A fully functional application is not required. A well-presented concept or prototype demonstrating meaningful NASA data usage is acceptable." | **Confirmed (LL)** | Put presentation quality ahead of live extraction. |
 | Other data | Allowed to complement NASA data. | **Confirmed (LL)** | CDL, SSURGO, Crop Progress are fine. |
-| Challenge-specific datasets | "Some challenges specify particular datasets or resources." | **Confirmed (LL)** | **Read the Field Shift Resources tab** and check whether it requires any. |
+| Challenge-specific datasets | "Some challenges specify particular datasets or resources." | **Confirmed (LL)**. Field Shift Resources tab read 14 Nov: it recommends datasets but requires none. | Every resource is mapped in handoff §10.1. |
+| Non-U.S. Government data | "For non-U.S. Government websites, participants must comply with any data use parameters of that specific website." | **Confirmed** (Resources tab) | Copernicus attribution for Sentinel-2 (HLS S30); PRISM terms if used. |
+| "SI" terminology | The Resources tab says "SI tools" and "SI models" where earlier years said AI. | Resources tab | Terminology only. Our design keeps any model out of evidence and ratings (handoff §12). |
 | Team size | 1–6 members; solo welcome. | **Confirmed (LL)** | — |
-| Work before the event | "Teams are not allowed to begin working on the challenges prior to the hackathon." | **Confirmed (FAQ)**. Not mentioned in the LL email. | All product code from Sat 9:00 am SGT. Ask the Local Lead about this repo's pre-event material (README pre-event log) and disclose it. |
+| Work before the event | "Teams are not allowed to begin working on the challenges prior to the hackathon." | **Confirmed (FAQ)** | Product code from Sat 9:00 am SGT. Pre-event material is logged in the README; no further follow-up (team decision, 14 Nov). |
 | Finality | No edits after the deadline. | Precedent (2025 guide) | Submit early. |
 | AI tools | Not mentioned in the LL email. The 2025 guidance asked teams to state where and how AI tools were used. | Precedent / **Open** | Disclose every AI tool in Project Details and `REFERENCES.md`. |
 | Rights and originality | Teams must have rights to submitted materials; no plagiarism or unauthorised use of another team's work. | FAQ via search index (year uncertain) | Don't copy from other teams' public repos. |
@@ -42,9 +44,6 @@ Selected Singapore projects advance as Global Nominees.
 
 ## Still to do
 
-- [ ] Field Shift **Resources** tab: list every item below; add the NASA ones to handoff §10 and `REFERENCES.md`; check for required datasets.
-  - …
-- [ ] Ask the Local Lead about the pre-event material and record the answer here:
-  - Asked: … (date, channel)
-  - Answer: …
+- [x] Field Shift **Resources** tab: read 14 Nov, mapped in handoff §10.1, NASA and partner items added to `REFERENCES.md`. None is mandatory.
+- [ ] Challenge **Details** tab: compare with handoff §1.1.
 - [ ] Confirm the AI-tool disclosure wording if the submission form has a field for it.
