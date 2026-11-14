@@ -1,8 +1,8 @@
 {
  "field_id": "field_c",
- "generated": "2026-11-14T08:13:25Z",
+ "generated": "2026-11-14T08:49:26Z",
  "engine": "Engine 1: Field History (handoff \u00a78.1)",
- "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2020",
+ "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025",
  "method": {
   "cover_threshold_ndvi": 0.4,
   "spring_green_ndvi": 0.4,
@@ -41,7 +41,7 @@
    "autumn_green_obs": 0,
    "confidence": "moderate",
    "note": "peak in a 32-day cloudy gap: value held near the clear maximum; peak value and date uncertain",
-   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2020"
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
   },
   {
    "season": 2017,
@@ -69,7 +69,7 @@
    "autumn_green_obs": 0,
    "confidence": "moderate",
    "note": "",
-   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2020"
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
   },
   {
    "season": 2018,
@@ -97,7 +97,7 @@
    "autumn_green_obs": 0,
    "confidence": "moderate",
    "note": "",
-   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2020"
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
   },
   {
    "season": 2019,
@@ -125,7 +125,7 @@
    "autumn_green_obs": 0,
    "confidence": "moderate",
    "note": "",
-   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2020"
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
   },
   {
    "season": 2020,
@@ -153,27 +153,167 @@
    "autumn_green_obs": 0,
    "confidence": "moderate",
    "note": "peak in a 32-day cloudy gap: value held near the clear maximum; peak value and date uncertain",
-   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2020"
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
+  },
+  {
+   "season": 2021,
+   "crop": "corn",
+   "n_obs_apr_oct": 11,
+   "max_gap_apr_oct": 41,
+   "peak_date": "2021-07-15",
+   "peak_ndvi": 0.92,
+   "peak_gap_days": 41,
+   "peak_uncertain": true,
+   "greenup_date": "2021-06-13",
+   "decline_date": "2021-09-26",
+   "integrated_ndvi": 69.0,
+   "living_cover_end": "2021-10-10",
+   "cover_year_start": "2020-10-15",
+   "cover_year_end": "2021-10-10",
+   "cover_year_partial": false,
+   "cover_year_days": 361,
+   "living_cover_days": 128,
+   "no_living_cover_days": 233,
+   "no_living_cover_share": 0.645,
+   "off_season_living_days": 0,
+   "spring_green": "insufficient data",
+   "spring_green_obs": 0,
+   "autumn_green_obs": 0,
+   "confidence": "moderate",
+   "note": "peak in a 41-day cloudy gap: value held near the clear maximum; peak value and date uncertain",
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
+  },
+  {
+   "season": 2022,
+   "crop": "soybeans",
+   "n_obs_apr_oct": 20,
+   "max_gap_apr_oct": 25,
+   "peak_date": "2022-08-12",
+   "peak_ndvi": 0.951,
+   "peak_gap_days": 7,
+   "peak_uncertain": false,
+   "greenup_date": "2022-07-07",
+   "decline_date": "2022-09-23",
+   "integrated_ndvi": 50.7,
+   "living_cover_end": "2022-10-03",
+   "cover_year_start": "2021-10-11",
+   "cover_year_end": "2022-10-03",
+   "cover_year_partial": false,
+   "cover_year_days": 358,
+   "living_cover_days": 98,
+   "no_living_cover_days": 260,
+   "no_living_cover_share": 0.726,
+   "off_season_living_days": 0,
+   "spring_green": "none detected",
+   "spring_green_obs": 0,
+   "autumn_green_obs": 0,
+   "confidence": "high",
+   "note": "",
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
+  },
+  {
+   "season": 2023,
+   "crop": "corn",
+   "n_obs_apr_oct": 18,
+   "max_gap_apr_oct": 32,
+   "peak_date": "2023-07-16",
+   "peak_ndvi": 0.943,
+   "peak_gap_days": 9,
+   "peak_uncertain": false,
+   "greenup_date": "2023-06-14",
+   "decline_date": "2023-09-22",
+   "integrated_ndvi": 65.9,
+   "living_cover_end": "2023-10-08",
+   "cover_year_start": "2022-10-04",
+   "cover_year_end": "2023-10-08",
+   "cover_year_partial": false,
+   "cover_year_days": 370,
+   "living_cover_days": 126,
+   "no_living_cover_days": 244,
+   "no_living_cover_share": 0.659,
+   "off_season_living_days": 0,
+   "spring_green": "none detected",
+   "spring_green_obs": 0,
+   "autumn_green_obs": 0,
+   "confidence": "moderate",
+   "note": "",
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
+  },
+  {
+   "season": 2024,
+   "crop": "soybeans",
+   "n_obs_apr_oct": 23,
+   "max_gap_apr_oct": 33,
+   "peak_date": "2024-08-21",
+   "peak_ndvi": 0.929,
+   "peak_gap_days": 24,
+   "peak_uncertain": false,
+   "greenup_date": "2024-07-11",
+   "decline_date": "2024-09-22",
+   "integrated_ndvi": 46.2,
+   "living_cover_end": "2024-10-01",
+   "cover_year_start": "2023-10-09",
+   "cover_year_end": "2024-10-01",
+   "cover_year_partial": false,
+   "cover_year_days": 359,
+   "living_cover_days": 93,
+   "no_living_cover_days": 266,
+   "no_living_cover_share": 0.741,
+   "off_season_living_days": 0,
+   "spring_green": "none detected",
+   "spring_green_obs": 0,
+   "autumn_green_obs": 0,
+   "confidence": "moderate",
+   "note": "",
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
+  },
+  {
+   "season": 2025,
+   "crop": "corn",
+   "n_obs_apr_oct": 17,
+   "max_gap_apr_oct": 39,
+   "peak_date": "2025-07-22",
+   "peak_ndvi": 0.946,
+   "peak_gap_days": 16,
+   "peak_uncertain": false,
+   "greenup_date": "2025-06-13",
+   "decline_date": "2025-09-12",
+   "integrated_ndvi": 56.8,
+   "living_cover_end": "2025-09-25",
+   "cover_year_start": "2024-10-02",
+   "cover_year_end": "2025-09-25",
+   "cover_year_partial": false,
+   "cover_year_days": 359,
+   "living_cover_days": 119,
+   "no_living_cover_days": 240,
+   "no_living_cover_share": 0.669,
+   "off_season_living_days": 0,
+   "spring_green": "none detected",
+   "spring_green_obs": 0,
+   "autumn_green_obs": 0,
+   "confidence": "moderate",
+   "note": "",
+   "source": "NASA HLS L30 v2.0 (Landsat 8/9), LP DAAC 2016-2025"
   }
  ],
  "summary": {
-  "complete_cover_years": 4,
-  "mean_no_living_cover_share": 0.707,
-  "no_living_cover_months_per_year": 8.5,
+  "complete_cover_years": 9,
+  "mean_no_living_cover_share": 0.696,
+  "no_living_cover_months_per_year": 8.4,
   "mean_off_season_living_days": 0.0,
   "spring_green_seasons": 0,
-  "spring_assessable_seasons": 3,
+  "spring_assessable_seasons": 7,
   "autumn_green_seasons": 0
  },
  "sensitivity_no_living_cover_months": {
-  "0.35": 8.3,
-  "0.40": 8.5,
+  "0.35": 8.1,
+  "0.40": 8.4,
   "0.45": 8.6
  },
  "coverage": {
   "L30": [
    2016,
-   2020
+   2025
   ]
  }
 }
