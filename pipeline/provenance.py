@@ -29,6 +29,7 @@ DATASETS = {
     "smap_l4": "NASA SMAP L4 SPL4SMGP v008 root-zone soil moisture, modelled/assimilated",
     "nasadem": "NASADEM (NASA JPL reprocessing of SRTM), 1 arc-second, via Microsoft Planetary Computer",
     "ecostress_esi": "NASA ECOSTRESS ECO_L4T_ESI v002, LP DAAC via AppEEARS",
+    "usdm": "U.S. Drought Monitor county statistics (NDMC, University of Nebraska-Lincoln; USDA; NOAA), weekly",
     "cdl": "USDA NASS Cropland Data Layer, via USDA CroplandCROS image service",
     "ssurgo": "USDA NRCS SSURGO, via Soil Data Access",
     "mslsp": "NASA MSLSP30NA v011 (MuSLI phenology), LP DAAC",

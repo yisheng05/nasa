@@ -22,6 +22,10 @@ from ..config import RAW, SEASONS
 
 API = "https://usdmdataservices.unl.edu/api/CountyStatistics/GetDroughtSeverityStatisticsByAreaPercent"
 DRY_AREA_PCT = 50  # a window is "dry" when on average at least half the county is in the category
+CATEGORY_LABELS = {
+    "None": "no drought", "D0": "abnormally dry", "D1": "moderate drought",
+    "D2": "severe drought", "D3": "extreme drought", "D4": "exceptional drought",
+}
 
 
 def fetch(fips: str, start: int = SEASONS.start, end: int = SEASONS.stop - 1) -> pd.DataFrame:
@@ -49,6 +53,10 @@ def window_stats(usdm: pd.DataFrame, start, end) -> dict:
     w0, w1 = pd.Timestamp(start), pd.Timestamp(end)
     m = usdm[(usdm["valid_start"] <= w1) & (usdm["valid_end"] >= w0)]
     if m.empty:
-        return {"maps": 0, "d0_pct": None, "d1_pct": None, "d2_pct": None, "dry_d1": None, "dry_d0": None}
-    d0, d1, d2 = (round(float(m[c].mean()), 1) for c in ("d0", "d1", "d2"))
-    return {"maps": len(m), "d0_pct": d0, "d1_pct": d1, "d2_pct": d2, "dry_d1": d1 >= DRY_AREA_PCT, "dry_d0": d0 >= DRY_AREA_PCT}
+        return {"maps": 0, "d0_pct": None, "d1_pct": None, "d2_pct": None, "d3_pct": None, "d4_pct": None,
+                "category": None, "dry_d1": None, "dry_d0": None}
+    pct = {c: round(float(m[c].mean()), 1) for c in ("d0", "d1", "d2", "d3", "d4")}
+    # majority category: the worst one covering at least half the county on average
+    category = next((c.upper() for c in ("d4", "d3", "d2", "d1", "d0") if pct[c] >= DRY_AREA_PCT), "None")
+    return {"maps": len(m), **{f"{c}_pct": v for c, v in pct.items()}, "category": category,
+            "dry_d1": pct["d1"] >= DRY_AREA_PCT, "dry_d0": pct["d0"] >= DRY_AREA_PCT}

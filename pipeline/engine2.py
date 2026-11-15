@@ -35,6 +35,10 @@ Provisional choices, for the team and an agronomist to agree:
   scenes 15 Jun-31 Aug. A low ESI that agrees with a regional flag raises confidence to
   "moderate-high"; disagreement keeps it at "moderate" and is reported. A low ESI with no
   regional flag is reported as field-level stress the regional data missed.
+- U.S. Drought Monitor (V13, display only): the county's majority category over the weekly
+  maps overlapping each window, beside the POWER dry call. It never changes a flag, a
+  scenario or a confidence level: it was used to validate the rules, so it is not used
+  to tune them.
 """
 
 from __future__ import annotations
@@ -46,6 +50,7 @@ import pandas as pd
 
 from .config import CLIMATE_BASELINE
 from .gdd import gdd_day
+from .sources.usdm import window_stats as usdm_window
 
 SILK_GDD_FROM_GREENUP = 400.0
 CORN_WINDOW_DAYS = 14
@@ -111,6 +116,11 @@ class StressSeason:
     esi_field_median: float | None = None
     esi_status: str | None = None  # "low", "not low", "insufficient"; None if no ECOSTRESS for the year
     esi_agrees: bool | None = None
+    usdm_category: str | None = None  # Drought Monitor majority category over the window: "None", "D0".."D4"
+    usdm_d0_pct: float | None = None  # mean share of the county in D0 or worse (cumulative)
+    usdm_d1_pct: float | None = None
+    usdm_d2_pct: float | None = None
+    usdm_agrees: bool | None = None  # POWER dry call == Drought Monitor D1-or-worse majority
     peak_ndvi: float | None = None
     crop_median_peak: float | None = None
     integrated_rel: float | None = None  # (integrated NDVI - crop median) / crop median
@@ -154,11 +164,13 @@ def _base_rate(wet_pct: pd.Series, tmax_pct: pd.Series, w0: pd.Timestamp, w1: pd
 
 
 def run(
-    e1_seasons: list[dict], power: pd.DataFrame, smap: pd.Series | None = None, esi: pd.DataFrame | None = None
+    e1_seasons: list[dict], power: pd.DataFrame, smap: pd.Series | None = None, esi: pd.DataFrame | None = None,
+    usdm: pd.DataFrame | None = None,
 ) -> tuple[list[StressSeason], dict]:
     """Engine 2 for one field. power: POWER daily (T2M_MAX, T2M_MIN, PRECTOTCORR, GWETROOT).
 
     esi: optional ECOSTRESS scenes (sources.ecostress.field_scenes): date, esi, usable.
+    usdm: optional weekly Drought Monitor county statistics (sources.usdm.fetch); display only.
     """
     esi_ok = esi[esi["usable"]] if esi is not None and len(esi) else None
     esi_years = set(esi["date"].dt.year) if esi is not None and len(esi) else set()
@@ -209,6 +221,12 @@ def run(
             if len(sp) >= 0.8 * n:
                 st.smap_dry_days = int((sp < DRY_PCT).sum())
                 st.smap_agrees = (st.smap_dry_days >= DRY_SHARE * len(sp)) == (st.dry_days >= DRY_SHARE * n)
+        if usdm is not None and len(usdm):
+            u = usdm_window(usdm, w0, w1)
+            if u["maps"]:
+                st.usdm_category = u["category"]
+                st.usdm_d0_pct, st.usdm_d1_pct, st.usdm_d2_pct = u["d0_pct"], u["d1_pct"], u["d2_pct"]
+                st.usdm_agrees = u["dry_d1"] == (st.dry_days >= DRY_SHARE * n)
         med = medians.get(st.crop or "")
         if med:
             st.crop_median_peak, st.crop_n = round(med[0], 3), med[2]
@@ -292,6 +310,18 @@ def summarise(seasons: list[StressSeason]) -> dict:
         "years": [s.season for s in checked],
         "disagree_years": [s.season for s in checked if not s.smap_agrees],
         "note": "SMAP L4 is 9 km and assimilated: it cross-checks POWER's modelled wetness, it is not a field measurement",
+    }
+    um = [s for s in windows if s.usdm_category is not None]
+    dry = [s for s in um if s.dry_days >= DRY_SHARE * (s.window_days or 0)]
+    d1 = [s for s in um if (s.usdm_d1_pct or 0) >= 50]
+    res["usdm"] = {
+        "checked_seasons": len(um),
+        "power_dry_calls": len(dry),
+        "dry_calls_at_d0_or_worse": sum((s.usdm_d0_pct or 0) >= 50 for s in dry),
+        "dry_calls_at_d1_or_worse": sum((s.usdm_d1_pct or 0) >= 50 for s in dry),
+        "d1_windows": len(d1),
+        "d1_windows_missed": [s.season for s in d1 if s.dry_days < DRY_SHARE * (s.window_days or 0)],
+        "note": "U.S. Drought Monitor, county-scale weekly expert synthesis (NDMC, USDA, NOAA); display only, never changes a flag or confidence",
     }
     for crop in sorted({s.crop for s in seasons if s.crop and s.window_start}):
         cs = [s for s in seasons if s.crop == crop and s.window_start]

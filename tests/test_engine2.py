@@ -168,3 +168,32 @@ def test_smap_missing_window_is_not_checked():
     seasons = [_e1(2014, "corn", "2014-06-20", "2014-07-25")]  # before SMAP's record
     st, summ = E2.run(seasons, _power(), smap=_smap())
     assert st[0].smap_agrees is None and summ["smap"]["checked_seasons"] == 0
+
+
+def _usdm(d1_years=(), d0_years=()) -> pd.DataFrame:
+    starts = pd.date_range("2015-12-29", "2025-12-30", freq="7D")
+    df = pd.DataFrame({"valid_start": starts, "valid_end": starts + pd.Timedelta(days=6, hours=23, minutes=59),
+                       "none": 100.0, "d0": 0.0, "d1": 0.0, "d2": 0.0, "d3": 0.0, "d4": 0.0})
+    summer = df.valid_start.dt.month.isin([6, 7, 8, 9])
+    for y in d0_years:
+        df.loc[summer & (df.valid_start.dt.year == y), ["none", "d0"]] = [20.0, 80.0]
+    for y in d1_years:
+        df.loc[summer & (df.valid_start.dt.year == y), ["none", "d0", "d1"]] = [0.0, 100.0, 70.0]
+    return df
+
+
+def test_drought_monitor_is_display_only():
+    seasons = [_e1(2022, "corn", "2022-06-20", "2022-07-25"), _e1(2020, "corn", "2020-06-20", "2020-07-25"),
+               _e1(2024, "corn", "2024-06-20", "2024-07-25")]
+    plain, plain_summ = E2.run(seasons, _power(dry_year=2022))
+    st, summ = E2.run(seasons, _power(dry_year=2022), usdm=_usdm(d1_years=[2020], d0_years=[2022]))
+    by = {s.season: s for s in st}
+    assert by[2022].usdm_category == "D0" and by[2022].usdm_agrees is False  # POWER dry, Monitor only abnormally dry
+    assert by[2020].usdm_category == "D1" and by[2020].usdm_agrees is False  # a drought POWER missed
+    assert by[2024].usdm_category == "None" and by[2024].usdm_agrees is True
+    for a, b in zip(plain, st):  # flags, scenarios and confidence are untouched
+        assert (a.stress_flag, a.scenario, a.confidence) == (b.stress_flag, b.scenario, b.confidence)
+    u = summ["usdm"]
+    assert (u["power_dry_calls"], u["dry_calls_at_d0_or_worse"], u["dry_calls_at_d1_or_worse"]) == (1, 1, 0)
+    assert u["d1_windows"] == 1 and u["d1_windows_missed"] == [2020]
+    assert "usdm" not in plain_summ or plain_summ["usdm"]["checked_seasons"] == 0

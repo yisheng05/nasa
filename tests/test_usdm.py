@@ -26,5 +26,13 @@ def test_window_overlap_and_dry_calls():
 
 
 def test_window_without_maps():
-    assert usdm.window_stats(_maps(), "2019-07-01", "2019-07-14") == {
-        "maps": 0, "d0_pct": None, "d1_pct": None, "d2_pct": None, "dry_d1": None, "dry_d0": None}
+    s = usdm.window_stats(_maps(), "2019-07-01", "2019-07-14")
+    assert s["maps"] == 0 and s["category"] is None and s["dry_d1"] is None
+
+
+def test_majority_category():
+    m = _maps()
+    assert usdm.window_stats(m, "2022-07-14", "2022-07-31")["category"] == "D1"  # D1 mean 56.7, D2 3.3
+    assert usdm.window_stats(m, "2022-07-12", "2022-07-18")["category"] == "D0"  # 60% D0, 20% D1
+    assert usdm.window_stats(m, "2022-08-09", "2022-08-15")["category"] == "None"
+    assert set(usdm.CATEGORY_LABELS) == {"None", "D0", "D1", "D2", "D3", "D4"}

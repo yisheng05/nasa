@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app import charts
 from app import data as D
 from pipeline import engine3 as E3
+from pipeline.sources.usdm import CATEGORY_LABELS as USDM_LABELS
 
 st.set_page_config(page_title="Field Shift", page_icon="🌱", layout="wide")
 
@@ -209,13 +210,32 @@ with t_cond:
             )
         else:
             st.caption("Moisture cross-check (NASA SMAP L4): pending.")
+        um = e2["summary"].get("usdm") or {}
+        if um.get("checked_seasons"):
+            st.markdown(
+                f"**U.S. Drought Monitor ({props.get('county', 'county')}, weekly):** {um['dry_calls_at_d0_or_worse']} of {um['power_dry_calls']} dry calls "
+                f"fall in at least abnormally dry weeks; {um['dry_calls_at_d1_or_worse']} reach moderate drought. "
+                f"Drought windows this tool missed: {', '.join(map(str, um['d1_windows_missed'])) or 'none'}."
+            )
+            st.caption(
+                "Drought Monitor column: the worst category covering at least half the county, averaged over the weekly maps that overlap the window. "
+                "It is a county-scale expert synthesis (NDMC, USDA, NOAA), shown for reference: it never changes a flag or a confidence level."
+            )
         st.caption(
             "Corn window: 14 days around silking, estimated at 400 °C capped GDD after green-up (cross-checked against the NDVI peak). Soybean window: NDVI peak −14 to +21 days. "
             "Flag: root-zone wetness below the 20th percentile on half the window, or Tmax above the 80th percentile on 5 of 14 days (provisional). "
             "NASA POWER weather is regional (~0.5° cells), so nearby fields see near-identical conditions; which crop is hit depends on rotation phase. Confidence capped at moderate."
         )
-        cols2 = ["season", "crop", "window_start", "window_end", "dry_days", "hot_days", "window_days", "base_rate", "esi_median", "esi_status", "vigour", "scenario", "confidence"]
-        st.dataframe(pd.DataFrame(e2["seasons"])[cols2], hide_index=True, width="stretch")
+        e2df = pd.DataFrame(e2["seasons"])
+        if "usdm_category" in e2df:
+            e2df["drought_monitor"] = e2df.apply(
+                lambda r: None if r["usdm_category"] is None or pd.isna(r["usdm_category"])
+                else ("none" if r["usdm_category"] == "None" else f"{r['usdm_category']} {USDM_LABELS[r['usdm_category']]}")
+                + (", differs" if r.get("usdm_agrees") is False else ""),
+                axis=1,
+            )
+        cols2 = ["season", "crop", "window_start", "window_end", "dry_days", "hot_days", "window_days", "base_rate", "esi_median", "esi_status", "drought_monitor", "vigour", "scenario", "confidence"]
+        st.dataframe(e2df[[c for c in cols2 if c in e2df]], hide_index=True, width="stretch")
     else:
         st.info("Engine 2 runs once Engine 1 has this field's seasons.")
     with st.expander("Show data"):

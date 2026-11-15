@@ -1,31 +1,31 @@
-field,season,crop,power_dry,smap_dry,stress_flag,esi,maps,d0_pct,d1_pct,d2_pct,dry_d1,dry_d0
-field_a,2016,corn,False,False,False,,3,100.0,60.6,0.0,True,True
-field_a,2017,soybeans,True,False,True,,6,100.0,83.0,0.0,True,True
-field_a,2018,corn,False,False,False,insufficient,3,0.0,0.0,0.0,False,False
-field_a,2019,soybeans,False,False,False,low,6,89.9,17.6,0.0,False,True
-field_a,2020,corn,False,False,False,not low,3,100.0,80.3,30.6,True,True
-field_a,2021,soybeans,True,True,True,low,6,100.0,100.0,84.0,True,True
-field_a,2022,corn,True,False,True,not low,3,10.3,0.0,0.0,False,False
-field_a,2023,soybeans,True,True,True,not low,6,92.9,19.0,0.0,False,True
-field_a,2024,corn,False,False,False,insufficient,3,0.0,0.0,0.0,False,False
-field_a,2025,soybeans,False,False,False,low,6,0.0,0.0,0.0,False,False
-field_b,2016,soybeans,False,False,False,,6,50.0,0.0,0.0,False,True
-field_b,2017,corn,True,True,True,,3,99.9,61.8,0.0,True,True
-field_b,2018,soybeans,False,False,False,not low,6,0.0,0.0,0.0,False,False
-field_b,2019,corn,False,False,False,insufficient,3,0.0,0.0,0.0,False,False
-field_b,2020,soybeans,False,False,False,low,6,96.2,80.3,42.9,True,True
-field_b,2021,corn,True,True,True,low,3,100.0,100.0,83.4,True,True
-field_b,2022,soybeans,True,False,True,not low,6,60.3,20.3,0.0,False,True
-field_b,2023,corn,True,False,True,insufficient,3,100.0,0.0,0.0,False,True
-field_b,2024,soybeans,False,False,False,insufficient,6,0.0,0.0,0.0,False,False
-field_b,2025,corn,False,False,False,low,3,0.0,0.0,0.0,False,False
-field_c,2016,soybeans,False,False,False,,6,66.7,0.0,0.0,False,True
-field_c,2017,corn,True,True,True,,3,93.4,37.3,0.0,False,True
-field_c,2018,soybeans,False,False,False,not low,6,0.0,0.0,0.0,False,False
-field_c,2019,corn,False,False,False,insufficient,3,0.0,0.0,0.0,False,False
-field_c,2020,soybeans,True,False,True,low,6,100.0,90.1,55.2,True,True
-field_c,2021,corn,True,True,True,low,3,100.0,100.0,83.4,True,True
-field_c,2022,soybeans,True,False,True,not low,6,76.1,23.9,0.0,False,True
-field_c,2023,corn,True,False,True,not low,3,100.0,0.0,0.0,False,True
-field_c,2024,soybeans,False,False,False,insufficient,6,14.2,0.0,0.0,False,False
-field_c,2025,corn,False,False,False,low,3,0.0,0.0,0.0,False,False
+field,season,crop,power_dry,smap_dry,stress_flag,esi,maps,d0_pct,d1_pct,d2_pct,d3_pct,d4_pct,category,dry_d1,dry_d0
+field_a,2016,corn,False,False,False,,3,100.0,60.6,0.0,0.0,0.0,D1,True,True
+field_a,2017,soybeans,True,False,True,,6,100.0,83.0,0.0,0.0,0.0,D1,True,True
+field_a,2018,corn,False,False,False,insufficient,3,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_a,2019,soybeans,False,False,False,low,6,89.9,17.6,0.0,0.0,0.0,D0,False,True
+field_a,2020,corn,False,False,False,not low,3,100.0,80.3,30.6,0.0,0.0,D1,True,True
+field_a,2021,soybeans,True,True,True,low,6,100.0,100.0,84.0,0.0,0.0,D2,True,True
+field_a,2022,corn,True,False,True,not low,3,10.3,0.0,0.0,0.0,0.0,None,False,False
+field_a,2023,soybeans,True,True,True,not low,6,92.9,19.0,0.0,0.0,0.0,D0,False,True
+field_a,2024,corn,False,False,False,insufficient,3,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_a,2025,soybeans,False,False,False,low,6,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_b,2016,soybeans,False,False,False,,6,50.0,0.0,0.0,0.0,0.0,D0,False,True
+field_b,2017,corn,True,True,True,,3,99.9,61.8,0.0,0.0,0.0,D1,True,True
+field_b,2018,soybeans,False,False,False,not low,6,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_b,2019,corn,False,False,False,insufficient,3,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_b,2020,soybeans,False,False,False,low,6,96.2,80.3,42.9,0.0,0.0,D1,True,True
+field_b,2021,corn,True,True,True,low,3,100.0,100.0,83.4,0.0,0.0,D2,True,True
+field_b,2022,soybeans,True,False,True,not low,6,60.3,20.3,0.0,0.0,0.0,D0,False,True
+field_b,2023,corn,True,False,True,insufficient,3,100.0,0.0,0.0,0.0,0.0,D0,False,True
+field_b,2024,soybeans,False,False,False,insufficient,6,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_b,2025,corn,False,False,False,low,3,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_c,2016,soybeans,False,False,False,,6,66.7,0.0,0.0,0.0,0.0,D0,False,True
+field_c,2017,corn,True,True,True,,3,93.4,37.3,0.0,0.0,0.0,D0,False,True
+field_c,2018,soybeans,False,False,False,not low,6,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_c,2019,corn,False,False,False,insufficient,3,0.0,0.0,0.0,0.0,0.0,None,False,False
+field_c,2020,soybeans,True,False,True,low,6,100.0,90.1,55.2,0.0,0.0,D2,True,True
+field_c,2021,corn,True,True,True,low,3,100.0,100.0,83.4,0.0,0.0,D2,True,True
+field_c,2022,soybeans,True,False,True,not low,6,76.1,23.9,0.0,0.0,0.0,D0,False,True
+field_c,2023,corn,True,False,True,not low,3,100.0,0.0,0.0,0.0,0.0,D0,False,True
+field_c,2024,soybeans,False,False,False,insufficient,6,14.2,0.0,0.0,0.0,0.0,None,False,False
+field_c,2025,corn,False,False,False,low,3,0.0,0.0,0.0,0.0,0.0,None,False,False
