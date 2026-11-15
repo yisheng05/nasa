@@ -1,6 +1,6 @@
 {
  "field_id": "field_a",
- "generated": "2026-11-14T15:06:51Z",
+ "generated": "2026-11-15T00:29:05Z",
  "engine": "Engine 2: Stress Recurrence (handoff \u00a78.2)",
  "source": "NASA POWER daily (community AG), NASA LaRC; NASA POWER GWETROOT (from NASA GMAO MERRA-2), modelled; NASA SMAP L4 SPL4SMGP v008 root-zone soil moisture, modelled/assimilated; NASA ECOSTRESS ECO_L4T_ESI v002, LP DAAC via AppEEARS; timing from Engine 1 (NASA HLS)",
  "method": {

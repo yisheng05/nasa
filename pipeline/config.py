@@ -13,6 +13,7 @@ DEMO_FIELDS = REPO / "pipeline" / "demo_fields.geojson"
 SEASONS = range(2016, 2026)  # 2016-2025 inclusive (handoff §3.2)
 CLIMATE_BASELINE = (1991, 2020)  # POWER day-of-year percentiles (handoff §8.2)
 POWER_START = 1981
+USDM_COUNTY_FIPS = "19169"  # Story County, Iowa: all three demo fields (Census geocoder, 15 Nov)
 
 ALBERS = 5070  # CONUS Albers, CDL's native CRS; metres
 WGS84 = 4326
