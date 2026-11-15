@@ -48,12 +48,23 @@ def test_actions_quote_the_evidence():
 
 def test_priority_action_follows_the_ranking():
     e3 = _docs("field_a")[2]
-    assert "Corn–soybean (current) ranks first" in T.priority_action(e3, ["Workload and simplicity"], set())["text"]
+    assert "keeping the current rotation comes out on top" in T.priority_action(e3, ["Workload and simplicity"], set())["text"]
     soil = T.priority_action(e3, ["Soil protection"], set())["text"]
-    assert "oats/red clover ranks first" in soil and "cereal rye cover ranks first instead" in soil
+    assert "adding oats + red clover comes out on top" in soil and "adding a cereal rye cover does instead" in soil
     no_oats = T.priority_action(e3, ["Soil protection"], {"small_grain_market"})["text"]
-    assert "cereal rye cover ranks first." in no_oats and "instead" not in no_oats
+    assert "adding a cereal rye cover comes out on top." in no_oats and "instead" not in no_oats
     assert T.priority_action(e3, [], set())["text"].startswith("Set your priorities")
+
+
+def test_stability_line():
+    from pipeline import engine3 as E3
+
+    e3 = _docs("field_a")[2]
+    kept, _ = E3.apply_constraints(set())
+    assert T.stability_line(e3["ratings"], kept, ["Soil protection"]) == (
+        "Oats + red clover comes out on top unless workload and simplicity comes first, when keeping the current rotation does.")
+    only, _ = E3.apply_constraints({"small_grain_market", "cover_termination"})
+    assert T.stability_line(e3["ratings"], only, ["Soil protection"]).startswith("Only the current rotation is left")
 
 
 def test_trend_message_reports_significance_honestly():

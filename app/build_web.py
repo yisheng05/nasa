@@ -78,6 +78,7 @@ def build() -> Path:
             "PRIORITIES": E3.PRIORITIES, "CRITERIA": E3.CRITERIA, "CRITERIA_FOR_PRIORITY": E3.CRITERIA_FOR_PRIORITY,
             "CANDIDATES": [{"id": c["id"], "name": c["name"], "needs": sorted(c["needs"])} for c in E3.CANDIDATES],
             "CONSTRAINTS": E3.CONSTRAINTS,
+            "OPTIONS": T.OPTIONS,
         },
     }
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"), default=str).replace("</", "<\\/")

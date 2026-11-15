@@ -15,6 +15,15 @@ from pipeline.config import PROCESSED
 DECISION = ("Should the next rotation stay the same, add a cereal rye cover, or add oats and red clover? "
             "The tool shows the evidence; the choice stays with the farmer.")
 SIGNIFICANT_P = 0.05
+# plain names for the three options (as on slide 5), what each changes, and how to say it in a sentence
+OPTIONS = {
+    "cso_rc": {"label": "Oats + red clover", "blurb": "Corn, soybean, then oats with red clover sown under them: a three-year rotation.",
+               "phrase": "adding oats + red clover"},
+    "cs_rye": {"label": "Cereal rye cover", "blurb": "The same corn–soybean, with cereal rye sown after harvest and ended in spring.",
+               "phrase": "adding a cereal rye cover"},
+    "cs": {"label": "Current rotation", "blurb": "Corn–soybean as today. The other options are rated against it.",
+           "phrase": "keeping the current rotation"},
+}
 GREEN_MIN_OBS = 2  # Engine 1's autumn-green rule: >= 2 clear observations >= 0.40 after the end of living cover
 
 
@@ -136,13 +145,34 @@ def priority_action(e3: dict, priorities: list[str], active: set[str]) -> dict:
     ratings = e3["ratings"]
     kept, _ = E3.apply_constraints(set(active))
     top = E3.rank(ratings, kept, priorities)[0]
-    text = f"With {priorities[0].lower()} first, {top['name']} ranks first."
-    if top["id"] == "cs":
-        text += " Both alternatives add work that outweighs their gains on that priority."
+    text = f"With {priorities[0].lower()} first, {OPTIONS[top['id']]['phrase']} comes out on top"
+    text += ": both alternatives add work that outweighs their gains on that priority." if top["id"] == "cs" else "."
     if "small_grain_market" not in active and top["id"] == "cso_rc":
         kept2, _ = E3.apply_constraints(set(active) | {"small_grain_market"})
-        text += f" Without a local market for oats, {E3.rank(ratings, kept2, priorities)[0]['name']} ranks first instead."
+        text += f" Without a local market for oats, {OPTIONS[E3.rank(ratings, kept2, priorities)[0]['id']]['phrase']} does instead."
     return {"title": title, "text": text}
+
+
+def _join_or(xs: list) -> str:
+    xs = [str(x) for x in xs]
+    return ", ".join(xs[:-1]) + (" or " if len(xs) > 1 else "") + xs[-1] if xs else ""
+
+
+def stability_line(ratings: dict, kept: list[dict], priorities: list[str]) -> str:
+    """One sentence for 'How stable is this?': which option wins whichever priority comes first. Mirrored in the page."""
+    if len(kept) == 1:
+        return f"Only the {OPTIONS[kept[0]['id']]['label'].lower()} is left after your constraints."
+    by_name = {c["name"]: c["id"] for c in E3.CANDIDATES}
+    tops = {p: by_name[n] for p, n in E3.what_if(ratings, kept, priorities).items()}
+    counts: dict[str, int] = {}
+    for i in tops.values():
+        counts[i] = counts.get(i, 0) + 1
+    most = max(counts, key=lambda i: (counts[i], -list(OPTIONS).index(i)))
+    others = [i for i in OPTIONS if i in counts and i != most]
+    if not others:
+        return f"{OPTIONS[most]['label']} comes out on top whichever priority you put first."
+    parts = [f"{_join_or([p.lower() for p, i in tops.items() if i == o])} comes first, when {OPTIONS[o]['phrase']} does" for o in others]
+    return f"{OPTIONS[most]['label']} comes out on top unless " + "; or unless ".join(parts) + "."
 
 
 def actions(e1: dict, e2: dict, e3: dict, cross: dict, priorities: list[str], active: set[str]) -> list[dict]:

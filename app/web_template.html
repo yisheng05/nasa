@@ -103,6 +103,32 @@ td.r-similar, td.r-baseline { color: var(--neutral); }
 .controls { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; }
 @media (max-width: 720px) { .controls { grid-template-columns: 1fr; } }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.step { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+ol.order { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+ol.order li { display: flex; align-items: center; gap: 8px; background: var(--accent-soft); border-radius: 10px; padding: 6px 8px; }
+ol.order li .ord { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-fill); color: #FFFFFF; display: grid; place-items: center; font-weight: 600; font-size: 13px; flex: none; }
+ol.order li .name { flex: 1; font-weight: 600; }
+ol.order li.empty { background: var(--surface-2); color: var(--muted); }
+button.mini { font: inherit; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; width: 32px; height: 32px; }
+button.mini:disabled { opacity: .35; cursor: default; }
+.chip.ghost { background: transparent; color: var(--muted); }
+.optcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.opt { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: var(--surface); min-width: 0; }
+.opt.top { border: 2px solid var(--accent-fill); }
+.opt.out { opacity: .6; background: var(--surface-2); }
+.opt h3 { margin: 0; font-size: 18px; }
+.opt .badge { align-self: flex-start; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; background: var(--surface-2); color: var(--muted); }
+.opt.top .badge { background: var(--accent-fill); color: #FFFFFF; }
+.opt .blurb { margin: 0; color: var(--muted); font-size: 14px; }
+.opt ul.rates { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+.opt ul.rates li { display: grid; grid-template-columns: 18px 1fr auto; gap: 6px; align-items: baseline; }
+.opt ul.rates li.mine .crit { font-weight: 600; }
+.opt ul.rates .word { font-weight: 600; }
+.opt ul.rates li.r-better .ic, .opt ul.rates li.r-better .word { color: var(--better); }
+.opt ul.rates li.r-worse .ic, .opt ul.rates li.r-worse .word { color: var(--worse); }
+.opt ul.rates li.r-similar .ic, .opt ul.rates li.r-similar .word { color: var(--neutral); }
+.opt .keyfact, .opt .check { margin: 0; font-size: 14px; }
+.opt details summary { font-size: 14px; }
 .chip[aria-pressed="true"] { background: var(--accent-fill); color: #FFFFFF; border-color: var(--accent-fill); }
 .chip .ord { display: inline-block; min-width: 18px; font-weight: 600; }
 .checks { display: flex; flex-direction: column; gap: 8px; }
@@ -205,29 +231,28 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
       <h2 id="opttitle"></h2>
       <p id="optintro"></p>
       <div class="controls">
-        <div class="trend">
-          <h3>Your priorities</h3>
-          <p class="small">Tap in order of importance. Tap again to remove.</p>
-          <div class="chips" id="prios"></div>
+        <div class="step">
+          <h3>1 · What matters most to you?</h3>
+          <p class="small">Add them in order: the first counts most. Use ↑ to move one up.</p>
+          <ol class="order" id="order"></ol>
+          <div class="chips" id="addprios"></div>
         </div>
-        <div class="trend">
-          <h3>Constraints</h3>
+        <div class="step">
+          <h3>2 · Anything that rules an option out?</h3>
           <div class="checks" id="cons"></div>
         </div>
       </div>
     </section>
     <section class="panel">
-      <h2>How they compare</h2>
+      <h2>How they compare for you</h2>
       <p class="msg" id="optmsg"></p>
-      <div id="dropped"></div>
       <div id="notes"></div>
-      <div class="scroll"><table id="trade"></table></div>
+      <div class="optcards" id="optcards"></div>
       <p class="small" id="tradenote"></p>
-      <p id="worth"></p>
       <h3>How stable is this?</h3>
-      <div class="scroll"><table id="whatif"></table></div>
+      <p id="stable"></p>
       <div id="rented"></div>
-      <div id="evidence"></div>
+      <details><summary>Side-by-side table</summary><div class="scroll"><table id="trade"></table></div></details>
       <details><summary>What this tool cannot establish</summary><ul id="notest"></ul></details>
       <p class="small" id="sources"></p>
     </section>
@@ -289,14 +314,26 @@ function applyConstraints(active) { const kept = [], dropped = []; E3.CANDIDATES
 function rank(ratings, cands, prios) { const crit = orderedCriteria(prios); return [...cands].sort((a, b) => { for (const k of crit) { const d = SCORE[ratings[b.id][k].rating] - SCORE[ratings[a.id][k].rating]; if (d) return d; } return 0; }); }
 function whatIf(ratings, cands, prios) { const out = {}; E3.PRIORITIES.forEach(p => { out[p] = rank(ratings, cands, [p, ...prios.filter(q => q !== p)])[0].name; }); return out; }
 function priorityAction(ratings, prios, active) {
-  const title = "Decide by your first priority", act = new Set(active);
+  const title = "Decide by your first priority", act = new Set(active), O = E3.OPTIONS;
   if (!prios.length) return { title, text: "Set your priorities to rank the options." };
   const [kept] = applyConstraints(act);
   const top = rank(ratings, kept, prios)[0];
-  let text = `With ${prios[0].toLowerCase()} first, ${top.name} ranks first.`;
-  if (top.id === "cs") text += " Both alternatives add work that outweighs their gains on that priority.";
-  if (!act.has("small_grain_market") && top.id === "cso_rc") { const [k2] = applyConstraints(new Set([...act, "small_grain_market"])); text += ` Without a local market for oats, ${rank(ratings, k2, prios)[0].name} ranks first instead.`; }
+  let text = `With ${prios[0].toLowerCase()} first, ${O[top.id].phrase} comes out on top` + (top.id === "cs" ? ": both alternatives add work that outweighs their gains on that priority." : ".");
+  if (!act.has("small_grain_market") && top.id === "cso_rc") { const [k2] = applyConstraints(new Set([...act, "small_grain_market"])); text += ` Without a local market for oats, ${O[rank(ratings, k2, prios)[0].id].phrase} does instead.`; }
   return { title, text };
+}
+function joinOr(xs) { return xs.length > 1 ? xs.slice(0, -1).join(", ") + " or " + xs[xs.length - 1] : (xs[0] || ""); }
+function stabilityLine(ratings, kept, prios) {
+  const O = E3.OPTIONS, ids = Object.keys(O);
+  if (kept.length === 1) return `Only the ${O[kept[0].id].label.toLowerCase()} is left after your constraints.`;
+  const byName = Object.fromEntries(E3.CANDIDATES.map(c => [c.name, c.id]));
+  const tops = Object.fromEntries(Object.entries(whatIf(ratings, kept, prios)).map(([p, n]) => [p, byName[n]]));
+  const counts = {}; Object.values(tops).forEach(i => { counts[i] = (counts[i] || 0) + 1; });
+  const most = Object.keys(counts).sort((a, b) => (counts[b] - counts[a]) || (ids.indexOf(a) - ids.indexOf(b)))[0];
+  const others = ids.filter(i => i in counts && i !== most);
+  if (!others.length) return `${O[most].label} comes out on top whichever priority you put first.`;
+  const parts = others.map(o => `${joinOr(Object.entries(tops).filter(([, i]) => i === o).map(([p]) => p.toLowerCase()))} comes first, when ${O[o].phrase} does`);
+  return `${O[most].label} comes out on top unless ` + parts.join("; or unless ") + ".";
 }
 function nextSteps(f) { const a = f.actions; return [a[0], a[1], priorityAction(f.e3.ratings, state.priorities, state.constraints), a[2], a[3]]; }
 
@@ -417,31 +454,50 @@ function drawTrend(svg, tip, years, m, corn) {
 }
 
 /* ---------------- rotation options ---------------- */
+function renderOrder() {
+  const P = state.priorities;
+  $("order").innerHTML = P.length ? P.map((p, i) => `<li><span class="ord">${i + 1}</span><span class="name">${esc(p)}</span><button type="button" class="mini" data-up="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move ${esc(p)} up">↑</button><button type="button" class="mini" data-rm="${i}" aria-label="Remove ${esc(p)}">✕</button></li>`).join("")
+    : `<li class="empty">Nothing chosen yet: add what matters most to you.</li>`;
+  const rest = E3.PRIORITIES.filter(p => !P.includes(p));
+  $("addprios").innerHTML = rest.map(p => `<button type="button" class="chip" data-add="${esc(p)}">+ ${esc(p)}</button>`).join("") + `<button type="button" class="chip ghost" id="reset">Reset</button>`;
+  const done = () => { save(); renderOptions(); renderSummary(); };
+  $("order").querySelectorAll("[data-up]").forEach(b => b.onclick = () => { const i = +b.dataset.up; [P[i - 1], P[i]] = [P[i], P[i - 1]]; done(); });
+  $("order").querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { P.splice(+b.dataset.rm, 1); done(); });
+  $("addprios").querySelectorAll("[data-add]").forEach(b => b.onclick = () => { P.push(b.dataset.add); done(); });
+  $("reset").onclick = () => { state.priorities = ["Soil protection", "Water and stress risk", "Workload and simplicity"]; done(); };
+}
+function optionCard(f, c, i, crit, mine) {
+  const o = E3.OPTIONS[c.id], r = f.e3.ratings[c.id];
+  if (c.id === "cs") return `<article class="opt${i === 0 ? " top" : ""}"><span class="badge">#${i + 1} for you</span><h3>${esc(o.label)}</h3><p class="blurb">${esc(o.blurb)}</p>
+    <p class="keyfact">Today: about ${f.e1.summary.no_living_cover_months_per_year} months a year without living cover.</p></article>`;
+  const rows = crit.map(k => { const x = r[k], ic = { better: "▲", similar: "●", worse: "▼" }[x.rating] || "·"; return `<li class="r-${x.rating}${mine.has(k) ? " mine" : ""}"><span class="ic" aria-hidden="true">${ic}</span><span class="crit">${esc(k)}</span><span class="word">${x.rating}</span></li>`; }).join("");
+  const est = r["Soil cover and living roots"].estimate, verify = [...new Set(crit.map(k => r[k].verify).filter(Boolean))];
+  return `<article class="opt${i === 0 ? " top" : ""}"><span class="badge">#${i + 1} for you</span><h3>${esc(o.label)}</h3><p class="blurb">${esc(o.blurb)}</p>
+    <ul class="rates" aria-label="Ratings against the current rotation, in your priority order">${rows}</ul>
+    ${est ? `<p class="keyfact"><b>Soil cover:</b> ${esc(est)}.</p>` : ""}
+    ${verify.length ? `<p class="check"><b>Check first:</b> ${esc(verify[0])}</p>` : ""}
+    <details><summary>Why these ratings?</summary><ul>${crit.map(k => { const x = r[k]; return `<li><b>${esc(k)}: ${x.rating}</b> (confidence ${esc(x.confidence)}). ${esc(x.evidence)}${x.verify ? ` <i>Check: ${esc(x.verify)}</i>` : ""}</li>`; }).join("")}</ul></details></article>`;
+}
 function renderOptions() {
   const f = F(), ratings = f.e3.ratings;
-  $("prios").innerHTML = E3.PRIORITIES.map(p => { const i = state.priorities.indexOf(p); return `<button type="button" class="chip" aria-pressed="${i >= 0}" data-p="${esc(p)}"><span class="ord">${i >= 0 ? i + 1 : "·"}</span> ${esc(p)}</button>`; }).join("") + `<button type="button" class="chip" id="reset">Reset</button>`;
-  $("prios").querySelectorAll("[data-p]").forEach(b => b.onclick = () => { const p = b.dataset.p; state.priorities = state.priorities.includes(p) ? state.priorities.filter(q => q !== p) : [...state.priorities, p]; save(); renderOptions(); renderSummary(); });
-  $("reset").onclick = () => { state.priorities = ["Soil protection", "Water and stress risk", "Workload and simplicity"]; save(); renderOptions(); renderSummary(); };
+  $("opttitle").textContent = f.heads.options_title; $("optintro").textContent = f.heads.options_intro;
+  renderOrder();
   $("cons").innerHTML = Object.entries(E3.CONSTRAINTS).map(([k, v]) => `<label><input type="checkbox" id="c-${k}" data-c="${k}" ${state.constraints.has(k) ? "checked" : ""}> ${esc(v)}</label>`).join("") + `<label><input type="checkbox" id="c-rented" ${state.rented ? "checked" : ""}> Rented land on a short lease</label>`;
   $("cons").querySelectorAll("[data-c]").forEach(c => c.onchange = () => { c.checked ? state.constraints.add(c.dataset.c) : state.constraints.delete(c.dataset.c); renderOptions(); renderSummary(); });
   $("c-rented").onchange = e => { state.rented = e.target.checked; renderOptions(); };
   const [kept, dropped] = applyConstraints(state.constraints);
-  $("dropped").innerHTML = dropped.map(([n, why]) => `<p class="warn"><b>${esc(n)}</b> removed: ${esc(why)}.</p>`).join("");
   $("notes").innerHTML = f.e3.notes.map(n => `<p class="note">${esc(n)}</p>`).join("");
   const ranked = rank(ratings, kept, state.priorities), crit = orderedCriteria(state.priorities);
-  $("trade").innerHTML = `<tr><th>Criterion (your priority order)</th>${ranked.map((c, i) => `<th><span class="rank">#${i + 1}</span> ${esc(c.name)}</th>`).join("")}</tr>` +
-    crit.map(k => `<tr><td>${esc(k)}</td>${ranked.map(c => { const r = ratings[c.id][k].rating; return `<td class="r-${r}">${r}</td>`; }).join("")}</tr>`).join("");
-  $("tradenote").textContent = `Ratings are relative to the current rotation. Options are ordered by your first priority, then the next to break ties${state.priorities.length ? ": " + state.priorities.join(" → ") : ""}. Changing priorities reorders rows and options; it never changes a rating. Income is not predicted.`;
-  $("opttitle").textContent = f.heads.options_title; $("optintro").textContent = f.heads.options_intro;
+  const mine = new Set(state.priorities.flatMap(p => E3.CRITERIA_FOR_PRIORITY[p] || []));
   $("optmsg").textContent = priorityAction(ratings, state.priorities, state.constraints).text;
-  const top = ranked[0];
-  if (top.id === "cs") $("worth").innerHTML = "<b>Under these priorities the current rotation ranks first.</b> Each alternative costs more workload than it returns on your top priority.";
-  else { const g = crit.filter(k => ratings[top.id][k].rating === "better").map(k => k.toLowerCase()), w = crit.filter(k => ratings[top.id][k].rating === "worse").map(k => k.toLowerCase()); const est = ratings[top.id]["Soil cover and living roots"].estimate;
-    $("worth").innerHTML = `<b>Worth discussing: ${esc(top.name)}.</b> Better on ${esc(g.join(", ") || "nothing")}; worse on ${esc(w.join(", ") || "nothing")}.${est ? " Soil cover: " + esc(est) + "." : ""}`; }
-  const wi = whatIf(ratings, kept, state.priorities);
-  $("whatif").innerHTML = `<tr><th>If this came first</th><th>Top option</th></tr>` + Object.entries(wi).map(([p, n]) => `<tr><td>${esc(p)}</td><td>${esc(n)}</td></tr>`).join("");
+  const outIds = new Set(kept.map(c => c.id));
+  $("optcards").innerHTML = ranked.map((c, i) => optionCard(f, c, i, crit, mine)).join("") +
+    E3.CANDIDATES.filter(c => !outIds.has(c.id)).map(c => `<article class="opt out"><span class="badge">Ruled out</span><h3>${esc(E3.OPTIONS[c.id].label)}</h3><p class="blurb">${esc(E3.OPTIONS[c.id].blurb)}</p><p class="keyfact">${esc(dropped.find(([n]) => n === c.name)?.[1] || "Removed by your constraints")}.</p></article>`).join("");
+  $("tradenote").textContent = `▲ better, ● similar, ▼ worse than the current rotation. Bold rows are your priorities. Changing priorities reorders the options; it never changes a rating. Income is not predicted.`;
+  $("stable").textContent = stabilityLine(ratings, kept, state.priorities);
+  $("trade").innerHTML = `<tr><th>Criterion (your priority order)</th>${ranked.map((c, i) => `<th>#${i + 1} ${esc(E3.OPTIONS[c.id].label)}</th>`).join("")}</tr>` +
+    crit.map(k => `<tr><td>${esc(k)}</td>${ranked.map(c => { const r = ratings[c.id][k].rating; return `<td class="r-${r}">${r}</td>`; }).join("")}</tr>`).join("");
   $("rented").innerHTML = state.rented ? `<p class="note">On a short lease, the benefits of cover crops and longer rotations build over years and may not reach the person farming. Check lease terms before choosing.</p>` : "";
-  $("evidence").innerHTML = ranked.filter(c => c.id !== "cs").map(c => `<details><summary>Evidence: ${esc(c.name)}</summary><ul>${crit.map(k => { const x = ratings[c.id][k]; return `<li><b>${esc(k)}: ${x.rating}</b> (confidence ${esc(x.confidence)}). ${esc(x.evidence)}${x.verify ? ` <i>Verify: ${esc(x.verify)}</i>` : ""}</li>`; }).join("")}</ul></details>`).join("");
   $("notest").innerHTML = f.e3.not_established.map(n => `<li>${esc(n)}</li>`).join("");
   $("sources").textContent = "Crop characteristics: " + f.e3.sources.join("; ") + ". Confirm the catalogue with an agronomist before relying on it.";
 }

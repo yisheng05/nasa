@@ -28,13 +28,14 @@ def test_js_ranking_matches_python(tmp_path):
                 p = list(perm[:3])
                 cases.append({"f": f["id"], "p": p, "c": cons, "py": [c["id"] for c in E3.rank(f["e3"]["ratings"], kept, p)],
                               "wi": E3.what_if(f["e3"]["ratings"], kept, p),
-                              "pa": T.priority_action(f["e3"], p, set(cons))["text"]})
+                              "pa": T.priority_action(f["e3"], p, set(cons))["text"],
+                              "st": T.stability_line(f["e3"]["ratings"], kept, p)})
     script = tmp_path / "parity.js"
     script.write_text(
         "const E3=" + json.dumps(data["engine3"]) + ";const F=" + json.dumps({f["id"]: f["e3"]["ratings"] for f in data["fields"]}) + ";\n" + logic
         + "\nconst cases=" + json.dumps(cases) + ";let bad=0;for(const c of cases){const [k]=applyConstraints(new Set(c.c));"
         "if(JSON.stringify(rank(F[c.f],k,c.p).map(x=>x.id))!==JSON.stringify(c.py)||JSON.stringify(whatIf(F[c.f],k,c.p))!==JSON.stringify(c.wi)"
-        "||priorityAction(F[c.f],c.p,c.c).text!==c.pa)bad++;}console.log(bad);"
+        "||priorityAction(F[c.f],c.p,c.c).text!==c.pa||stabilityLine(F[c.f],k,c.p)!==c.st)bad++;}console.log(bad);"
     )
     out = subprocess.run(["node", str(script)], capture_output=True, text=True, check=True).stdout.strip()
     assert out == "0"

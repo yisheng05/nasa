@@ -78,14 +78,14 @@ with st.sidebar:
     st.title("Field Shift")
     st.caption("Rotation options from a field's own history")
     fid = st.selectbox("Field", FIELDS, format_func=lambda f: D.field_label(f, _static(f), PROPS.get(f, {})))
-    st.subheader("Your priorities")
+    st.subheader("What matters most to you?")
     priorities = st.multiselect(
-        "Pick in order of importance",
+        "Pick in order: the first counts most",
         E3.PRIORITIES,
         default=["Soil protection", "Water and stress risk", "Workload and simplicity"],
         help="The order you pick sets the row order in Rotation options. It never changes the evidence or the ratings (test V9).",
     )
-    st.subheader("Constraints")
+    st.subheader("Anything that rules an option out?")
     active = {k for k, label in E3.CONSTRAINTS.items() if st.checkbox(label, key=f"c_{k}")}
     rented = st.checkbox(D.LONG_TERM_NOTE)
 
@@ -279,46 +279,51 @@ with t_rot:
         st.markdown(f"**{T.priority_action(e3, priorities, active)['text']}**")
         ratings = e3["ratings"]
         kept, dropped = E3.apply_constraints(active)
-        for name, why in dropped:
-            st.warning(f"**{name}** removed: {why}.")
         for note in e3["notes"]:
             st.info(note)
         ranked = E3.rank(ratings, kept, priorities)
         crit = E3.ordered_criteria(priorities)
-        sym = {"better": "▲ better", "similar": "● similar", "worse": "▼ worse", "baseline": "baseline"}
-        table = pd.DataFrame(
-            {c["name"]: [str(i + 1)] + [sym[ratings[c["id"]][k]["rating"]] for k in crit] for i, c in enumerate(ranked)},
-            index=pd.Index(["Rank under your priorities", *crit], name="Criterion (your priority order)"),
-        )
-        st.dataframe(table, width="stretch")
-        order_txt = " → ".join(priorities) if priorities else "no priorities chosen (default order)"
-        st.caption(
-            f"Ratings are relative to the current rotation. Options are ordered by your first priority, then the next to break ties: {order_txt}. "
-            "Changing priorities reorders rows and options; it never changes a rating (V9). Income is not predicted."
-        )
-        top = ranked[0]
-        if top["id"] == "cs":
-            st.markdown("**Under these priorities the current rotation ranks first.** Each alternative costs more workload than it returns on your top priority.")
-        else:
-            gains = [k for k in crit if ratings[top["id"]][k]["rating"] == "better"]
-            costs = [k for k in crit if ratings[top["id"]][k]["rating"] == "worse"]
-            est = ratings[top["id"]]["Soil cover and living roots"].get("estimate")
-            st.markdown(
-                f"**Worth discussing: {top['name']}.** Better on {', '.join(g.lower() for g in gains) or 'nothing'}; "
-                f"worse on {', '.join(c.lower() for c in costs) or 'nothing'}." + (f" Soil cover: {est}." if est else "")
-            )
-        wi = E3.what_if(ratings, kept, priorities)
-        st.markdown("**How stable is this?** Top option if each priority came first:")
-        st.dataframe(pd.DataFrame({"If this came first": list(wi.keys()), "Top option": list(wi.values())}), hide_index=True, width="stretch")
+        mine = {k for p in priorities for k in E3.CRITERIA_FOR_PRIORITY.get(p, [])}
+        kept_ids = {c["id"] for c in kept}
+        ruled_out = [c for c in E3.CANDIDATES if c["id"] not in kept_ids]
+        why_out = dict(dropped)
+        badge = {"better": ":blue[▲ better]", "similar": ":gray[● similar]", "worse": ":orange[▼ worse]"}
+        cols = st.columns(len(ranked) + len(ruled_out))
+        for i, c in enumerate(ranked):
+            o, r = T.OPTIONS[c["id"]], ratings[c["id"]]
+            with cols[i], st.container(border=True):
+                st.markdown(f"**#{i + 1} for you**" if i == 0 else f"#{i + 1} for you")
+                st.markdown(f"#### {o['label']}")
+                st.caption(o["blurb"])
+                if c["id"] == "cs":
+                    if e1:
+                        st.markdown(f"Today: about {e1['summary']['no_living_cover_months_per_year']} months a year without living cover.")
+                    continue
+                st.markdown("\n".join(f"- {badge[r[k]['rating']]} {('**' + k + '**') if k in mine else k}" for k in crit))
+                est = r["Soil cover and living roots"].get("estimate")
+                if est:
+                    st.markdown(f"**Soil cover:** {est}.")
+                verify = list(dict.fromkeys(r[k]["verify"] for k in crit if r[k]["verify"]))
+                if verify:
+                    st.markdown(f"**Check first:** {verify[0]}")
+                with st.expander("Why these ratings?"):
+                    for k in crit:
+                        cell = r[k]
+                        st.markdown(f"**{k}: {cell['rating']}** (confidence {cell['confidence']}). {cell['evidence']}" + (f"  \n*Check:* {cell['verify']}" if cell["verify"] else ""))
+        for j, c in enumerate(ruled_out):
+            with cols[len(ranked) + j], st.container(border=True):
+                st.markdown(":gray[Ruled out]")
+                st.markdown(f"#### :gray[{T.OPTIONS[c['id']]['label']}]")
+                st.caption(T.OPTIONS[c["id"]]["blurb"])
+                st.markdown(f":gray[{why_out.get(c['name'], 'Removed by your constraints')}.]")
+        st.caption("▲ better, ● similar, ▼ worse than the current rotation. Bold rows are your priorities. Changing priorities reorders the options; it never changes a rating (V9). Income is not predicted.")
+        st.markdown(f"**How stable is this?** {T.stability_line(ratings, kept, priorities)}")
         if rented:
             st.info("On a short lease, the benefits of cover crops and longer rotations build over years and may not reach the person farming. Check lease terms before choosing.")
-        for c in ranked:
-            if c["id"] == "cs":
-                continue
-            with st.expander(f"Evidence: {c['name']}"):
-                for k in crit:
-                    cell = ratings[c["id"]][k]
-                    st.markdown(f"**{k}: {cell['rating']}** (confidence {cell['confidence']}). {cell['evidence']}" + (f"  \n*Verify:* {cell['verify']}" if cell["verify"] else ""))
+        with st.expander("Side-by-side table"):
+            sym = {"better": "▲ better", "similar": "● similar", "worse": "▼ worse", "baseline": "baseline"}
+            st.dataframe(pd.DataFrame({f"#{i + 1} {T.OPTIONS[c['id']]['label']}": [sym[ratings[c["id"]][k]["rating"]] for k in crit] for i, c in enumerate(ranked)},
+                                      index=pd.Index(crit, name="Criterion (your priority order)")), width="stretch")
         with st.expander("What this tool cannot establish"):
             st.markdown("\n".join(f"- {x}" for x in e3["not_established"]))
         st.caption("Crop characteristics: " + "; ".join(e3["sources"]) + ". Confirm the catalogue with an agronomist before relying on it.")
