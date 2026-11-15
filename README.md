@@ -83,16 +83,22 @@ Run the tests (V10 GDD, app smoke tests incl. V9 ordering):
 python -m pytest -q
 ```
 
+Re-check every validation test in handoff §15 (V1–V13) from the committed evidence; this writes [`docs/validation_results.md`](docs/validation_results.md):
+
+```bash
+python prep/validate_all.py
+```
+
 ## Repo map
 
 | Path | What goes here | Handoff section |
 |---|---|---|
-| `docs/` | Handoff v2 and the 2026 rules checklist | — |
-| `prep/` | Pre-event data-access checks | §18.2 |
+| `docs/` | Handoff v2, the 2026 rules checklist and the validation results | §15 |
+| `prep/` | Data-access checks, the V6 visual-check sheets and `validate_all.py` | §15, §18.2 |
 | `notebooks/` | Offline precompute of the demo fields → evidence JSON/Parquet | §14 |
 | `pipeline/` | Engine 1 Field History, Engine 2 Stress Recurrence, Engine 3 Rotation Comparison | §8 |
 | `app/` | Streamlit UI: season strip, trend panel, trade-off table, one-page summary | §13.1 |
-| `tests/` | Acceptance tests (V10 GDD, V9 ordering in the app shell; more to come) | §15 |
+| `tests/` | Unit and acceptance tests (V7, V9, V10, engines, readers, web parity) | §15 |
 | `data/` | Raw extracts (git-ignored) and `data/processed/` evidence read by the app (committed) | §14 |
 | `REFERENCES.md` | Data, papers, code and AI tools used, for the submission form | §1.4 |
 

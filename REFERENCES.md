@@ -32,7 +32,7 @@ Access: [AppEEARS](https://appeears.earthdatacloud.nasa.gov/), [Earthdata Search
 | Dataset | Provider | Role | Link |
 |---|---|---|---|
 | Cropland Data Layer | USDA NASS | Crop sequence and ground truth | [CropScape](https://nassgeodata.gmu.edu/CropScape/) |
-| Crop Progress | USDA NASS | Validation of stage estimates (V4) | [NASS](https://www.nass.usda.gov/Publications/National_Crop_Progress/) |
+| Crop Progress (weekly Iowa % corn silked, 2016–2025) | USDA NASS | Validation of silking estimates (V4) | [ESMIS archive](https://esmis.nal.usda.gov/publication/crop-progress) |
 | SSURGO / gSSURGO | USDA NRCS | Soil properties | [Soil Data Access](https://sdmdataaccess.sc.egov.usda.gov/) |
 | U.S. Drought Monitor | NDMC (University of Nebraska–Lincoln), USDA, NOAA | Neutral check of Engine 2's dry calls (V13), Story County weekly statistics | [Data services](https://droughtmonitor.unl.edu/DmData/DataDownload.aspx) |
 | SoilGrids 2.0 | ISRIC | Soil properties outside the US | [SoilGrids](https://soilgrids.org/) |
