@@ -71,3 +71,24 @@ def test_validation_summary_reads_the_validation_files():
     lines = T.validation_summary()
     assert any("MSLSP30NA" in x for x in lines) and any("Crop Progress" in x for x in lines)
     assert any("rated blind by AI" in x for x in lines)
+
+
+def test_what_worked_follows_the_evidence():
+    w = T.what_worked([(L, *_docs(f)[:2]) for L, f in FIELDS])
+    by = {p["letter"]: p for p in w["fields"]}
+    for L, f in FIELDS:
+        e2 = _docs(f)[1]
+        flagged = [s for s in e2["seasons"] if s["stress_flag"]]
+        assert by[L]["flagged"] == len(flagged)
+        assert by[L]["held"] == sum(s["vigour"] in ("similar", "above") for s in flagged)
+        assert {d["season"] for d in by[L]["dips"]} == {s["season"] for s in e2["seasons"] if not s["stress_flag"] and s["vigour"] == "below"}
+    assert by["C"]["cover"] is None and "No green after harvest" in by["C"]["lines"][0]
+    b = by["B"]["cover"]
+    assert b["with_years"] == [2018, 2022, 2024] and b["diff"] > 1.5  # the field that greens after harvest has much less bare soil after it
+    assert "12 of 13" in w["lead"] and "not yield" in w["caveat"]
+
+
+def test_dips_cite_their_evidence():
+    a = T.field_worked("A", *_docs("field_a")[:2])
+    d2020 = next(d for d in a["dips"] if d["season"] == 2020)
+    assert any("Drought Monitor" in x for x in d2020["why"])

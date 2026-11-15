@@ -119,6 +119,9 @@ table.hitgrid td.soybeans { background: var(--soy); color: var(--soy-ink); font-
 ol.actions { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
 ol.actions li { line-height: 1.5; }
 ul.checks-list { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+table.worked td, table.worked th { vertical-align: top; }
+table.worked tr.current td, table.worked tr.current th { background: var(--surface-2); }
+table.worked th[scope="row"] { white-space: nowrap; }
 .warn { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
 details { border-top: 1px solid var(--line); padding-top: 10px; }
 details summary { cursor: pointer; font-weight: 600; }
@@ -146,6 +149,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
     <button role="tab" id="tab-history" data-view="history">Field history</button>
     <button role="tab" id="tab-conditions" data-view="conditions">Weather risk</button>
     <button role="tab" id="tab-options" data-view="options">Rotation options</button>
+    <button role="tab" id="tab-worked" data-view="worked">What worked</button>
     <button role="tab" id="tab-summary" data-view="summary">Next steps</button>
   </nav>
 
@@ -226,6 +230,19 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
       <div id="evidence"></div>
       <details><summary>What this tool cannot establish</summary><ul id="notest"></ul></details>
       <p class="small" id="sources"></p>
+    </section>
+  </main>
+
+  <main id="view-worked" class="wrap" role="tabpanel" aria-labelledby="tab-worked" hidden>
+    <section class="panel">
+      <h2 id="workedtitle"></h2>
+      <p id="workedlead"></p>
+      <div class="scroll"><table class="worked" id="workedtable"></table></div>
+    </section>
+    <section class="panel">
+      <h2 id="workedfield"></h2>
+      <ul class="checks-list" id="workedlines"></ul>
+      <p class="small" id="workedcaveat"></p>
     </section>
   </main>
 
@@ -446,21 +463,36 @@ function summaryText() {
   dropped.forEach(([n, why]) => lines.push(`- Removed by your constraints: ${n} (${why})`));
   const verify = [...new Set(ranked.filter(c => c.id !== "cs").flatMap(c => E3.CRITERIA.map(k => f.e3.ratings[c.id][k].verify).filter(Boolean)))].sort();
   if (verify.length) lines.push("", "Verify with an agronomist:", ...verify.map(v => "- " + v));
+  const mine = DATA.worked.fields.find(p => p.letter === f.letter);
+  lines.push("", "What worked on this field:", ...mine.lines.map(l => "- " + l));
   lines.push("", "How we checked this:", ...DATA.validation.map(v => "- " + v));
   lines.push("", "Not established by this tool:", ...f.e3.not_established.map(n => "- " + n));
   return lines.join("\n");
+}
+function renderWorked() {
+  const W = DATA.worked, f = F();
+  $("workedtitle").textContent = W.title; $("workedlead").textContent = W.lead;
+  const m1 = x => Number(x).toFixed(1);
+  const cov = p => p.cover ? `${m1(p.cover.with_months)} vs ${m1(p.cover.without_months)} months (${m1(p.cover.diff)} less; ${p.cover.with_years.join(", ")})` : `never; ${m1(p.uncovered_range[0])}–${m1(p.uncovered_range[1])} months every year`;
+  const dips = p => p.dips.length ? p.dips.map(d => `${d.season} ${d.crop === "soybeans" ? "soybean" : d.crop}: ${d.why.length ? d.why.join("; ") : "no cause in the data"}`).join(" · ") : "none";
+  $("workedtable").innerHTML = `<tr><th>Field</th><th>Green after harvest: bare-soil months, cover years vs others</th><th>Vigour held in stress seasons</th><th>Weaker seasons the regional flags missed</th></tr>` +
+    W.fields.map(p => `<tr class="${p.letter === f.letter ? "current" : ""}"><th scope="row">Field ${esc(p.letter)}</th><td>${esc(cov(p))}</td><td class="num">${p.held} of ${p.flagged}${p.dropped.length ? ` (not ${p.dropped.map(([y, c]) => `${c} ${y}`).join(", ")})` : ""}</td><td>${esc(dips(p))}</td></tr>`).join("");
+  const mine = W.fields.find(p => p.letter === f.letter);
+  $("workedfield").textContent = `Field ${f.letter} in detail`;
+  $("workedlines").innerHTML = mine.lines.map(l => `<li>${esc(l)}</li>`).join("");
+  $("workedcaveat").textContent = W.caveat;
 }
 function renderSummary() { $("summary").textContent = summaryText(); $("checks").innerHTML = DATA.validation.map(v => `<li>${esc(v)}</li>`).join(""); $("actions").innerHTML = nextSteps(F()).map(a => `<li><b>${esc(a.title)}.</b> ${esc(a.text)}</li>`).join(""); }
 $("copy").onclick = () => { const t = summaryText(); const done = () => { $("copied").textContent = "Copied"; }; const fallback = () => { const r = document.createRange(); r.selectNodeContents($("summary")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("copied").textContent = "Selected: press Ctrl+C or ⌘C to copy"; };
   try { navigator.clipboard.writeText(t).then(done, fallback); } catch (e) { fallback(); } };
 
 /* ---------------- tabs ---------------- */
-const VIEWS = ["history", "conditions", "options", "summary"];
+const VIEWS = ["history", "conditions", "options", "worked", "summary"];
 function showView(v) { if (!VIEWS.includes(v)) v = "history"; VIEWS.forEach(n => { $("view-" + n).hidden = n !== v; $("tab-" + n).setAttribute("aria-selected", String(n === v)); }); }
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { location.hash = b.dataset.view; showView(b.dataset.view); });
 window.addEventListener("hashchange", () => showView(location.hash.slice(1)));
 
-function renderAll() { renderPicker(); renderHeader(); renderHistory(); renderConditions(); renderOptions(); renderSummary(); }
+function renderAll() { renderPicker(); renderHeader(); renderHistory(); renderConditions(); renderOptions(); renderWorked(); renderSummary(); }
 $("built").textContent = `Precomputed ${DATA.generated} from the Field Shift pipeline (notebooks/01_precompute.ipynb).`;
 renderAll(); showView(location.hash.slice(1));
 </script>

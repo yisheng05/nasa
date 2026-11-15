@@ -73,6 +73,7 @@ def build() -> Path:
         "cross": cross,
         "decision": T.DECISION,
         "validation": T.validation_summary(),
+        "worked": T.what_worked([(f.split("_")[-1].upper(), D.load_engine1(f), D.load_engine2(f)) for f in D.field_ids()]),
         "engine3": {
             "PRIORITIES": E3.PRIORITIES, "CRITERIA": E3.CRITERIA, "CRITERIA_FOR_PRIORITY": E3.CRITERIA_FOR_PRIORITY,
             "CANDIDATES": [{"id": c["id"], "name": c["name"], "needs": sorted(c["needs"])} for c in E3.CANDIDATES],

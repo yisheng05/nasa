@@ -213,3 +213,91 @@ def validation_summary() -> list[str]:
     if diffs:
         lines.append(f"Field slope from NASADEM, once smoothed, is within {max(diffs):.2f} percentage points of USGS lidar on every field.")
     return lines
+
+
+# ---------------------------------------------------------------- what worked, field by field
+GREEN_YEAR_DAYS = E3.GREEN_YEAR_DAYS  # a cover year with >= 30 off-season living days counts as "with green" (as Engine 3)
+USDM_WORDS = {"D0": "abnormally dry", "D1": "moderate drought", "D2": "severe drought", "D3": "extreme drought", "D4": "exceptional drought"}
+VIGOUR_CAVEAT = ("Vigour is the season’s peak and total greenness against this field’s own normal for the crop, not yield, and peak greenness "
+                 "saturates near 0.9, so “held” can overstate resilience. Green after harvest is not confirmed as a cover crop. "
+                 "Ten seasons per field: patterns to discuss, not proof.")
+
+
+def _median(xs: list[float]) -> float:
+    xs = sorted(xs)
+    n = len(xs)
+    return (xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2) if n else float("nan")
+
+
+def field_worked(letter: str, e1: dict, e2: dict) -> dict:
+    """What the record says worked on one field: cover years, stress resilience, weaker seasons and their likely reasons."""
+    s2 = {s["season"]: s for s in e2["seasons"]}
+    # soil cover: complete cover years with off-season green vs without, within the same crop (Engine 3's rule)
+    cover = None
+    by_crop: dict[str, dict[str, list]] = {}
+    for s in e1["seasons"]:
+        if s.get("cover_year_partial") or s.get("no_living_cover_share") is None or s.get("off_season_living_days") is None:
+            continue
+        kind = "with" if s["off_season_living_days"] >= GREEN_YEAR_DAYS else "without" if s["off_season_living_days"] <= 5 else None
+        if kind:
+            by_crop.setdefault(s["crop"], {"with": [], "without": []})[kind].append(s)
+    for crop, d in by_crop.items():
+        if d["with"] and d["without"]:
+            w = round(_median([x["no_living_cover_share"] for x in d["with"]]) * 12, 1)
+            wo = round(_median([x["no_living_cover_share"] for x in d["without"]]) * 12, 1)
+            after = [s2[x["season"]]["vigour"] for x in d["with"] if x["season"] in s2]
+            cover = {"crop": crop, "with_years": [x["season"] for x in d["with"]], "with_months": w, "without_months": wo,
+                     "n_without": len(d["without"]), "diff": round(wo - w, 1), "vigour_after": after}
+    months = [round(s["no_living_cover_share"] * 12, 1) for s in e1["seasons"] if s.get("no_living_cover_share") is not None and not s.get("cover_year_partial")]
+    flagged = [s for s in e2["seasons"] if s.get("stress_flag")]
+    held = [s["season"] for s in flagged if s["vigour"] in ("similar", "above")]
+    dropped = [(s["season"], s["crop"]) for s in flagged if s["vigour"] == "below"]
+    dips = []
+    for s in e2["seasons"]:
+        if s.get("stress_flag") or s["vigour"] != "below":
+            continue
+        why = []
+        if s.get("esi_status") == "low":
+            why.append("ECOSTRESS showed stress at field scale")
+        if s.get("usdm_category") in USDM_WORDS:
+            why.append(f"Drought Monitor: {USDM_WORDS[s['usdm_category']]} in the window")
+        dips.append({"season": s["season"], "crop": s["crop"], "why": why})
+    lines = []
+    if cover:
+        crop_word = "soybean" if cover["crop"] == "soybeans" else cover["crop"]
+        one = len(cover["with_years"]) == 1
+        lines.append(f"Green after harvest went with less bare soil: in the {crop_word} year{'' if one else 's'} that followed it ({_join(cover['with_years'])}), "
+                     f"{cover['with_months']} months went without living cover, against {cover['without_months']} in this field’s other {crop_word} "
+                     f"year{'s' if cover['n_without'] > 1 else ''}: about {cover['diff']} months less."
+                     + (f" The {crop_word}{' crop' if one else 's'} that followed showed no drop in vigour." if cover["vigour_after"] and all(v in ("similar", "above") for v in cover["vigour_after"]) else ""))
+    else:
+        lines.append(f"No green after harvest, so no cover years to learn from: the soil went without living cover {min(months)}–{max(months)} months every year.")
+    if flagged:
+        lines.append(f"Crops held their vigour in {len(held)} of {len(flagged)} seasons hit by a dry or hot spell"
+                     + (f"; the exception: {_join([f'{c} in {y}' for y, c in dropped])}." if dropped else "."))
+    if dips:
+        lines.append("Weaker seasons the regional weather did not flag: "
+                     + "; ".join(f"{d['season']} {d['crop']} ({', '.join(d['why']) if d['why'] else 'no cause in the data; ask the farmer'})" for d in dips) + ".")
+    else:
+        lines.append("No weaker seasons outside the flagged years.")
+    return {"letter": letter, "cover": cover, "flagged": len(flagged), "held": len(held), "dropped": dropped, "dips": dips, "lines": lines,
+            "uncovered_range": [min(months), max(months)] if months else None}
+
+
+def what_worked(fields: list[tuple[str, dict, dict]]) -> dict:
+    """The cross-field view for the 'What worked' section."""
+    per = [field_worked(L, e1, e2) for L, e1, e2 in fields]
+    held, flagged = sum(p["held"] for p in per), sum(p["flagged"] for p in per)
+    green = [p for p in per if p["cover"]]
+    best = max(green, key=lambda p: p["cover"]["diff"]) if green else None
+    dips = [f"{p['letter']} {d['season']}" for p in per for d in p["dips"]]
+    explained = all(d["why"] for p in per for d in p["dips"])
+    lead = f"Across the three fields, crops held their vigour in {held} of {flagged} seasons hit by a dry or hot spell."
+    if best:
+        lead += (f" Field {best['letter']}, which most often turned green after harvest, had about {best['cover']['diff']} months less bare soil "
+                 "in the years that followed, with no sign of a vigour penalty." if all(v in ("similar", "above") for v in best["cover"]["vigour_after"])
+                 else f" Field {best['letter']}, which most often turned green after harvest, had about {best['cover']['diff']} months less bare soil in the years that followed.")
+    if dips:
+        lead += (f" The weaker seasons the regional flags missed ({_join(dips)}) line up with field-scale ECOSTRESS stress or the Drought Monitor, "
+                 "which is why the field-scale checks matter." if explained else f" Weaker seasons the regional flags missed: {_join(dips)}.")
+    return {"title": "What worked, field by field", "lead": lead, "fields": per, "caveat": VIGOUR_CAVEAT}

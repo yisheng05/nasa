@@ -138,7 +138,7 @@ st.caption(
 
 heads = T.headlines(e1, e2, cross, letter) if e1 and e2 else None
 
-t_hist, t_cond, t_rot, t_inputs, t_sum = st.tabs(["Field history", "Weather risk", "Rotation options", "Your inputs", "Next steps"])
+t_hist, t_cond, t_rot, t_inputs, t_worked, t_sum = st.tabs(["Field history", "Weather risk", "Rotation options", "Your inputs", "What worked", "Next steps"])
 
 # ---------------------------------------------------------------- field history
 with t_hist:
@@ -373,6 +373,34 @@ with t_inputs:
         )
         st.caption(f"{props.get('naip_note', '')}. Selected because CDL shows strict corn/soybean alternation 2016–2025; checked on NAIP 2025.")
 
+# ---------------------------------------------------------------- what worked
+worked = T.what_worked([d for d in _docs if d[1] and d[2]])
+mine = next((p for p in worked["fields"] if p["letter"] == letter), None)
+with t_worked:
+    st.subheader(worked["title"])
+    st.markdown(worked["lead"])
+
+    def _cov(p):
+        c = p["cover"]
+        return (f"{c['with_months']:.1f} vs {c['without_months']:.1f} months ({c['diff']:.1f} less; {', '.join(map(str, c['with_years']))})" if c
+                else f"never; {p['uncovered_range'][0]:.1f}–{p['uncovered_range'][1]:.1f} months every year")
+
+    def _dips(p):
+        return " · ".join(f"{d['season']} {'soybean' if d['crop'] == 'soybeans' else d['crop']}: {'; '.join(d['why']) or 'no cause in the data'}" for d in p["dips"]) or "none"
+
+    wt = pd.DataFrame(
+        {"Green after harvest: bare-soil months, cover years vs others": [_cov(p) for p in worked["fields"]],
+         "Vigour held in stress seasons": [f"{p['held']} of {p['flagged']}" + (f" (not {', '.join(f'{c} {y}' for y, c in p['dropped'])})" if p["dropped"] else "") for p in worked["fields"]],
+         "Weaker seasons the regional flags missed": [_dips(p) for p in worked["fields"]]},
+        index=pd.Index([f"Field {p['letter']}" + (" (this field)" if p["letter"] == letter else "") for p in worked["fields"]], name="Field"),
+    )
+    st.dataframe(wt, width="stretch")
+    if mine:
+        st.subheader(f"Field {letter} in detail")
+        st.markdown("\n".join(f"- {line}" for line in mine["lines"]))
+    st.caption(worked["caveat"])
+
+
 # ---------------------------------------------------------------- summary
 def _rotation_lines() -> list[str]:
     kept, dropped = E3.apply_constraints(active)
@@ -428,6 +456,9 @@ with t_sum:
         "",
         "## Rotation options (Engine 3)",
         *(_rotation_lines() if e3 else ["- Pending"]),
+        "",
+        "## What worked on this field",
+        *([f"- {line}" for line in mine["lines"]] if mine else ["- Pending"]),
         "",
         "## How we checked this",
         *[f"- {v}" for v in T.validation_summary()],
