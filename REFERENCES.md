@@ -62,4 +62,6 @@ See `requirements.txt`. Add any third-party code copied or adapted here, with a 
 | Tool | Used for |
 |---|---|
 | Claude Code (Anthropic) | Pre-event: repo setup, README, rules checklist, this file, the data-access check script (9 Nov); research on 2026 rules and revision of the design handoff to v2.1 (13 Nov) |
+| Claude Code (Anthropic), during the event | Data pipeline, engines, tests, the Streamlit app, the V1 and V2 web pages, both slide decks, the submission text, and the blind visual ratings for V6 (spot-checked by the team) |
+| Piper TTS (open source, voice en_US-lessac-high) | The synthetic narration voice in the 30-second demo video (`docs/demo/`); Claude wrote the script and assembled the video with FFmpeg |
 | | *(add tools used during the event)* |
