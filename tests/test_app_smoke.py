@@ -15,7 +15,9 @@ def _run() -> AppTest:
 
 
 def _option_table(at: AppTest):
-    return next(d.value for d in at.dataframe if "Corn–soybean (current)" in d.value.columns)
+    """The side-by-side table: columns '#rank Label', rows = criteria in priority order. Returns it keyed by plain label."""
+    df = next(d.value for d in at.dataframe if d.value.index.name == "Criterion (your priority order)")
+    return df.rename(columns=lambda c: c.split(" ", 1)[1])
 
 
 def test_app_renders_without_exceptions():
@@ -30,8 +32,9 @@ def test_constraint_removes_small_grain_option():
     at = _run()
     at.checkbox(key="c_small_grain_market").check().run()
     assert not at.exception
-    assert any("oats/red clover" in w.value for w in at.warning)
-    assert "Corn–soybean–oats/red clover" not in _option_table(at).columns
+    cards = [m.value for m in at.markdown if m.value.startswith("#### ")]
+    assert "#### :gray[Oats + red clover]" in cards  # shown as ruled out, not silently dropped
+    assert "Oats + red clover" not in _option_table(at).columns
 
 
 def test_v9_priorities_reorder_columns_not_ratings():
@@ -40,9 +43,7 @@ def test_v9_priorities_reorder_columns_not_ratings():
     at.multiselect[0].set_value(["Crop diversity", "Soil protection"]).run()
     assert not at.exception
     after = _option_table(at)
-    assert after.index[1] == "Crop diversity"  # row 0 is the rank
+    assert after.index[0] == "Crop diversity"
     assert set(after.index) == set(before.index)
     for row in before.index:
-        if row == "Rank under your priorities":
-            continue
         assert before.loc[row].to_dict() == after.loc[row].to_dict()  # same rating for every option
