@@ -37,6 +37,7 @@ h2 { font-size: 20px; font-weight: 600; }
 h3 { font-size: 16px; font-weight: 600; }
 p { margin: 0; }
 .muted { color: var(--muted); }
+.decision { font-weight: 600; margin: 4px 0 0; max-width: 760px; }
 .small { font-size: 13px; color: var(--muted); }
 .num { font-variant-numeric: tabular-nums; }
 .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent); }
@@ -117,6 +118,7 @@ table.hitgrid td.corn { background: var(--corn); color: var(--corn-ink); font-we
 table.hitgrid td.soybeans { background: var(--soy); color: var(--soy-ink); font-weight: 600; }
 ol.actions { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
 ol.actions li { line-height: 1.5; }
+ul.checks-list { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 .warn { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
 details { border-top: 1px solid var(--line); padding-top: 10px; }
 details summary { cursor: pointer; font-weight: 600; }
@@ -133,6 +135,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
       <span class="eyebrow">NASA Space Apps 2026 · Field Shift</span>
       <h1 id="title">Field A, Story County, Iowa</h1>
       <p class="muted" id="subtitle">It’s November. This field has alternated corn and soybean for ten seasons, and the farmer is planning the next ones.</p>
+      <p class="decision" id="decision"></p>
     </div>
     <div class="picker" role="group" aria-label="Choose a field" id="picker"></div>
   </header>
@@ -141,24 +144,25 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
 
   <nav class="tabs" role="tablist" aria-label="Views">
     <button role="tab" id="tab-history" data-view="history">Field history</button>
-    <button role="tab" id="tab-conditions" data-view="conditions">Changing conditions</button>
+    <button role="tab" id="tab-conditions" data-view="conditions">Weather risk</button>
     <button role="tab" id="tab-options" data-view="options">Rotation options</button>
-    <button role="tab" id="tab-summary" data-view="summary">Summary</button>
+    <button role="tab" id="tab-summary" data-view="summary">Next steps</button>
   </nav>
 
   <main id="view-history" class="wrap" role="tabpanel" aria-labelledby="tab-history">
     <section class="panel">
+      <h2 id="covertitle"></h2>
       <div class="grid3" id="e1tiles"></div>
       <p class="small" id="e1note"></p>
     </section>
     <section class="panel">
-      <p class="msg" id="histmsg"></p>
-      <h2>Ten seasons on one strip</h2>
+      <h2 id="histtitle"></h2>
+      <p id="histmsg"></p>
       <div class="scroll"><div class="strip" id="strip"></div></div>
       <div class="detail" id="celldetail">Tap a season’s cell for its dates, evidence and confidence.</div>
     </section>
     <section class="panel">
-      <h2>Field greenness, every clear satellite pass</h2>
+      <h2 id="evidtitle"></h2>
       <div class="legend"><span><i style="background:var(--landsat)"></i>Landsat (L30)</span><span><i style="background:var(--sentinel)"></i>Sentinel-2 (S30)</span><span><i class="line" style="background:var(--smooth)"></i>Smoothed (Engine 1)</span><span>Dashed line: living-cover threshold</span></div>
       <div class="chartwrap"><svg class="chart" id="ndvi" viewBox="0 0 1000 330" role="img" aria-label="Field median NDVI 2016 to 2025"></svg><div class="tip" id="ndvitip" hidden></div></div>
       <p class="small" id="ndvinote"></p>
@@ -173,17 +177,20 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
       <p class="small">The crop at its sensitive stage when Engine 2 flagged a dry or hot spell, on each demo field. Blank: no flag that year.</p>
     </section>
     <section class="panel">
-      <h2>Stress at each crop’s sensitive stage</h2>
+      <h2 id="stresstitle"></h2>
       <div class="grid3" id="e2tiles"></div>
       <p id="e2crops"></p>
+      <h3>How we checked it</h3>
       <p id="e2esi"></p>
       <p id="e2smap"></p>
       <p id="e2usdm"></p>
+      <h3>Season by season</h3>
       <p class="small">Corn: 14 days around silking, estimated from capped growing degree days after green-up. Soybean: from 14 days before to 21 days after the greenness peak. Flag: root-zone wetness below the 20th percentile on half the window, or daily maximum above the 80th percentile on 5 of 14 days (provisional). The three fields sit in two neighbouring regional weather cells, so the same years recur; which crop is hit depends on the rotation’s phase. Confidence is capped at moderate, or moderate–high where the field-scale ECOSTRESS stress index (actual over potential evapotranspiration, 70 m, within 10 days of the window, against this field’s own summer median) confirms a flag. ECOSTRESS overpass times vary, so read single seasons with care.</p>
       <div class="scroll"><table id="e2table"></table></div>
     </section>
     <section class="panel">
-      <h2>How conditions are changing here</h2>
+      <h2 id="trendtitle"></h2>
+      <p id="trendmsg"></p>
       <p class="small">Regional context from NASA POWER (about 0.5°), 15 June–15 August each year. Root-zone wetness is modelled (NASA GMAO MERRA-2). Grey band: middle 60% of 1991–2020. Dots: this field’s corn seasons.</p>
       <div class="trends" id="trends"></div>
     </section>
@@ -191,6 +198,8 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
 
   <main id="view-options" class="wrap" role="tabpanel" aria-labelledby="tab-options" hidden>
     <section class="panel">
+      <h2 id="opttitle"></h2>
+      <p id="optintro"></p>
       <div class="controls">
         <div class="trend">
           <h3>Your priorities</h3>
@@ -204,7 +213,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
       </div>
     </section>
     <section class="panel">
-      <h2>Rotation options against your priorities</h2>
+      <h2>How they compare</h2>
       <p class="msg" id="optmsg"></p>
       <div id="dropped"></div>
       <div id="notes"></div>
@@ -224,6 +233,11 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
     <section class="panel">
       <h2>What you can do next</h2>
       <ol class="actions" id="actions"></ol>
+    </section>
+    <section class="panel">
+      <h2>How we checked this</h2>
+      <ul class="checks-list" id="checks"></ul>
+      <p class="small">Full results: docs/validation_results.md in the code repository (python prep/validate_all.py re-runs them). All thresholds are provisional, for an agronomist to review.</p>
     </section>
     <section class="panel">
       <h2>One page for the agronomist conversation</h2>
@@ -265,7 +279,7 @@ function priorityAction(ratings, prios, active) {
   let text = `With ${prios[0].toLowerCase()} first, ${top.name} ranks first.`;
   if (top.id === "cs") text += " Both alternatives add work that outweighs their gains on that priority.";
   if (!act.has("small_grain_market") && top.id === "cso_rc") { const [k2] = applyConstraints(new Set([...act, "small_grain_market"])); text += ` Without a local market for oats, ${rank(ratings, k2, prios)[0].name} ranks first instead.`; }
-  return { title, text: text + " Changing priorities reorders the options; it never changes a rating." };
+  return { title, text };
 }
 function nextSteps(f) { const a = f.actions; return [a[0], a[1], priorityAction(f.e3.ratings, state.priorities, state.constraints), a[2], a[3]]; }
 
@@ -276,7 +290,7 @@ function renderPicker() {
 }
 function renderHeader() {
   const f = F();
-  $("title").textContent = `Field ${f.letter}, ${f.county}`;
+  $("title").textContent = `Field ${f.letter}, ${f.county}`; $("decision").textContent = DATA.decision;
   $("facts").innerHTML = [
     [`${f.area} ha`, "Area"], [`~${f.interior_px}`, "Interior 30 m pixels"], [`${f.slope}%`, `Mean slope (lidar ${f.lidar}%)`],
     [`${f.soil.aws.toFixed(1)} cm`, "Available water, top 100 cm"], [f.soil.drainage, "Drainage (by area)"], [f.corn_years, "Corn years"],
@@ -285,7 +299,8 @@ function renderHeader() {
 
 /* ---------------- field history ---------------- */
 function renderHistory() {
-  $("histmsg").textContent = F().heads.history;
+  const H = F().heads;
+  $("covertitle").textContent = H.cover_title; $("histtitle").textContent = H.history_title; $("histmsg").textContent = H.history; $("evidtitle").textContent = H.evidence_title;
   const f = F(), e1 = f.e1;
   $("e1tiles").innerHTML = [
     [`~${e1.summary.no_living_cover_months_per_year} months`, "a year without living cover"],
@@ -343,12 +358,13 @@ function drawNdvi(f) {
 /* ---------------- changing conditions ---------------- */
 function renderConditions() {
   const hd = F().heads, cx = DATA.cross;
-  $("condtitle").textContent = hd.conditions_title; $("condmsg").textContent = hd.conditions;
+  $("condtitle").textContent = hd.conditions_title; $("condmsg").textContent = hd.conditions; $("stresstitle").textContent = hd.stress_title;
+  $("trendtitle").textContent = F().trend_msg.title; $("trendmsg").textContent = F().trend_msg.text;
   $("hitgrid").innerHTML = `<tr><th></th>${cx.years.map(y => `<th class="yr">${y}</th>`).join("")}</tr>` +
     cx.hits.map(h => `<tr><th>Field ${esc(h.letter)}</th>${h.cells.map(c => c ? `<td class="${esc(c)}">${c === "soybeans" ? "soybean" : esc(c)}</td>` : "<td></td>").join("")}</tr>`).join("");
   const f = F(), a = f.e2.summary.all_seasons;
   $("e2tiles").innerHTML = [
-    [`${a.stress_seasons} of ${a.seasons}`, "seasons with a dry or hot sensitive window"],
+    [`${a.stress_seasons} of ${a.seasons}`, "seasons hit by a dry or hot spell at the sensitive stage"],
     [`${a.expected_stress_seasons}`, "expected from 1991–2020 for the same calendar windows"],
     [pct(a.chance_at_least_observed), "chance of at least this many by luck: suggestive, not conclusive"],
   ].map(([v, l]) => `<div class="tile"><b class="num">${v}</b><span>${l}</span></div>`).join("");
@@ -365,7 +381,7 @@ function renderConditions() {
   const corn = f.crops.filter(c => c.crop === "corn").map(c => c.y);
   f.conditions.metrics.forEach(m => {
     const div = document.createElement("div"); div.className = "trend";
-    div.innerHTML = `<h3>${esc(m.title)}</h3><div class="chartwrap"><svg class="chart" viewBox="0 0 480 200" role="img" aria-label="${esc(m.title)} 1981 to 2025"></svg><div class="tip" hidden></div></div><p class="small">Trend 1981–2025: ${m.trend >= 0 ? "+" : ""}${m.trend.toFixed(2)} ${esc(m.unit)} per decade (not tested for significance).</p>`;
+    div.innerHTML = `<h3>${esc(m.title)}</h3><div class="chartwrap"><svg class="chart" viewBox="0 0 480 200" role="img" aria-label="${esc(m.title)} 1981 to 2025"></svg><div class="tip" hidden></div></div><p class="small">Trend 1981–2025: ${m.trend >= 0 ? "+" : ""}${m.trend.toFixed(2)} ${esc(m.unit)} per decade (p = ${m.p.toFixed(2)}${m.p < 0.05 ? ", significant" : ", not significant"}).</p>`;
     box.appendChild(div); drawTrend(div.querySelector("svg"), div.querySelector(".tip"), f.conditions.years, m, corn);
   });
 }
@@ -399,6 +415,7 @@ function renderOptions() {
   $("trade").innerHTML = `<tr><th>Criterion (your priority order)</th>${ranked.map((c, i) => `<th><span class="rank">#${i + 1}</span> ${esc(c.name)}</th>`).join("")}</tr>` +
     crit.map(k => `<tr><td>${esc(k)}</td>${ranked.map(c => { const r = ratings[c.id][k].rating; return `<td class="r-${r}">${r}</td>`; }).join("")}</tr>`).join("");
   $("tradenote").textContent = `Ratings are relative to the current rotation. Options are ordered by your first priority, then the next to break ties${state.priorities.length ? ": " + state.priorities.join(" → ") : ""}. Changing priorities reorders rows and options; it never changes a rating. Income is not predicted.`;
+  $("opttitle").textContent = f.heads.options_title; $("optintro").textContent = f.heads.options_intro;
   $("optmsg").textContent = priorityAction(ratings, state.priorities, state.constraints).text;
   const top = ranked[0];
   if (top.id === "cs") $("worth").innerHTML = "<b>Under these priorities the current rotation ranks first.</b> Each alternative costs more workload than it returns on your top priority.";
@@ -429,10 +446,11 @@ function summaryText() {
   dropped.forEach(([n, why]) => lines.push(`- Removed by your constraints: ${n} (${why})`));
   const verify = [...new Set(ranked.filter(c => c.id !== "cs").flatMap(c => E3.CRITERIA.map(k => f.e3.ratings[c.id][k].verify).filter(Boolean)))].sort();
   if (verify.length) lines.push("", "Verify with an agronomist:", ...verify.map(v => "- " + v));
+  lines.push("", "How we checked this:", ...DATA.validation.map(v => "- " + v));
   lines.push("", "Not established by this tool:", ...f.e3.not_established.map(n => "- " + n));
   return lines.join("\n");
 }
-function renderSummary() { $("summary").textContent = summaryText(); $("actions").innerHTML = nextSteps(F()).map(a => `<li><b>${esc(a.title)}.</b> ${esc(a.text)}</li>`).join(""); }
+function renderSummary() { $("summary").textContent = summaryText(); $("checks").innerHTML = DATA.validation.map(v => `<li>${esc(v)}</li>`).join(""); $("actions").innerHTML = nextSteps(F()).map(a => `<li><b>${esc(a.title)}.</b> ${esc(a.text)}</li>`).join(""); }
 $("copy").onclick = () => { const t = summaryText(); const done = () => { $("copied").textContent = "Copied"; }; const fallback = () => { const r = document.createRange(); r.selectNodeContents($("summary")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("copied").textContent = "Selected: press Ctrl+C or ⌘C to copy"; };
   try { navigator.clipboard.writeText(t).then(done, fallback); } catch (e) { fallback(); } };
 

@@ -129,6 +129,14 @@ def trend_per_decade(metrics: pd.DataFrame, col: str) -> float:
     return float(slope * 10)
 
 
+def trend_pvalue(metrics: pd.DataFrame, col: str) -> float:
+    """Two-sided p-value of the least-squares slope (the same fit as trend_per_decade)."""
+    from scipy.stats import linregress
+
+    s = metrics[col].dropna()
+    return float(linregress(s.index.to_numpy(dtype=float), s.to_numpy(dtype=float)).pvalue)
+
+
 def corn_season_context(metrics: pd.DataFrame, seq: pd.DataFrame) -> pd.DataFrame:
     """Each corn season's window rainfall and root-zone wetness as a percentile of 1991–2020."""
     corn = seq.loc[seq.crop == "corn", "season"].tolist()

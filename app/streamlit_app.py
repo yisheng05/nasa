@@ -122,6 +122,7 @@ with st.sidebar:
 letter = fid.split("_")[-1].upper()
 st.title(f"Field {letter}, {props.get('county', '')}")
 st.markdown("It's November. This field has alternated corn and soybean for ten seasons, and the farmer is planning the next ones.")
+st.markdown(f"**{T.DECISION}**")
 
 soil = static["soil"]
 terrain = static["terrain"]
@@ -137,10 +138,12 @@ st.caption(
 
 heads = T.headlines(e1, e2, cross, letter) if e1 and e2 else None
 
-t_hist, t_cond, t_rot, t_inputs, t_sum = st.tabs(["Field history", "Changing conditions", "Rotation options", "Your inputs", "Summary"])
+t_hist, t_cond, t_rot, t_inputs, t_sum = st.tabs(["Field history", "Weather risk", "Rotation options", "Your inputs", "Next steps"])
 
 # ---------------------------------------------------------------- field history
 with t_hist:
+    if heads:
+        st.subheader(heads["cover_title"])
     if e1:
         sm, sens = e1["summary"], e1["sensitivity_no_living_cover_months"]
         m1, m2, m3 = st.columns(3)
@@ -151,13 +154,13 @@ with t_hist:
             f"Coverage so far: {D.coverage_text(e1)}. Living-cover threshold NDVI {e1['method']['cover_threshold_ndvi']:.2f} (provisional); "
             f"at 0.35 / 0.40 / 0.45 the headline is {sens['0.35']} / {sens['0.40']} / {sens['0.45']} months a year."
         )
+    st.subheader(heads["history_title"] if heads else "Ten seasons on one strip")
     if heads:
-        st.markdown(f"**{heads['history']}**")
-    st.subheader("Ten seasons on one strip")
+        st.markdown(heads["history"])
     st.altair_chart(charts.season_strip(seq, e1["seasons"] if e1 else None, e2["seasons"] if e2 else None), width="stretch", theme=None)
-    st.caption("Crop from the USDA Cropland Data Layer unless you edited it under Your inputs. No living cover = months of each cover year (end of one season's living canopy to the next) with no green vegetation; * = partial first year. Stress = regional root-zone dryness and/or heat in the crop's sensitive window (Engine 2; see Changing conditions). Hover a cell for details.")
+    st.caption("Crop from the USDA Cropland Data Layer unless you edited it under Your inputs. No living cover = months of each cover year (end of one season's living canopy to the next) with no green vegetation; * = partial first year. Stress = regional root-zone dryness and/or heat in the crop's sensitive window (Engine 2; see Weather risk). Hover a cell for details.")
     if hls is not None:
-        st.subheader("Field greenness, every clear satellite pass")
+        st.subheader(heads["evidence_title"] if heads else "Field greenness, every clear satellite pass")
         st.altair_chart(charts.ndvi_scatter(hls, smooth, e1["method"]["cover_threshold_ndvi"] if e1 else None), width="stretch", theme=None)
         cov = ", ".join(f"{s} {g.date.dt.year.min()}–{g.date.dt.year.max()}" for s, g in hls.groupby("sensor"))
         thr = f" Dashed line: living-cover threshold NDVI {e1['method']['cover_threshold_ndvi']:.2f}." if e1 else ""
@@ -181,21 +184,7 @@ with t_cond:
         colour = {"corn": "background-color:#EDA100;color:#1C2620;font-weight:600", "soybean": "background-color:#008300;color:#FFFFFF;font-weight:600"}
         st.dataframe(grid.style.map(lambda v: colour.get(v, "")), width="content")
         st.caption("The crop at its sensitive stage when Engine 2 flagged a dry or hot spell, on each demo field. Blank: no flag that year.")
-    st.subheader("How conditions are changing here")
-    st.caption(
-        "Regional context, not field measurements: NASA POWER covers a ~0.5° cell, and root-zone wetness is modelled (GMAO MERRA-2). "
-        "The window 15 Jun–15 Aug is a calendar stand-in for the maize sensitive period; Engine 2 will use each season's estimated silking date. "
-        "Grey band: middle 60% of 1991–2020."
-    )
-    metrics = D.window_metrics(power)
-    corn_years = seq.loc[seq.crop == "corn", "season"].tolist()
-    cols = st.columns(2)
-    for i, (col, (title, unit, src)) in enumerate(D.METRICS.items()):
-        with cols[i % 2]:
-            band = D.baseline_band(metrics, col)
-            st.altair_chart(charts.trend_chart(metrics, col, title, unit, band, corn_years), width="stretch", theme=None)
-            st.caption(f"Linear trend 1981–2025: {D.trend_per_decade(metrics, col):+.2f} {unit} per decade (not tested for significance). Source: {src}.")
-    st.subheader("Stress at each crop's sensitive stage (Engine 2)")
+    st.subheader(heads["stress_title"] if heads else "Stress at each crop's sensitive stage (Engine 2)")
     if e2:
         sm2 = e2["summary"]
         a = sm2["all_seasons"]
@@ -209,6 +198,7 @@ with t_cond:
                 d = sm2[crop]
                 lines.append(f"**{crop.capitalize()}:** {d['stress_seasons']} of {d['seasons']} seasons ({', '.join(map(str, d['stress_years'])) or 'none'}), expected {d['expected_stress_seasons']}.")
         st.markdown(" ".join(lines))
+        st.markdown("##### How we checked it")
         esi = sm2.get("esi")
         if esi and esi["assessed_seasons"]:
             st.markdown(
@@ -237,6 +227,7 @@ with t_cond:
                 "Drought Monitor column: the worst category covering at least half the county, averaged over the weekly maps that overlap the window. "
                 "It is a county-scale expert synthesis (NDMC, USDA, NOAA), shown for reference: it never changes a flag or a confidence level."
             )
+        st.markdown("##### Season by season")
         st.caption(
             "Corn window: 14 days around silking, estimated at 400 °C capped GDD after green-up (cross-checked against the NDVI peak). Soybean window: NDVI peak −14 to +21 days. "
             "Flag: root-zone wetness below the 20th percentile on half the window, or Tmax above the 80th percentile on 5 of 14 days (provisional). "
@@ -254,12 +245,34 @@ with t_cond:
         st.dataframe(e2df[[c for c in cols2 if c in e2df]], hide_index=True, width="stretch")
     else:
         st.info("Engine 2 runs once Engine 1 has this field's seasons.")
+    _a = e2["summary"]["all_seasons"] if e2 else {"stress_seasons": 0, "seasons": 0}
+    _m = D.window_metrics(power)
+    tm = T.trend_message([{"title": ti, "unit": u, "slope": D.trend_per_decade(_m, c), "p": D.trend_pvalue(_m, c)} for c, (ti, u, _s) in D.METRICS.items()],
+                         _a["stress_seasons"], _a["seasons"])
+    st.subheader(tm["title"])
+    st.markdown(tm["text"])
+    st.caption(
+        "Regional context, not field measurements: NASA POWER covers a ~0.5° cell, and root-zone wetness is modelled (GMAO MERRA-2). "
+        "The window 15 Jun–15 Aug is a calendar stand-in for the maize sensitive period; Engine 2 will use each season's estimated silking date. "
+        "Grey band: middle 60% of 1991–2020."
+    )
+    metrics = D.window_metrics(power)
+    corn_years = seq.loc[seq.crop == "corn", "season"].tolist()
+    cols = st.columns(2)
+    for i, (col, (title, unit, src)) in enumerate(D.METRICS.items()):
+        with cols[i % 2]:
+            band = D.baseline_band(metrics, col)
+            st.altair_chart(charts.trend_chart(metrics, col, title, unit, band, corn_years), width="stretch", theme=None)
+            _p = D.trend_pvalue(metrics, col)
+            st.caption(f"Linear trend 1981–2025: {D.trend_per_decade(metrics, col):+.2f} {unit} per decade (p = {_p:.2f}, {'significant' if _p < T.SIGNIFICANT_P else 'not significant'}). Source: {src}.")
     with st.expander("Show data"):
         st.dataframe(metrics.round(2), width="stretch")
 
 # ---------------------------------------------------------------- rotation options
 with t_rot:
-    st.subheader("Rotation options against your priorities")
+    st.subheader(heads["options_title"] if heads else "Rotation options against your priorities")
+    if heads:
+        st.markdown(heads["options_intro"])
     if not e3:
         st.info("Engine 3 runs once Engines 1 and 2 have this field's seasons.")
     else:
@@ -415,6 +428,9 @@ with t_sum:
         "",
         "## Rotation options (Engine 3)",
         *(_rotation_lines() if e3 else ["- Pending"]),
+        "",
+        "## How we checked this",
+        *[f"- {v}" for v in T.validation_summary()],
         "",
         "## Not established by this tool",
         *([f"- {x}" for x in e3["not_established"]] if e3 else ["Yield or profit effects on this field; change in soil carbon or nutrients."]),

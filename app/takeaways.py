@@ -10,7 +10,11 @@ import re
 from datetime import date
 
 from pipeline import engine3 as E3
+from pipeline.config import PROCESSED
 
+DECISION = ("Should the next rotation stay the same, add a cereal rye cover, or add oats and red clover? "
+            "The tool shows the evidence; the choice stays with the farmer.")
+SIGNIFICANT_P = 0.05
 GREEN_MIN_OBS = 2  # Engine 1's autumn-green rule: >= 2 clear observations >= 0.40 after the end of living cover
 
 
@@ -65,10 +69,19 @@ def headlines(e1: dict, e2: dict, cross: dict, letter: str) -> dict:
     """One message per tab, matching the deck."""
     g = green_after_harvest(e1)["corn"]
     w0, w1 = window_span(e2)
+    a = e2["summary"]["all_seasons"]
+    more = a["stress_seasons"] > a["expected_stress_seasons"]
     return {
-        "history": (f"Same rotation on paper as its neighbours, different management on the ground. Field {letter} turned green after "
-                    f"{len(g['years'])} of its {g['n']} corn harvests (green after corn harvest: {green_line(cross)})."),
+        "cover_title": "Most of the year, no living cover",
+        "history_title": "Same rotation on paper, different management on the ground",
+        "history": (f"The USDA crop map shows the same corn–soybean rotation on all three fields, but Field {letter} turned green after "
+                    f"{len(g['years'])} of its {g['n']} corn harvests. Green after corn harvest: {green_line(cross)}."),
+        "evidence_title": "The evidence: every clear satellite pass",
         "conditions_title": "Weather picks the year. Rotation picks the crop.",
+        "stress_title": "More often than a typical decade, but not proven" if more else "No more often than a typical decade",
+        "options_title": "Three rotations against your priorities",
+        "options_intro": ("Stay with corn–soybean, add a cereal rye cover, or add oats with red clover. Each option is rated better, similar or worse "
+                          "than the current rotation from this field’s evidence and crop traits; your priorities set the order and never change a rating."),
         "conditions": (f"The same regional years hit all three fields; where each field is in its rotation decides which crop takes the hit. "
                        f"Here, corn silks and soybeans fill pods between {w0} and {w1}, "
                        f"so a corn–soybean rotation always has a crop exposed in those weeks."),
@@ -129,7 +142,6 @@ def priority_action(e3: dict, priorities: list[str], active: set[str]) -> dict:
     if "small_grain_market" not in active and top["id"] == "cso_rc":
         kept2, _ = E3.apply_constraints(set(active) | {"small_grain_market"})
         text += f" Without a local market for oats, {E3.rank(ratings, kept2, priorities)[0]['name']} ranks first instead."
-    text += " Changing priorities reorders the options; it never changes a rating."
     return {"title": title, "text": text}
 
 
@@ -137,3 +149,67 @@ def actions(e1: dict, e2: dict, e3: dict, cross: dict, priorities: list[str], ac
     """All next steps in reading order: cover, calendar, priority, green check, agronomist."""
     fa = field_actions(e1, e2, e3, cross)
     return [fa[0], fa[1], priority_action(e3, priorities, active), fa[2], fa[3]]
+
+
+def trend_message(trends: list[dict], stress_seasons: int, seasons: int) -> dict:
+    """Headline for the mid-summer trends. trends: dicts with title, unit, slope (per decade) and p."""
+    sig = [x for x in trends if x["p"] < SIGNIFICANT_P]
+    heat = next((x for x in trends if x["title"].startswith("Daily maximum")), None)
+    hot = next((x for x in trends if x["title"].startswith("Days above")), None)
+    if sig:
+        title = "Is it changing? Yes: " + _join([x["title"].split(",")[0].lower() for x in sig])
+    else:
+        title = "Is it changing? Not clearly, yet"
+    lead = (f"Mid-summer highs are edging up ({heat['slope']:+.1f} °C and {hot['slope']:+.1f} days above 30 °C per decade since 1981), "
+            if heat and hot and heat["slope"] > 0 else "")
+    if sig:
+        text = lead + f"and the change in {_join([x['title'].split(',')[0].lower() for x in sig])} is statistically significant (p < {SIGNIFICANT_P})."
+    else:
+        pmin = min(x["p"] for x in trends)
+        text = (lead + ("but " if lead else "") + f"year-to-year swings are larger: no mid-summer trend here is statistically significant (p ≥ {pmin:.2f}). "
+                f"The risk to plan for is the swings you already see: {stress_seasons} of {seasons} seasons hit at the sensitive stage.")
+    return {"title": title, "text": text}
+
+
+def validation_summary() -> list[str]:
+    """One line per check, read from the validation files the notebook writes (see docs/validation_results.md)."""
+    import pandas as pd
+
+    lines = []
+    def csv(name):
+        p = PROCESSED / name
+        return pd.read_csv(p) if p.exists() else None
+    v3, v4, v6, v13 = csv("v3_mslsp_greenup.csv"), csv("v4_silking_check.csv"), csv("v6_visual_calls.csv"), csv("v13_usdm_windows.csv")
+    v11 = pd.read_csv(PROCESSED / "v11_smap_power.csv", index_col=0) if (PROCESSED / "v11_smap_power.csv").exists() else None
+    if v3 is not None:
+        lines.append(f"Green-up dates match NASA’s own MSLSP30NA phenology within 10 days in {int((v3.diff_days.abs() <= 10).sum())} of {len(v3)} field-seasons (2016–2019).")
+    if v4 is not None:
+        miss = v4[~v4.inside]
+        where = sorted({str(f)[-1].upper() for f in miss.field})
+        tail = (f"; all {len(miss)} misses are on Field {where[0]} ({_join(sorted(miss.season))})" if len(where) == 1
+                else f"; misses on Fields {_join(where)}" if where else "")
+        lines.append(f"Estimated corn silking falls inside Iowa’s 25–75% silked dates (USDA Crop Progress) in {int(v4.inside.sum())} of {len(v4)} corn seasons{tail}.")
+    if v6 is not None:
+        rnd = v6[v6.set.str.startswith("random")]
+        lines.append(f"Off-season cover calls match true-colour satellite images on {int(rnd.match.sum())} of {len(rnd)} random dates (rated blind by AI; to be spot-checked).")
+    if v11 is not None:
+        lines.append(f"NASA SMAP soil moisture agrees with the dry calls in {min(int(s.split('/')[0]) for s in v11.flags_agree)}–{max(int(s.split('/')[0]) for s in v11.flags_agree)} of 10 seasons per field.")
+    if v13 is not None:
+        dry = v13[v13.power_dry]
+        missed = v13[v13.dry_d1 & ~v13.power_dry]
+        by_year: dict[int, list[str]] = {}
+        for r in missed.itertuples():
+            by_year.setdefault(int(r.season), []).append(str(r.field)[-1].upper())
+        gaps = "; ".join(f"{y} on Field{'s' if len(f) > 1 else ''} {_join(sorted(f))}" for y, f in sorted(by_year.items(), key=lambda kv: (-len(kv[1]), kv[0])))
+        lines.append(f"U.S. Drought Monitor: {int(dry.dry_d0.sum())} of {len(dry)} dry calls fall in at least abnormally dry weeks, {int(dry.dry_d1.sum())} in moderate drought"
+                     + (f"; drought the tool missed: {gaps}." if gaps else "."))
+    import json
+    diffs = []
+    for f in ("field_a", "field_b", "field_c"):
+        p = PROCESSED / f / "field_static.json"
+        if p.exists():
+            tr = json.loads(p.read_text())["terrain"]
+            diffs.append(abs(tr["mean_slope_pct"]["value"] - tr["ref_3dep_10m_pct"]["value"]))
+    if diffs:
+        lines.append(f"Field slope from NASADEM, once smoothed, is within {max(diffs):.2f} percentage points of USGS lidar on every field.")
+    return lines

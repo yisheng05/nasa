@@ -54,3 +54,20 @@ def test_priority_action_follows_the_ranking():
     no_oats = T.priority_action(e3, ["Soil protection"], {"small_grain_market"})["text"]
     assert "cereal rye cover ranks first." in no_oats and "instead" not in no_oats
     assert T.priority_action(e3, [], set())["text"].startswith("Set your priorities")
+
+
+def test_trend_message_reports_significance_honestly():
+    flat = [{"title": "Daily maximum temperature, 15 Jun–15 Aug mean", "unit": "°C", "slope": 0.22, "p": 0.37},
+            {"title": "Days above 30 °C, 15 Jun–15 Aug", "unit": "days", "slope": 1.4, "p": 0.38},
+            {"title": "Rainfall, 15 Jun–15 Aug", "unit": "mm", "slope": -5.9, "p": 0.62}]
+    m = T.trend_message(flat, 4, 10)
+    assert m["title"] == "Is it changing? Not clearly, yet" and "not statistically significant" not in m["title"]
+    assert "p ≥ 0.37" in m["text"] and "4 of 10 seasons" in m["text"]
+    sig = [dict(flat[0], p=0.01), *flat[1:]]
+    assert T.trend_message(sig, 4, 10)["title"].startswith("Is it changing? Yes")
+
+
+def test_validation_summary_reads_the_validation_files():
+    lines = T.validation_summary()
+    assert any("MSLSP30NA" in x for x in lines) and any("Crop Progress" in x for x in lines)
+    assert any("rated blind by AI" in x for x in lines)

@@ -38,6 +38,7 @@ def _field(fid: str, cross: dict) -> dict:
             "values": [round(float(v), 3) for v in metrics[col]],
             "band": [round(band["p20"], 3), round(band["p80"], 3)],
             "trend": round(D.trend_per_decade(metrics, col), 3),
+            "p": round(D.trend_pvalue(metrics, col), 3),
         })
     passes = len(obs)
     o = obs[obs["ndvi_median"].notna()].sort_values("date")
@@ -59,6 +60,8 @@ def _field(fid: str, cross: dict) -> dict:
         "conditions": {"years": [int(y) for y in metrics.index], "metrics": conds},
         "heads": T.headlines(e1, e2, cross, fid.split("_")[-1].upper()),
         "actions": T.field_actions(e1, e2, e3, cross),
+        "trend_msg": T.trend_message([{"title": c["title"], "unit": c["unit"], "slope": c["trend"], "p": c["p"]} for c in conds],
+                                     e2["summary"]["all_seasons"]["stress_seasons"], e2["summary"]["all_seasons"]["seasons"]),
     }
 
 
@@ -68,6 +71,8 @@ def build() -> Path:
         "generated": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
         "fields": [_field(fid, cross) for fid in D.field_ids()],
         "cross": cross,
+        "decision": T.DECISION,
+        "validation": T.validation_summary(),
         "engine3": {
             "PRIORITIES": E3.PRIORITIES, "CRITERIA": E3.CRITERIA, "CRITERIA_FOR_PRIORITY": E3.CRITERIA_FOR_PRIORITY,
             "CANDIDATES": [{"id": c["id"], "name": c["name"], "needs": sorted(c["needs"])} for c in E3.CANDIDATES],
