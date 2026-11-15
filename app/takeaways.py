@@ -221,7 +221,7 @@ def validation_summary() -> list[str]:
         lines.append(f"Estimated corn silking falls inside Iowa’s 25–75% silked dates (USDA Crop Progress) in {int(v4.inside.sum())} of {len(v4)} corn seasons{tail}.")
     if v6 is not None:
         rnd = v6[v6.set.str.startswith("random")]
-        lines.append(f"Off-season cover calls match true-colour satellite images on {int(rnd.match.sum())} of {len(rnd)} random dates (rated blind by AI; to be spot-checked).")
+        lines.append(f"Off-season cover calls match true-colour satellite images on {int(rnd.match.sum())} of {len(rnd)} random dates (rated blind by AI, spot-checked by the team).")
     if v11 is not None:
         lines.append(f"NASA SMAP soil moisture agrees with the dry calls in {min(int(s.split('/')[0]) for s in v11.flags_agree)}–{max(int(s.split('/')[0]) for s in v11.flags_agree)} of 10 seasons per field.")
     if v13 is not None:

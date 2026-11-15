@@ -127,7 +127,7 @@ def main() -> None:
         bal = v6[~v6.set.str.startswith("random")]
         rows.append(("V6", "Off-season green / not-green call vs true-colour HLS, 10 random dates per field (≥ 9 of 10)",
                      " · ".join(f"{f[-1].upper()} {int(k)}/10" for f, k in per.items())
-                     + f"; balanced extra set (Sep–May, 5 green + 5 not green): {int(bal.match.sum())}/{len(bal)}. Rated blind by Claude (AI); team to spot-check", bool((per >= 9).all())))
+                     + f"; balanced extra set (Sep–May, 5 green + 5 not green): {int(bal.match.sum())}/{len(bal)}. Rated blind by Claude (AI); spot-checked by the team", bool((per >= 9).all())))
     v = v7()
     ok = all(all(e["repeat"] and e["matches_stored"] for e in r.values() if isinstance(e, dict)) for r in v.values())
     rows.append(("V7", "Determinism: Engines 1–3 re-run twice from stored inputs",
