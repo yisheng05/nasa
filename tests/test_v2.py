@@ -112,3 +112,24 @@ def test_plan_follows_each_fields_rotation(model):
         assert rye["start_year"] == (2027 if f["corn_parity"] == 1 else 2028)
         assert oats["start_year"] == (2027 if f["crop_2026"] == "soybeans" else 2028)
         assert all(f"Field {g['letter']}" not in s["what"] for s in rye["steps"] + oats["steps"] for g in model["farm"] if g["letter"] != f["letter"])
+
+
+def test_trend_summary_matches_its_numbers(model):
+    for F in model["fields"].values():
+        t = F["trend"]
+        assert t["since"] == 1981 and set(t["metrics"]) == set(D.METRICS)
+        sig = any(v["p"] < 0.05 for v in t["metrics"].values())
+        assert t["significant"] == sig
+        assert ("None of these trends is statistically significant" in t["text"]) == (not sig)
+        assert f"{abs(t['metrics']['tmax_c']['slope']):.1f} °C" in t["text"]
+
+
+def test_soil_water_is_shown_and_used(model):
+    static = {f[-1].upper(): json.loads((D.PROCESSED / f / "field_static.json").read_text()) for f in D.field_ids()}
+    for f in model["farm"]:
+        assert f["aws"] == round(static[f["letter"]]["soil"]["aws0100wta"]["value"], 1)
+        for cid in ("cs_rye", "cso_rc"):
+            assert "USDA SSURGO" in model["fields"][f["letter"]]["ratings"][cid]["Water and stress exposure"]["evidence"]
+    assert "SSURGO" in model["soil_note"] and f"{min(f['aws'] for f in model['farm']):.1f}" in model["soil_note"]
+    html = PAGE.read_text()
+    assert 'id="soilnote"' in html and 'id="trendtitle"' in html

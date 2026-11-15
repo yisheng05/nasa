@@ -28,7 +28,7 @@ The hackathon is live (from Sat 14 Nov 9:00 am SGT). Product code starts now. Ev
 Deadline **Sun 15 Nov 11:59 pm SGT** (internal: 10:00 pm). Submit on the official Space Apps site:
 
 - **Project Summary:** the solution, the problem and its impact.
-- **Project Demo:** a 30-second video **or** 7 slides. Both are ready: the 7-slide Field Shift V2 demo deck, and a 29.6-second narrated video of it in `docs/demo/` (script and subtitles alongside).
+- **Project Demo:** a 30-second video **or** 7 slides. Both are ready: the 7-slide Field Shift V2 demo deck, and a 29.8-second narrated video of it in `docs/demo/` (script and subtitles alongside).
 - **Final Project Link:** publicly accessible. Make this repo public first (see below).
 - **Project Details:** approach, tools, technologies, NASA datasets with source links and how each is used. Include AI tools from `REFERENCES.md`.
 

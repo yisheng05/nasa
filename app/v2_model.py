@@ -191,6 +191,44 @@ def where_to_start(option: str, farm: list[dict], gains: dict[str, float | None]
     return None
 
 
+# ---------------------------------------------------------------- is it changing? and the soil
+def _signed(x: float, fmt: str) -> str:
+    return format(x, "+" + fmt).replace("-", "\u2212")
+
+
+def trend_summary(power: pd.DataFrame, stress: int, seasons: int) -> dict:
+    """Is mid-summer changing here? V1's least-squares trends (15 Jun-15 Aug, since 1981) with two-sided p-values."""
+    m = D.window_metrics(power)
+    t = {col: {"title": D.METRICS[col][0], "slope": round(D.trend_per_decade(m, col), 3), "p": round(D.trend_pvalue(m, col), 3)}
+         for col in D.METRICS}
+    sig = [col for col, v in t.items() if v["p"] < T.SIGNIFICANT_P]
+    since = int(m.index.min())
+    change = (f"Since {since}, mid-June to mid-August highs moved {_signed(t['tmax_c']['slope'], '.1f')} °C and "
+              f"{_signed(t['hot_days']['slope'], '.1f')} days above 30 °C per decade, rainfall {_signed(t['rain_mm']['slope'], '.0f')} mm and "
+              f"root-zone wetness {_signed(t['gwetroot']['slope'], '.2f')} per decade.")
+    if sig:
+        names = ", ".join(t[c]["title"].split(",")[0].lower() for c in sig)
+        verdict = f" The change in {names} is statistically significant (p < {T.SIGNIFICANT_P}): plan for it as a trend."
+    else:
+        pmin = min(v["p"] for v in t.values())
+        verdict = (f" None of these trends is statistically significant (p \u2265 {pmin:.2f}): the swings from year to year are larger than the change. "
+                   f"Plan for the swings, which hit the crop at its sensitive stage in {stress} of {seasons} recent seasons.")
+    return {"since": since, "metrics": t, "significant": bool(sig),
+            "title": "Is it changing? " + ("Yes" if sig else "Not clearly, yet"), "text": change + verdict}
+
+
+def soil_note(farm: list[dict]) -> str:
+    """What the local soil says across the farm (USDA SSURGO, area-weighted over each field's map units)."""
+    aws = [f["aws"] for f in farm]
+    drains = sorted({f["drainage"] for f in farm})
+    same = max(aws) - min(aws) < 1.0
+    water = (f"The soil holds about the same water on all three fields: {min(aws):.1f}\u2013{max(aws):.1f} cm in the top metre "
+             if same else f"The soil holds {min(aws):.1f}\u2013{max(aws):.1f} cm of water in the top metre ")
+    return (water + "(USDA SSURGO). It buffers short dry spells alike on every field, so soil does not change which option suits which field; "
+            "the satellite record does. " + ("Drainage differs: " + ", ".join(f"Field {f['letter']} {f['drainage'].lower()}" for f in farm) + "."
+                                             if len(drains) > 1 else f"All three are {drains[0].lower()}."))
+
+
 # ---------------------------------------------------------------- ratings (V1's, with the revised water and erosion rules)
 def ratings_v2(e3: dict, expo: dict, static: dict) -> dict:
     r = {cid: {k: dict(v) for k, v in crit.items()} for cid, crit in e3["ratings"].items()}
@@ -208,6 +246,11 @@ def ratings_v2(e3: dict, expo: dict, static: dict) -> dict:
         (f"Same cash crops and the same windows: {cs['hot_share']:.0%} of days above 30 °C and wetness {cs['wetness']:.2f} on average. "
          f"Rye {CATALOGUE['cereal rye']['water']}."),
         "moderate", "Earlier rye termination in a dry spring.")
+    aws = static["soil"]["aws0100wta"]["value"]
+    for cid in ("cs_rye", "cso_rc"):
+        r[cid]["Water and stress exposure"]["evidence"] += (
+            f" Soil: about {aws:.1f} cm of water held in the top metre (USDA SSURGO), which buffers short dry spells "
+            "alike under every option.")
     terr = static["terrain"]
     small = terr["mean_slope_pct"]["value"] < 3 and terr["p90_slope_pct"]["value"] < 3.5
     for cid in ("cs_rye", "cso_rc"):
@@ -294,6 +337,7 @@ def build() -> dict:
         late = ([{"season": int(r.season), "days_from_50": int(r.days_from_50)} for r in v4[(v4.field.astype(str).str[-1].str.upper() == L) & ~v4.inside].itertuples()]
                 if v4 is not None else [])
         farm.append({"letter": L, "area": st["area_ha"]["value"], "drainage": st["soil"]["drclassdcd"]["value"], "slope": st["terrain"]["mean_slope_pct"]["value"],
+                     "aws": round(st["soil"]["aws0100wta"]["value"], 1),
                      "bare_months": cur, "corn_parity": parity, "crop_2026": "corn" if parity == 0 else "soybeans",
                      "green": green_autumns(L, e1), "green_corn": [g["autumn"] for g in green_autumns(L, e1) if g["after"] == "corn"],
                      "corn_harvests": len(corn_years), "stress": a["stress_seasons"], "seasons": a["seasons"], "expected": a["expected_stress_seasons"],
@@ -301,12 +345,12 @@ def build() -> dict:
         fields[L] = {"id": f, "county": D.demo_props().get(f, {}).get("county", ""), "climate": season_climate(power), "windows": wins,
                      "exposure": expo, "ratings": ratings_v2(e3, expo, st), "notes": e3["notes"], "not_established": e3["not_established"],
                      "sources": e3["sources"], "living_cover": (sp := {crop: _living_span(e1, crop) for crop in ("corn", "soybeans")}),
-                     "calendar": calendar_rows(sp, wins)}
+                     "calendar": calendar_rows(sp, wins), "trend": trend_summary(power, a["stress_seasons"], a["seasons"])}
     gains = {f["letter"]: (round(f["bare_months"] - est_, 1) if (est_ := estimate_months(rows, f["letter"], effect)) is not None else None) for f in farm}
     return {
         "title": "Field Shift V2",
         "decision": T.DECISION,
-        "farm": farm, "fields": fields, "cover_rows": rows, "effect": effect, "gains": gains,
+        "farm": farm, "soil_note": soil_note(farm), "fields": fields, "cover_rows": rows, "effect": effect, "gains": gains,
         "start": {o: where_to_start(o, farm, gains) for o in ("cs_rye", "cso_rc")},
         "options": T.OPTIONS, "rotations": ROTATIONS, "oats_window": OATS_WINDOW,
         "catalogue": {k: {kk: vv for kk, vv in v.items() if kk != "sources"} for k, v in CATALOGUE.items()},

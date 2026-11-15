@@ -120,6 +120,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
     <h2>1 · Your farm: same rotation, different fields</h2>
     <p class="lead" id="farmlead"></p>
     <div class="cards3" id="farm" role="group" aria-label="Choose a field"></div>
+    <p class="small" id="soilnote"></p>
     <details><summary id="workedsum"></summary><ul class="plain" id="worked"></ul></details>
   </section>
 
@@ -137,6 +138,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
     <div class="legend"><span><i style="background:var(--corn)"></i>Corn</span><span><i style="background:var(--soy)"></i>Soybean</span><span><i style="background:var(--oats)"></i>Oats</span><span><i style="background:repeating-linear-gradient(45deg,var(--cover) 0 3px,transparent 3px 6px);border:1px solid var(--cover)"></i>Cover crop (planned)</span><span><i style="background:var(--bare)"></i>Bare soil</span><span><i style="background:transparent;border:2px solid var(--ink)"></i>Sensitive stage</span><span><i style="background:var(--hot)"></i>Days above 30 °C</span></div>
     <div class="chartwrap"><svg class="cal" id="cal" role="img"></svg></div>
     <p class="small">Crop canopy dates are this field’s medians from NASA HLS (2016–2025). Cover-crop and oat timings are planned, typical timings from extension guidance, not measured. Heat and root-zone wetness: NASA POWER, 2016–2025. The shaded column is the hottest half-month.</p>
+    <div class="result"><p class="msg" id="trendtitle"></p><p id="trendtext" style="margin-top:4px"></p><p class="small" style="margin-top:4px">NASA POWER, 15 June–15 August each year since 1981; least-squares trend with a two-sided test (significant at p &lt; 0.05).</p></div>
   </section>
 
   <section class="step" id="s4">
@@ -263,7 +265,8 @@ function renderFarm(d) {
     <span class="big">${f.bare_months.toFixed(1)} months</span><span class="small">a year without living cover</span>
     <dl><dt>Green after corn harvest</dt><dd>${f.green_corn.length} of ${f.corn_harvests}</dd>
     <dt>Hit by a dry or hot spell</dt><dd>${f.stress} of ${f.seasons} seasons</dd><dt>Typical decade</dt><dd>about ${f.expected}</dd>
-    <dt>Vigour held when hit</dt><dd>${f.held} of ${f.flagged}</dd><dt>Rye could save</dt><dd>${d.gains[f.letter] == null ? "not measured" : d.gains[f.letter].toFixed(1) + " months"}</dd></dl></button>`).join("");
+    <dt>Vigour held when hit</dt><dd>${f.held} of ${f.flagged}</dd><dt>Soil water, top metre</dt><dd>${f.aws.toFixed(1)} cm</dd><dt>Rye could save</dt><dd>${d.gains[f.letter] == null ? "not measured" : d.gains[f.letter].toFixed(1) + " months"}</dd></dl></button>`).join("");
+  $("soilnote").textContent = DATA.soil_note;
   $("farm").querySelectorAll("[data-f]").forEach(b => b.onclick = () => { state.field = b.dataset.f; save(); renderAll(); });
   const f = DATA.farm.find(x => x.letter === state.field);
   $("workedsum").textContent = `What the record says worked on Field ${f.letter}`;
@@ -295,6 +298,8 @@ function renderSeason() {
   const L = state.field, F = DATA.fields[L], ex = F.exposure, h = ex.hottest, c = ex.crops, cs = ex.options.cs;
   $("seasontitle").textContent = `3 · Your season: where the weather risk sits on Field ${L}`;
   $("seasonlead").textContent = `On Field ${L}, the hottest weeks are ${h.label}: ${pct(h.hot_share)} of days passed 30 °C in 2016–2025. Corn silks then (${c.corn.label}), and soybeans fill pods ${c.soybeans.label}. Oats are most sensitive in June, when the soil is wetter (root-zone wetness ${c.oats.wetness.toFixed(2)} against ${cs.wetness.toFixed(2)}) and heat days are a little fewer (${pct(c.oats.hot_share)} against ${pct(cs.hot_share)}).`;
+  $("trendtitle").textContent = F.trend.title;
+  $("trendtext").textContent = F.trend.text;
   drawCalendar(F);
 }
 function drawCalendar(F) {

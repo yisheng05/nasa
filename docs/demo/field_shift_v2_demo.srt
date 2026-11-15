@@ -1,28 +1,28 @@
 1
-00:00:00,150 --> 00:00:04,254
+00:00:00,150 --> 00:00:04,461
 Field Shift turns ten seasons of NASA data into a farmer’s rotation plan.
 
 2
-00:00:04,654 --> 00:00:09,648
+00:00:04,861 --> 00:00:09,876
 First, the farm: Field C never greens after harvest, so rye gains most there.
 
 3
-00:00:10,048 --> 00:00:12,944
+00:00:10,276 --> 00:00:13,322
 Next, the farmer adds what satellites can’t see.
 
 4
-00:00:13,344 --> 00:00:15,195
+00:00:13,722 --> 00:00:15,477
 The hottest weeks hit corn silking.
 
 5
-00:00:16,344 --> 00:00:19,275
+00:00:16,722 --> 00:00:19,494
 Three options, ranked by the farmer’s priorities.
 
 6
-00:00:19,675 --> 00:00:23,475
+00:00:19,894 --> 00:00:23,558
 Then a plan: rye on Field C after the 2027 harvest.
 
 7
-00:00:23,875 --> 00:00:28,729
+00:00:23,958 --> 00:00:28,873
 Checked against NASA, USDA and Drought Monitor records. The farmer decides.
 
