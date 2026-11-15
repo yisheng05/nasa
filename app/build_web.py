@@ -16,6 +16,7 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
 from app import data as D
+from app import takeaways as T
 from pipeline import engine3 as E3
 
 TEMPLATE = REPO / "app" / "web_template.html"
@@ -23,7 +24,7 @@ OUT = REPO / "app" / "web" / "field_shift.html"
 SMOOTH_STEP_DAYS = 2
 
 
-def _field(fid: str) -> dict:
+def _field(fid: str, cross: dict) -> dict:
     static, props = D.load_static(fid), D.demo_props().get(fid, {})
     e1, e2, e3 = D.load_engine1(fid), D.load_engine2(fid), D.load_engine3(fid)
     obs, smooth, power = D.load_hls(fid), D.load_smooth(fid), D.load_power(fid)
@@ -56,13 +57,17 @@ def _field(fid: str) -> dict:
                 "n": o["n_valid"].astype(int).tolist(), "k": [int(b) for b in o["passes_v1"]]},
         "smooth": {"start": sm.index[0].strftime("%Y-%m-%d"), "step": SMOOTH_STEP_DAYS, "v": [round(float(v), 3) for v in sm.to_numpy()]},
         "conditions": {"years": [int(y) for y in metrics.index], "metrics": conds},
+        "heads": T.headlines(e1, e2, cross, fid.split("_")[-1].upper()),
+        "actions": T.field_actions(e1, e2, e3, cross),
     }
 
 
 def build() -> Path:
+    cross = T.cross_fields([(f.split("_")[-1].upper(), D.load_engine1(f), D.load_engine2(f)) for f in D.field_ids()])
     data = {
         "generated": datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
-        "fields": [_field(fid) for fid in D.field_ids()],
+        "fields": [_field(fid, cross) for fid in D.field_ids()],
+        "cross": cross,
         "engine3": {
             "PRIORITIES": E3.PRIORITIES, "CRITERIA": E3.CRITERIA, "CRITERIA_FOR_PRIORITY": E3.CRITERIA_FOR_PRIORITY,
             "CANDIDATES": [{"id": c["id"], "name": c["name"], "needs": sorted(c["needs"])} for c in E3.CANDIDATES],

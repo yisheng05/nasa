@@ -30,6 +30,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--text); font-
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; }
 .wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 main.wrap { width: 100%; margin: 0; min-width: 0; }
+[hidden] { display: none !important; }  /* .wrap sets display: flex, which would otherwise override the hidden attribute */
 h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; color: var(--ink); }
 h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.2px; }
 h2 { font-size: 20px; font-weight: 600; }
@@ -106,6 +107,16 @@ td.r-similar, td.r-baseline { color: var(--neutral); }
 .checks { display: flex; flex-direction: column; gap: 8px; }
 .checks label { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
 .note { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.msg { font-size: 17px; font-weight: 600; line-height: 1.45; margin: 0 0 12px; }
+table.hitgrid { border-collapse: separate; border-spacing: 6px; margin: 4px -6px; }
+table.hitgrid th { font-weight: 600; text-align: left; padding: 0 10px 0 0; border: none; background: none; }
+table.hitgrid th.yr { font-weight: 400; color: var(--muted); text-align: center; padding: 0; }
+table.hitgrid th, table.hitgrid td { vertical-align: middle; }
+table.hitgrid td { min-width: 84px; height: 36px; text-align: center; border-radius: 6px; background: var(--surface-2); border: none; padding: 0 8px; }
+table.hitgrid td.corn { background: var(--corn); color: var(--corn-ink); font-weight: 600; }
+table.hitgrid td.soybeans { background: var(--soy); color: var(--soy-ink); font-weight: 600; }
+ol.actions { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
+ol.actions li { line-height: 1.5; }
 .warn { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
 details { border-top: 1px solid var(--line); padding-top: 10px; }
 details summary { cursor: pointer; font-weight: 600; }
@@ -141,6 +152,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
       <p class="small" id="e1note"></p>
     </section>
     <section class="panel">
+      <p class="msg" id="histmsg"></p>
       <h2>Ten seasons on one strip</h2>
       <div class="scroll"><div class="strip" id="strip"></div></div>
       <div class="detail" id="celldetail">Tap a season’s cell for its dates, evidence and confidence.</div>
@@ -154,6 +166,12 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
   </main>
 
   <main id="view-conditions" class="wrap" role="tabpanel" aria-labelledby="tab-conditions" hidden>
+    <section class="panel">
+      <h2 id="condtitle"></h2>
+      <p id="condmsg"></p>
+      <div class="scroll"><table class="hitgrid" id="hitgrid"></table></div>
+      <p class="small">The crop at its sensitive stage when Engine 2 flagged a dry or hot spell, on each demo field. Blank: no flag that year.</p>
+    </section>
     <section class="panel">
       <h2>Stress at each crop’s sensitive stage</h2>
       <div class="grid3" id="e2tiles"></div>
@@ -187,6 +205,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
     </section>
     <section class="panel">
       <h2>Rotation options against your priorities</h2>
+      <p class="msg" id="optmsg"></p>
       <div id="dropped"></div>
       <div id="notes"></div>
       <div class="scroll"><table id="trade"></table></div>
@@ -202,6 +221,10 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
   </main>
 
   <main id="view-summary" class="wrap" role="tabpanel" aria-labelledby="tab-summary" hidden>
+    <section class="panel">
+      <h2>What you can do next</h2>
+      <ol class="actions" id="actions"></ol>
+    </section>
     <section class="panel">
       <h2>One page for the agronomist conversation</h2>
       <pre class="summary" id="summary"></pre>
@@ -234,6 +257,17 @@ function orderedCriteria(prios) { const seen = new Set(), out = []; [...prios, .
 function applyConstraints(active) { const kept = [], dropped = []; E3.CANDIDATES.forEach(c => { const hit = c.needs.filter(n => active.has(n)); if (hit.length) dropped.push([c.name, hit.map(h => E3.CONSTRAINTS[h]).join("; ")]); else kept.push(c); }); return [kept, dropped]; }
 function rank(ratings, cands, prios) { const crit = orderedCriteria(prios); return [...cands].sort((a, b) => { for (const k of crit) { const d = SCORE[ratings[b.id][k].rating] - SCORE[ratings[a.id][k].rating]; if (d) return d; } return 0; }); }
 function whatIf(ratings, cands, prios) { const out = {}; E3.PRIORITIES.forEach(p => { out[p] = rank(ratings, cands, [p, ...prios.filter(q => q !== p)])[0].name; }); return out; }
+function priorityAction(ratings, prios, active) {
+  const title = "Decide by your first priority", act = new Set(active);
+  if (!prios.length) return { title, text: "Set your priorities to rank the options." };
+  const [kept] = applyConstraints(act);
+  const top = rank(ratings, kept, prios)[0];
+  let text = `With ${prios[0].toLowerCase()} first, ${top.name} ranks first.`;
+  if (top.id === "cs") text += " Both alternatives add work that outweighs their gains on that priority.";
+  if (!act.has("small_grain_market") && top.id === "cso_rc") { const [k2] = applyConstraints(new Set([...act, "small_grain_market"])); text += ` Without a local market for oats, ${rank(ratings, k2, prios)[0].name} ranks first instead.`; }
+  return { title, text: text + " Changing priorities reorders the options; it never changes a rating." };
+}
+function nextSteps(f) { const a = f.actions; return [a[0], a[1], priorityAction(f.e3.ratings, state.priorities, state.constraints), a[2], a[3]]; }
 
 /* ---------------- header ---------------- */
 function renderPicker() {
@@ -251,6 +285,7 @@ function renderHeader() {
 
 /* ---------------- field history ---------------- */
 function renderHistory() {
+  $("histmsg").textContent = F().heads.history;
   const f = F(), e1 = f.e1;
   $("e1tiles").innerHTML = [
     [`~${e1.summary.no_living_cover_months_per_year} months`, "a year without living cover"],
@@ -307,6 +342,10 @@ function drawNdvi(f) {
 
 /* ---------------- changing conditions ---------------- */
 function renderConditions() {
+  const hd = F().heads, cx = DATA.cross;
+  $("condtitle").textContent = hd.conditions_title; $("condmsg").textContent = hd.conditions;
+  $("hitgrid").innerHTML = `<tr><th></th>${cx.years.map(y => `<th class="yr">${y}</th>`).join("")}</tr>` +
+    cx.hits.map(h => `<tr><th>Field ${esc(h.letter)}</th>${h.cells.map(c => c ? `<td class="${esc(c)}">${c === "soybeans" ? "soybean" : esc(c)}</td>` : "<td></td>").join("")}</tr>`).join("");
   const f = F(), a = f.e2.summary.all_seasons;
   $("e2tiles").innerHTML = [
     [`${a.stress_seasons} of ${a.seasons}`, "seasons with a dry or hot sensitive window"],
@@ -360,6 +399,7 @@ function renderOptions() {
   $("trade").innerHTML = `<tr><th>Criterion (your priority order)</th>${ranked.map((c, i) => `<th><span class="rank">#${i + 1}</span> ${esc(c.name)}</th>`).join("")}</tr>` +
     crit.map(k => `<tr><td>${esc(k)}</td>${ranked.map(c => { const r = ratings[c.id][k].rating; return `<td class="r-${r}">${r}</td>`; }).join("")}</tr>`).join("");
   $("tradenote").textContent = `Ratings are relative to the current rotation. Options are ordered by your first priority, then the next to break ties${state.priorities.length ? ": " + state.priorities.join(" → ") : ""}. Changing priorities reorders rows and options; it never changes a rating. Income is not predicted.`;
+  $("optmsg").textContent = priorityAction(ratings, state.priorities, state.constraints).text;
   const top = ranked[0];
   if (top.id === "cs") $("worth").innerHTML = "<b>Under these priorities the current rotation ranks first.</b> Each alternative costs more workload than it returns on your top priority.";
   else { const g = crit.filter(k => ratings[top.id][k].rating === "better").map(k => k.toLowerCase()), w = crit.filter(k => ratings[top.id][k].rating === "worse").map(k => k.toLowerCase()); const est = ratings[top.id]["Soil cover and living roots"].estimate;
@@ -379,6 +419,7 @@ function summaryText() {
   const lines = [`Field ${f.letter}, ${f.county}`, "", `Area: ${f.area} ha (~${f.interior_px} interior 30 m pixels)`, `Crop sequence ${f.crops[0].y}–${f.crops[f.crops.length - 1].y}: ${seq} (USDA CDL)`,
     `Soil: ${f.soil.muname} (largest unit); drainage ${f.soil.drainage.toLowerCase()}; available water ${f.soil.aws.toFixed(1)} cm in the top 100 cm (USDA SSURGO)`, `Mean slope: ${f.slope}% (NASADEM, smoothed; lidar reference ${f.lidar}%)`, "",
     "Your priorities", state.priorities.map((p, i) => `${i + 1} ${p.toLowerCase()}`).join(", ") || "Not set", "",
+    "What you can do next", ...nextSteps(f).map((a, i) => `${i + 1}. ${a.title}. ${a.text}`), "",
     "Soil cover (Engine 1, NASA HLS 30 m)", `- No living cover: about ${e1.summary.no_living_cover_months_per_year} months a year (threshold NDVI ${e1.threshold.toFixed(2)}, range ${e1.sensitivity["0.35"]}–${e1.sensitivity["0.45"]})`,
     `- Spring green before the crop: ${e1.summary.spring_green_seasons} of ${e1.summary.spring_assessable_seasons} assessable springs (confirm before crediting a cover crop)`, "",
     "Stress at the sensitive stage (Engine 2, regional)", `- Dry or hot sensitive window in ${a.stress_seasons} of ${a.seasons} seasons (expected ${a.expected_stress_seasons} from 1991–2020; chance of at least this many ${pct(a.chance_at_least_observed)})`, "",
@@ -391,7 +432,7 @@ function summaryText() {
   lines.push("", "Not established by this tool:", ...f.e3.not_established.map(n => "- " + n));
   return lines.join("\n");
 }
-function renderSummary() { $("summary").textContent = summaryText(); }
+function renderSummary() { $("summary").textContent = summaryText(); $("actions").innerHTML = nextSteps(F()).map(a => `<li><b>${esc(a.title)}.</b> ${esc(a.text)}</li>`).join(""); }
 $("copy").onclick = () => { const t = summaryText(); const done = () => { $("copied").textContent = "Copied"; }; const fallback = () => { const r = document.createRange(); r.selectNodeContents($("summary")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("copied").textContent = "Selected: press Ctrl+C or ⌘C to copy"; };
   try { navigator.clipboard.writeText(t).then(done, fallback); } catch (e) { fallback(); } };
 

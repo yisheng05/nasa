@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import charts
 from app import data as D
+from app import takeaways as T
 from pipeline import engine3 as E3
 from pipeline.sources.usdm import CATEGORY_LABELS as USDM_LABELS
 
@@ -92,6 +93,8 @@ static, power, hls = _static(fid), _power(fid), _hls(fid)
 e1, smooth = _engine1(fid), _smooth(fid)
 e2 = _engine2(fid)
 e3 = _engine3(fid)
+_docs = [(f.split("_")[-1].upper(), _engine1(f), _engine2(f)) for f in D.field_ids()]
+cross = T.cross_fields([d for d in _docs if d[1] and d[2]])
 props = PROPS.get(fid, {})
 
 # farmer edits take precedence over CDL (handoff §8.1)
@@ -132,6 +135,8 @@ st.caption(
     f"drainage by area: {soil['drclassdcd']['value'].lower()}. Source: {soil['muname']['source']}."
 )
 
+heads = T.headlines(e1, e2, cross, letter) if e1 and e2 else None
+
 t_hist, t_cond, t_rot, t_inputs, t_sum = st.tabs(["Field history", "Changing conditions", "Rotation options", "Your inputs", "Summary"])
 
 # ---------------------------------------------------------------- field history
@@ -146,6 +151,8 @@ with t_hist:
             f"Coverage so far: {D.coverage_text(e1)}. Living-cover threshold NDVI {e1['method']['cover_threshold_ndvi']:.2f} (provisional); "
             f"at 0.35 / 0.40 / 0.45 the headline is {sens['0.35']} / {sens['0.40']} / {sens['0.45']} months a year."
         )
+    if heads:
+        st.markdown(f"**{heads['history']}**")
     st.subheader("Ten seasons on one strip")
     st.altair_chart(charts.season_strip(seq, e1["seasons"] if e1 else None, e2["seasons"] if e2 else None), width="stretch", theme=None)
     st.caption("Crop from the USDA Cropland Data Layer unless you edited it under Your inputs. No living cover = months of each cover year (end of one season's living canopy to the next) with no green vegetation; * = partial first year. Stress = regional root-zone dryness and/or heat in the crop's sensitive window (Engine 2; see Changing conditions). Hover a cell for details.")
@@ -165,6 +172,15 @@ with t_hist:
 
 # ---------------------------------------------------------------- changing conditions
 with t_cond:
+    if heads:
+        st.subheader(heads["conditions_title"])
+        st.markdown(heads["conditions"])
+        grid = pd.DataFrame({str(y): [h["cells"][i] or "" for h in cross["hits"]] for i, y in enumerate(cross["years"])},
+                            index=pd.Index([f"Field {h['letter']}" for h in cross["hits"]], name="Crop hit in a stress year"))
+        grid = grid.replace({"soybeans": "soybean"})
+        colour = {"corn": "background-color:#EDA100;color:#1C2620;font-weight:600", "soybean": "background-color:#008300;color:#FFFFFF;font-weight:600"}
+        st.dataframe(grid.style.map(lambda v: colour.get(v, "")), width="content")
+        st.caption("The crop at its sensitive stage when Engine 2 flagged a dry or hot spell, on each demo field. Blank: no flag that year.")
     st.subheader("How conditions are changing here")
     st.caption(
         "Regional context, not field measurements: NASA POWER covers a ~0.5° cell, and root-zone wetness is modelled (GMAO MERRA-2). "
@@ -247,6 +263,7 @@ with t_rot:
     if not e3:
         st.info("Engine 3 runs once Engines 1 and 2 have this field's seasons.")
     else:
+        st.markdown(f"**{T.priority_action(e3, priorities, active)['text']}**")
         ratings = e3["ratings"]
         kept, dropped = E3.apply_constraints(active)
         for name, why in dropped:
@@ -376,6 +393,9 @@ with t_sum:
         "",
         "## Your priorities",
         ", ".join(f"{i + 1} {p.lower()}" for i, p in enumerate(priorities)) or "Not set",
+        "",
+        "## What you can do next",
+        *([f"{i + 1}. **{a['title']}.** {a['text']}" for i, a in enumerate(T.actions(e1, e2, e3, cross, priorities, active))] if e1 and e2 and e3 else ["- Pending"]),
         "",
         "## Soil cover (Engine 1, NASA HLS 30 m)",
         (

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from app import takeaways as T
 from pipeline import engine3 as E3
 
 PAGE = Path(__file__).resolve().parent.parent / "app" / "web" / "field_shift.html"
@@ -26,12 +27,20 @@ def test_js_ranking_matches_python(tmp_path):
                 kept, _ = E3.apply_constraints(set(cons))
                 p = list(perm[:3])
                 cases.append({"f": f["id"], "p": p, "c": cons, "py": [c["id"] for c in E3.rank(f["e3"]["ratings"], kept, p)],
-                              "wi": E3.what_if(f["e3"]["ratings"], kept, p)})
+                              "wi": E3.what_if(f["e3"]["ratings"], kept, p),
+                              "pa": T.priority_action(f["e3"], p, set(cons))["text"]})
     script = tmp_path / "parity.js"
     script.write_text(
         "const E3=" + json.dumps(data["engine3"]) + ";const F=" + json.dumps({f["id"]: f["e3"]["ratings"] for f in data["fields"]}) + ";\n" + logic
         + "\nconst cases=" + json.dumps(cases) + ";let bad=0;for(const c of cases){const [k]=applyConstraints(new Set(c.c));"
-        "if(JSON.stringify(rank(F[c.f],k,c.p).map(x=>x.id))!==JSON.stringify(c.py)||JSON.stringify(whatIf(F[c.f],k,c.p))!==JSON.stringify(c.wi))bad++;}console.log(bad);"
+        "if(JSON.stringify(rank(F[c.f],k,c.p).map(x=>x.id))!==JSON.stringify(c.py)||JSON.stringify(whatIf(F[c.f],k,c.p))!==JSON.stringify(c.wi)"
+        "||priorityAction(F[c.f],c.p,c.c).text!==c.pa)bad++;}console.log(bad);"
     )
     out = subprocess.run(["node", str(script)], capture_output=True, text=True, check=True).stdout.strip()
     assert out == "0"
+
+
+def test_tabs_hide_other_views():
+    """.wrap sets display: flex, so the page needs an explicit [hidden] rule or every tab shows every view."""
+    tpl = (Path(__file__).resolve().parent.parent / "app" / "web_template.html").read_text()
+    assert re.search(r"\[hidden\]\s*\{\s*display:\s*none\s*!important", tpl)
