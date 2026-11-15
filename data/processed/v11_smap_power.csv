@@ -1,0 +1,4 @@
+,years,days,spearman,within_year_min,flags_agree,pass
+field_a,2016–2025,620,0.74,0.7,8/10,True
+field_b,2016–2025,620,0.74,0.7,8/10,True
+field_c,2016–2025,620,0.75,0.54,7/10,True

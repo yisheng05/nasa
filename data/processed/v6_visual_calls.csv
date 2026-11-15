@@ -1,0 +1,56 @@
+field,chip,date,sensor,ndvi_median,engine1_call,image,visual_call,visual_note,match,rater,set
+field_a,1,2016-06-01,S30,0.3043,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,2,2017-05-07,S30,0.2141,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,3,2018-11-13,S30,0.2557,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,4,2021-04-14,S30,0.2239,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,5,2021-04-21,S30,0.2113,not green,True,not green,"partly cloudy; interior visible, tan",True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,6,2021-04-29,S30,0.2193,not green,True,not green,cloud or snow contamination at top; interior tan,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,7,2022-04-16,S30,0.2059,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,8,2023-05-29,S30,0.2744,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,9,2023-06-17,L30,0.5163,green,True,not green,"faint grey-green cast, much paler than adjacent grass strips",False,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,10,2024-12-01,S30,0.1905,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,1,2018-06-03,L30,0.3247,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,2,2019-05-10,S30,0.2375,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,3,2020-12-02,S30,0.2209,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,4,2021-04-01,S30,0.2067,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,5,2023-09-04,L30,0.2929,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,6,2023-10-16,S30,0.4743,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,7,2024-03-15,L30,0.2382,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,8,2024-05-17,L30,0.2597,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,9,2025-05-10,S30,0.2329,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_b,10,2025-10-02,S30,0.2674,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,1,2016-04-15,S30,0.2288,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,2,2017-05-07,S30,0.2327,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,3,2018-03-13,S30,0.2095,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,4,2019-01-04,L30,0.3014,not green,True,not green,"dark olive-brown, could be sparse green on wet soil",True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,5,2019-06-01,S30,0.2745,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,6,2021-06-08,S30,0.3889,green,True,not green,faint grey-olive cast,False,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,7,2022-03-02,L30,0.191,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,8,2023-10-21,S30,0.2958,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,9,2024-10-08,L30,0.2583,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_c,10,2024-10-09,L30,0.2511,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check",random (handoff V6)
+field_a,1,2024-02-28,L30,0.2132,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,2,2025-05-08,S30,0.2403,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,3,2021-05-29,S30,0.4176,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,4,2023-11-17,S30,0.2362,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,5,2024-02-08,S30,0.2324,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,6,2016-12-06,L30,0.4692,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,7,2016-11-20,L30,0.5421,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,8,2022-04-21,S30,0.2628,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,9,2016-11-08,S30,0.4439,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_a,10,2016-11-04,L30,0.3889,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,1,2024-02-27,L30,0.2045,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,2,2022-04-26,L30,0.2141,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,3,2021-11-09,L30,0.6388,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,4,2021-04-26,S30,0.22,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,5,2024-02-12,L30,0.2132,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,6,2016-03-16,L30,0.543,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,7,2021-10-23,S30,0.5964,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,8,2017-12-08,S30,0.5168,green,True,not green,faint grey-green cast (same rule as field_a random #9: not green),False,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,9,2024-03-11,S30,0.2171,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_b,10,2023-10-21,S30,0.5514,green,True,green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_c,1,2021-04-26,S30,0.2468,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_c,2,2023-10-16,S30,0.3418,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_c,3,2019-12-22,L30,0.2039,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_c,4,2018-05-07,S30,0.2092,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"
+field_c,5,2016-03-25,L30,0.2449,not green,True,not green,,True,"Claude (AI), blind to the Engine 1 call; team to spot-check","balanced (Sep-May, 5 green + 5 not green per field)"

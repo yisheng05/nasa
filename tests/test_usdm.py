@@ -36,3 +36,25 @@ def test_majority_category():
     assert usdm.window_stats(m, "2022-07-12", "2022-07-18")["category"] == "D0"  # 60% D0, 20% D1
     assert usdm.window_stats(m, "2022-08-09", "2022-08-15")["category"] == "None"
     assert set(usdm.CATEGORY_LABELS) == {"None", "D0", "D1", "D2", "D3", "D4"}
+
+
+def test_crop_progress_parser():
+    from pipeline.sources import crop_progress as CP
+
+    text = """Corn Silking - Selected States
+[These 18 States planted 93% of the 2015 corn acreage]
+------------------------------------------------------------------
+                 :            Week ending            :
+                 :-----------------------------------:
+      State      : July 10,  : July 3,   : July 10,  : 2011-2015
+                 :   2015    :   2016    :   2016    :  Average
+------------------------------------------------------------------
+Illinois ........:     1         (NA)          4           6
+Iowa ............:     9           -           21          12
+"""
+    when, pct = CP.parse_iowa_silking(text)
+    assert str(when.date()) == "2016-07-10" and pct == 21.0
+    s = pd.Series({pd.Timestamp("2016-07-03"): 0.0, pd.Timestamp("2016-07-10"): 20.0, pd.Timestamp("2016-07-17"): 60.0, pd.Timestamp("2016-07-24"): 90.0})
+    m = CP.milestones(s)[2016]
+    assert str(m[25]) == "2016-07-10" or str(m[25]) == "2016-07-11"
+    assert m[50] < m[75] and str(m[75]) == "2016-07-20"
