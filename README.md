@@ -83,6 +83,12 @@ Run the tests (V10 GDD, app smoke tests incl. V9 ordering):
 python -m pytest -q
 ```
 
+Build Field Shift V2, the guided rotation plan for the farmer (see [`docs/v2_design.md`](docs/v2_design.md)), into `app/web/field_shift_v2.html`:
+
+```bash
+python app/build_v2.py
+```
+
 Re-check every validation test in handoff §15 (V1–V13) from the committed evidence; this writes [`docs/validation_results.md`](docs/validation_results.md):
 
 ```bash

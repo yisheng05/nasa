@@ -1,0 +1,442 @@
+<title>Field Shift V2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Field Shift V2: one guided page, five steps. Same tokens as V1. */
+:root {
+  --bg: #F7F8F5; --surface: #FFFFFF; --surface-2: #EEF1EC; --ink: #16201B; --muted: #55605A; --line: #DDE2DB;
+  --accent: #1F5FAE; --accent-fill: #2A78D6; --accent-soft: #E3ECF8;
+  --corn: #EDA100; --corn-ink: #16201B; --soy: #008300; --soy-ink: #FFFFFF; --oats: #B88A2E; --cover: #2E8B7A; --bare: #E3D7C1;
+  --hot: #D2691E; --wet: #2A78D6;
+  --better: #1F5FAE; --worse: #9A3F10; --neutral: #55605A;
+  --display: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif;
+  --text: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111613; --surface: #19201C; --surface-2: #222A25; --ink: #EDF1EC; --muted: #A7B1AA; --line: #2E3832;
+  --accent: #7DB2F0; --accent-fill: #3987E5; --accent-soft: #1D2B3D;
+  --corn: #C98500; --corn-ink: #111613; --soy: #0CA30C; --soy-ink: #FFFFFF; --oats: #A07A2A; --cover: #3BA592; --bare: #4A4334;
+  --hot: #E8823A; --wet: #5A9BE8;
+  --better: #7DB2F0; --worse: #F0A06B; --neutral: #A7B1AA; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111613; --surface: #19201C; --surface-2: #222A25; --ink: #EDF1EC; --muted: #A7B1AA; --line: #2E3832;
+  --accent: #7DB2F0; --accent-fill: #3987E5; --accent-soft: #1D2B3D;
+  --corn: #C98500; --corn-ink: #111613; --soy: #0CA30C; --soy-ink: #FFFFFF; --oats: #A07A2A; --cover: #3BA592; --bare: #4A4334;
+  --hot: #E8823A; --wet: #5A9BE8;
+  --better: #7DB2F0; --worse: #F0A06B; --neutral: #A7B1AA; color-scheme: dark; }
+* { box-sizing: border-box; }
+html { scroll-padding-top: 64px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--text); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-bottom: 48px; }
+.wrap { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+[hidden] { display: none !important; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; color: var(--ink); }
+h1 { font-size: 28px; font-weight: 700; } h2 { font-size: 21px; font-weight: 600; } h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; } .muted { color: var(--muted); } .small { font-size: 13px; color: var(--muted); }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent); }
+header.top { padding-top: 20px; display: flex; flex-direction: column; gap: 6px; }
+.decision { font-weight: 600; max-width: 780px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+nav.steps { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding: 8px 0; border-bottom: 1px solid var(--line); display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+nav.steps a { flex: none; text-decoration: none; color: var(--ink); border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 14px; white-space: nowrap; }
+nav.steps a b { color: var(--accent); margin-right: 4px; }
+section.step { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.lead { font-size: 16px; }
+button { font: inherit; color: var(--ink); cursor: pointer; }
+button:focus-visible, summary:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent-fill); outline-offset: 2px; }
+.cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.fcard { text-align: left; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); display: flex; flex-direction: column; gap: 6px; }
+.fcard[aria-pressed="true"] { border: 2px solid var(--accent-fill); background: var(--accent-soft); }
+.fcard .big { font-family: var(--display); font-size: 30px; font-weight: 700; color: var(--accent); line-height: 1.1; }
+.fcard dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-size: 14px; }
+.fcard dt { color: var(--muted); } .fcard dd { margin: 0; font-weight: 600; text-align: right; }
+.tag { align-self: flex-start; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; background: var(--surface-2); color: var(--muted); }
+.tag.go { background: var(--accent-fill); color: #FFFFFF; }
+ul.plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.qrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 0; border-top: 1px solid var(--line); }
+.qrow .q { flex: 1 1 260px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; font-size: 14px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-fill); color: #FFFFFF; }
+.checks { display: grid; gap: 6px; }
+.result { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; }
+.chartwrap { overflow-x: auto; }
+svg.cal { width: 100%; min-width: 640px; height: auto; display: block; }
+svg.cal text { font-family: var(--text); fill: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.controls { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 720px) { .controls { grid-template-columns: 1fr; } }
+ol.order { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+ol.order li { display: flex; align-items: center; gap: 8px; background: var(--accent-soft); border-radius: 10px; padding: 6px 8px; }
+ol.order li .ord { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-fill); color: #FFFFFF; display: grid; place-items: center; font-weight: 600; font-size: 13px; flex: none; }
+ol.order li .name { flex: 1; font-weight: 600; } ol.order li.empty { background: var(--surface-2); color: var(--muted); }
+button.mini { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; width: 32px; height: 32px; }
+button.mini:disabled { opacity: .35; cursor: default; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border-radius: 999px; border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; }
+.chip.ghost { background: transparent; color: var(--muted); }
+.opt { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.opt.top { border: 2px solid var(--accent-fill); } .opt.out { opacity: .6; background: var(--surface-2); }
+.opt h3 { font-size: 18px; } .opt .blurb { color: var(--muted); font-size: 14px; }
+.opt table.m { width: 100%; border-collapse: collapse; font-size: 13px; }
+.opt table.m td { padding: 3px 0; border-top: 1px solid var(--line); vertical-align: top; } .opt table.m td:last-child { text-align: right; font-weight: 600; padding-left: 8px; }
+ul.rates { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+ul.rates li { display: grid; grid-template-columns: 18px 1fr auto; gap: 6px; align-items: baseline; }
+ul.rates li.mine .crit { font-weight: 600; } ul.rates .word { font-weight: 600; }
+ul.rates li.r-better .ic, ul.rates li.r-better .word { color: var(--better); }
+ul.rates li.r-worse .ic, ul.rates li.r-worse .word { color: var(--worse); }
+ul.rates li.r-similar .ic, ul.rates li.r-similar .word { color: var(--neutral); }
+.msg { font-weight: 600; font-size: 16px; }
+.pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.pick button { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 12px; }
+.pick button[aria-pressed="true"] { border: 2px solid var(--accent-fill); background: var(--accent-soft); }
+.pick button b { display: block; font-family: var(--display); font-size: 16px; }
+ol.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+ol.timeline li { display: grid; grid-template-columns: 150px 1fr; gap: 12px; padding: 10px 12px; border-left: 3px solid var(--accent-fill); background: var(--surface-2); border-radius: 0 10px 10px 0; }
+ol.timeline li b { font-family: var(--display); }
+@media (max-width: 560px) { ol.timeline li { grid-template-columns: 1fr; gap: 2px; } }
+.btn { border-radius: 999px; border: 1px solid var(--line); background: var(--surface); padding: 7px 14px; }
+.btn.primary { background: var(--accent-fill); border-color: var(--accent-fill); color: #FFFFFF; }
+details summary { cursor: pointer; font-weight: 600; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+@media print { nav.steps, .noprint { display: none !important; } section.step { break-inside: avoid; border: 0; } body { background: #FFFFFF; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">NASA Space Apps 2026 · Field Shift V2</span>
+    <h1>Plan your next rotation</h1>
+    <p class="muted">Three corn–soybean fields in Story County, Iowa, read from ten seasons of NASA satellite and weather records. It’s November, and the farmer is planning the next ones.</p>
+    <p class="decision" id="decision"></p>
+  </header>
+  <nav class="steps" aria-label="Steps">
+    <a href="#s1"><b>1</b>Your farm</a><a href="#s2"><b>2</b>What we can’t see</a><a href="#s3"><b>3</b>Your season</a><a href="#s4"><b>4</b>Your options</a><a href="#s5"><b>5</b>Your plan</a><a href="#s6">How we know</a>
+  </nav>
+
+  <section class="step" id="s1">
+    <h2>1 · Your farm: same rotation, different fields</h2>
+    <p class="lead" id="farmlead"></p>
+    <div class="cards3" id="farm" role="group" aria-label="Choose a field"></div>
+    <details><summary id="workedsum"></summary><ul class="plain" id="worked"></ul></details>
+  </section>
+
+  <section class="step" id="s2">
+    <h2>2 · Tell us what the satellite can’t see</h2>
+    <p>The satellite sees green after harvest, but not whether it was a cover crop you planted, volunteers or weeds. Your answers change the estimates in the steps below.</p>
+    <div id="questions"></div>
+    <div><h3>Anything that rules an option out?</h3><div class="checks" id="cons"></div></div>
+    <div class="result" id="answerresult" aria-live="polite"></div>
+  </section>
+
+  <section class="step" id="s3">
+    <h2 id="seasontitle"></h2>
+    <p class="lead" id="seasonlead"></p>
+    <div class="legend"><span><i style="background:var(--corn)"></i>Corn</span><span><i style="background:var(--soy)"></i>Soybean</span><span><i style="background:var(--oats)"></i>Oats</span><span><i style="background:repeating-linear-gradient(45deg,var(--cover) 0 3px,transparent 3px 6px);border:1px solid var(--cover)"></i>Cover crop (planned)</span><span><i style="background:var(--bare)"></i>Bare soil</span><span><i style="background:transparent;border:2px solid var(--ink)"></i>Sensitive stage</span><span><i style="background:var(--hot)"></i>Days above 30 °C</span></div>
+    <div class="chartwrap"><svg class="cal" id="cal" role="img"></svg></div>
+    <p class="small">Crop canopy dates are this field’s medians from NASA HLS (2016–2025). Cover-crop and oat timings are planned, typical timings from extension guidance, not measured. Heat and root-zone wetness: NASA POWER, 2016–2025. The shaded column is the hottest half-month.</p>
+  </section>
+
+  <section class="step" id="s4">
+    <h2>4 · Your options, against your priorities</h2>
+    <div class="controls">
+      <div><h3>What matters most to you?</h3><p class="small">Add them in order: the first counts most. Use ↑ to move one up.</p><ol class="order" id="order"></ol><div class="chips" id="addprios" style="margin-top:6px"></div></div>
+      <div class="result"><p class="msg" id="optmsg"></p><p id="stable" style="margin-top:6px"></p></div>
+    </div>
+    <div class="cards3" id="optcards"></div>
+    <p class="small">▲ better, ● similar, ▼ worse than the current rotation. Bold rows are your priorities. Priorities reorder the options; they never change a rating. Income is not predicted.</p>
+  </section>
+
+  <section class="step" id="s5">
+    <h2>5 · Your plan</h2>
+    <p>Choose what you want to plan for. Field Shift suggests where to start small, so next season’s satellite record can show whether it worked.</p>
+    <div class="pick" id="pick" role="group" aria-label="Choose an option"></div>
+    <div id="plan" hidden>
+      <div class="result"><p class="msg" id="planhead"></p><p id="planwhy" style="margin-top:4px"></p></div>
+      <h3 style="margin-top:14px">Season by season</h3>
+      <ol class="timeline" id="timeline"></ol>
+      <div class="controls" style="margin-top:14px">
+        <div><h3>Questions for your agronomist</h3><ul class="plain" id="askag"></ul></div>
+        <div><h3>What Field Shift checks next season</h3><ul class="plain" id="nextchecks"></ul></div>
+      </div>
+      <div class="noprint" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px"><button class="btn primary" id="copyplan" type="button">Copy plan</button><span class="small" id="copied" aria-live="polite"></span></div>
+      <textarea id="plantext" readonly hidden rows="12" style="width:100%;margin-top:8px;font:inherit;font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px" aria-label="Plan text to copy"></textarea>
+    </div>
+  </section>
+
+  <section class="step" id="s6">
+    <h2>How we know</h2>
+    <ul class="plain" id="checks"></ul>
+    <p class="small" id="caveat"></p>
+    <details><summary>What this tool cannot establish</summary><ul class="plain" id="notest"></ul></details>
+    <p class="small" id="sources"></p>
+  </section>
+
+  <footer>
+    <span>Data: NASA HLS v2.0 (Landsat + ESA Sentinel-2), NASA POWER (incl. MERRA-2 root-zone wetness), NASA ECOSTRESS, NASA SMAP L4, NASA MSLSP30NA, NASADEM, U.S. Drought Monitor, USDA CDL, SSURGO and Crop Progress. Code: github.com/yisheng05/nasa.</span>
+    <span>Contains modified Copernicus Sentinel data 2016–2025. Field Shift V2 uses no AI model when it runs: every number comes from deterministic rules applied to these data.</span>
+  </footer>
+</div>
+
+<script>
+const DATA = {"title":"Field Shift V2","decision":"Should the next rotation stay the same, add a cereal rye cover, or add oats and red clover? The tool shows the evidence; the choice stays with the farmer.","farm":[{"letter":"A","area":50.6,"drainage":"Poorly drained","slope":1.72,"bare_months":8.5,"corn_parity":0,"crop_2026":"corn","green":[{"field":"A","autumn":2016,"after":"corn","cover_year":2017}],"green_corn":[2016],"corn_harvests":5,"stress":4,"seasons":10,"expected":2.9,"held":4,"flagged":4,"worked":["Green after harvest went with less bare soil: in the soybean year that followed it (2017), 7.5 months went without living cover, against 8.3 in this field’s other soybean years: about 0.8 months less. The soybean crop that followed showed no drop in vigour.","Crops held their vigour in 4 of 4 seasons hit by a dry or hot spell.","Weaker seasons the regional weather did not flag: 2019 soybeans (ECOSTRESS showed stress at field scale, Drought Monitor: abnormally dry in the window); 2020 corn (Drought Monitor: moderate drought in the window)."],"late_silking":[{"season":2018,"days_from_50":7},{"season":2020,"days_from_50":14},{"season":2024,"days_from_50":17}]},{"letter":"B","area":45.6,"drainage":"Poorly drained","slope":1.62,"bare_months":8.2,"corn_parity":1,"crop_2026":"soybeans","green":[{"field":"B","autumn":2017,"after":"corn","cover_year":2018},{"field":"B","autumn":2021,"after":"corn","cover_year":2022},{"field":"B","autumn":2023,"after":"corn","cover_year":2024},{"field":"B","autumn":2025,"after":"corn","cover_year":null}],"green_corn":[2017,2021,2023,2025],"corn_harvests":5,"stress":4,"seasons":10,"expected":2.7,"held":3,"flagged":4,"worked":["Green after harvest went with less bare soil: in the soybean years that followed it (2018, 2022 and 2024), 6.7 months went without living cover, against 8.8 in this field’s other soybean year: about 2.1 months less. The soybeans that followed showed no drop in vigour.","Crops held their vigour in 3 of 4 seasons hit by a dry or hot spell; the exception: corn in 2017.","Weaker seasons the regional weather did not flag: 2020 soybeans (ECOSTRESS showed stress at field scale, Drought Monitor: moderate drought in the window)."],"late_silking":[]},{"letter":"C","area":37.9,"drainage":"Well drained","slope":1.99,"bare_months":8.4,"corn_parity":1,"crop_2026":"soybeans","green":[],"green_corn":[],"corn_harvests":5,"stress":5,"seasons":10,"expected":3.0,"held":5,"flagged":5,"worked":["No green after harvest, so no cover years to learn from: the soil went without living cover 8.0–8.8 months every year.","Crops held their vigour in 5 of 5 seasons hit by a dry or hot spell.","No weaker seasons outside the flagged years."],"late_silking":[]}],"fields":{"A":{"id":"field_a","county":"Story County, Iowa","climate":[{"start":"05-01","end":"05-15","label":"1 May–15 May","hot_share":0.02,"wetness":0.635,"rain_mm_day":2.74},{"start":"05-16","end":"05-31","label":"16 May–31 May","hot_share":0.05,"wetness":0.632,"rain_mm_day":4.19},{"start":"06-01","end":"06-15","label":"1 Jun–15 Jun","hot_share":0.307,"wetness":0.598,"rain_mm_day":2.94},{"start":"06-16","end":"06-30","label":"16 Jun–30 Jun","hot_share":0.32,"wetness":0.583,"rain_mm_day":4.87},{"start":"07-01","end":"07-15","label":"1 Jul–15 Jul","hot_share":0.327,"wetness":0.568,"rain_mm_day":3.64},{"start":"07-16","end":"07-31","label":"16 Jul–31 Jul","hot_share":0.406,"wetness":0.539,"rain_mm_day":2.73},{"start":"08-01","end":"08-15","label":"1 Aug–15 Aug","hot_share":0.34,"wetness":0.518,"rain_mm_day":2.94},{"start":"08-16","end":"08-31","label":"16 Aug–31 Aug","hot_share":0.331,"wetness":0.514,"rain_mm_day":2.84},{"start":"09-01","end":"09-15","label":"1 Sep–15 Sep","hot_share":0.213,"wetness":0.515,"rain_mm_day":2.98},{"start":"09-16","end":"09-30","label":"16 Sep–30 Sep","hot_share":0.187,"wetness":0.522,"rain_mm_day":2.55}],"windows":{"corn":["07-18","07-31"],"soybeans":["07-25","08-29"],"oats":["06-01","06-30"]},"exposure":{"hottest":{"start":"07-16","end":"07-31","label":"16 Jul–31 Jul","hot_share":0.406,"wetness":0.539,"rain_mm_day":2.73},"crops":{"corn":{"hot_share":0.436,"wetness":0.536,"overlaps_hottest":true,"start":"07-18","end":"07-31","label":"18 Jul–31 Jul"},"soybeans":{"hot_share":0.369,"wetness":0.519,"overlaps_hottest":true,"start":"07-25","end":"08-29","label":"25 Jul–29 Aug"},"oats":{"hot_share":0.313,"wetness":0.591,"overlaps_hottest":false,"start":"06-01","end":"06-30","label":"1 Jun–30 Jun"}},"options":{"cs":{"hot_share":0.402,"wetness":0.528,"years_in_hottest":2,"rotation_years":2},"cs_rye":{"hot_share":0.402,"wetness":0.528,"years_in_hottest":2,"rotation_years":2},"cso_rc":{"hot_share":0.373,"wetness":0.549,"years_in_hottest":2,"rotation_years":3}}},"ratings":{"cs":{"Soil cover and living roots":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Erosion protection":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Water and stress exposure":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Nitrogen needs":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Workload and complexity":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Crop diversity":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""}},"cs_rye":{"Soil cover and living roots":{"rating":"better","evidence":"Now about 8.5 months a year without living cover (Engine 1, NASA HLS 30 m). In nearby cover years with autumn green, the share without living cover was 0.14 lower (≈1.7 months) than in matched years without it. Applied to this field's uncovered years: about 7.0 months a year. Lower bound: cereal rye also grows in spring, which the observed (likely winter-killed) cover did not.","confidence":"moderate","verify":"Whether autumn green on this or nearby fields is a planted cover (confirm with the farmer).","estimate":"~7.0 months a year without living cover (now ~8.5)"},"Erosion protection":{"rating":"better","evidence":"Better cover (winter cover over bare ground). Erosion importance here is lower: field mean slope 1.72% (NASADEM, smoothed; V12), 90th percentile 3.14%, SSURGO slope 1.792%, K factor 0.274. On this field the benefit is small: mean slope 1.72%, flat ground.","confidence":"moderate","verify":"","estimate":""},"Water and stress exposure":{"rating":"similar","evidence":"Same cash crops and the same windows: 40% of days above 30 °C and wetness 0.53 on average. Rye uses spring soil water before termination; can matter in a dry spring.","confidence":"moderate","verify":"Earlier rye termination in a dry spring.","estimate":""},"Nitrogen needs":{"rating":"similar","evidence":"Soybean credit unchanged. Cereal rye takes up leftover nitrate; can tie up nitrogen ahead of corn if terminated late.","confidence":"moderate","verify":"Rye termination timing ahead of corn, or rye ahead of soybeans only.","estimate":""},"Crop diversity":{"rating":"better","evidence":"3 species in 3 functional groups, against 2 species in 2 groups now (corn, soybeans, cereal rye).","confidence":"high","verify":"","estimate":""},"Workload and complexity":{"rating":"worse","evidence":"Adds autumn seeding and spring termination: seed in autumn after harvest; terminate in spring, well ahead of corn planting (ISU guidance is commonly ~10-14 days).","confidence":"moderate","verify":"Seeding equipment, labour at harvest, termination plan.","estimate":""}},"cso_rc":{"Soil cover and living roots":{"rating":"better","evidence":"Now about 8.5 months a year without living cover. In the oats year, oats then red clover keep living cover from spring through autumn and into the next spring (nurse crop for red clover, which covers the soil after oat harvest). Not observed on these fields, so not quantified.","confidence":"low–moderate","verify":"Clover establishment under oats on this soil.","estimate":""},"Erosion protection":{"rating":"better","evidence":"Better cover (living cover through most of the small-grain year). Erosion importance here is lower: field mean slope 1.72% (NASADEM, smoothed; V12), 90th percentile 3.14%, SSURGO slope 1.792%, K factor 0.274. On this field the benefit is small: mean slope 1.72%, flat ground.","confidence":"moderate","verify":"","estimate":""},"Water and stress exposure":{"rating":"better","evidence":"Measured on this farm, 2016–2025: in the oats year the sensitive stage moves to June, when root-zone wetness averages 0.59 against 0.53 in the corn and soybean windows, and 31% of days pass 30 °C against 40%. Corn and soybeans are exposed in 2 years of 3 instead of every year.","confidence":"moderate","verify":"Oat heading dates locally; clover's late-summer water use.","estimate":""},"Nitrogen needs":{"rating":"better","evidence":"Red clover is a legume; leaves a nitrogen credit for the following corn, in addition to the soybean credit.","confidence":"moderate","verify":"Clover stand density before corn.","estimate":""},"Crop diversity":{"rating":"better","evidence":"4 species in 3 functional groups, against 2 species in 2 groups now (corn, soybeans, oats, red clover).","confidence":"high","verify":"","estimate":""},"Workload and complexity":{"rating":"worse","evidence":"Adds a third crop to plant, harvest (July) and market or feed, plus clover establishment and termination: more change to operations than a cover crop alone.","confidence":"moderate","verify":"Small-grain harvest equipment, storage, local oat market.","estimate":""}}},"notes":[],"not_established":["Yield or profit effects on this field.","Soil organic carbon, nitrogen, phosphorus, pH, compaction or biology.","Whether autumn or spring green is a planted cover, weeds or volunteers (confirm before crediting).","Field-level soil moisture: stress drivers are regional (POWER ~0.5°, SMAP 9 km)."],"sources":["Iowa State University Extension and Outreach","Midwest Cover Crops Council","Practical Farmers of Iowa","SARE, Managing Cover Crops Profitably (3rd ed.)"],"living_cover":{"corn":{"start":"06-27","end":"09-22"},"soybeans":{"start":"06-19","end":"09-30"}},"calendar":{"cs":[{"crop":"corn","segments":[{"kind":"bare","start":1,"end":177},{"kind":"crop","name":"corn","start":178,"end":265},{"kind":"bare","start":266,"end":365}],"window":{"start":199,"end":212}},{"crop":"soybeans","segments":[{"kind":"bare","start":1,"end":169},{"kind":"crop","name":"soybeans","start":170,"end":273},{"kind":"bare","start":274,"end":365}],"window":{"start":206,"end":241}}],"cs_rye":[{"crop":"corn","segments":[{"kind":"cover","name":"cereal rye","start":1,"end":133},{"kind":"bare","start":134,"end":177},{"kind":"crop","name":"corn","start":178,"end":265},{"kind":"bare","start":266,"end":285},{"kind":"cover","name":"cereal rye","start":286,"end":365}],"window":{"start":199,"end":212}},{"crop":"soybeans","segments":[{"kind":"cover","name":"cereal rye","start":1,"end":125},{"kind":"bare","start":126,"end":169},{"kind":"crop","name":"soybeans","start":170,"end":273},{"kind":"bare","start":274,"end":293},{"kind":"cover","name":"cereal rye","start":294,"end":365}],"window":{"start":206,"end":241}}],"cso_rc":[{"crop":"corn","segments":[{"kind":"cover","name":"red clover","start":1,"end":133},{"kind":"bare","start":134,"end":177},{"kind":"crop","name":"corn","start":178,"end":265},{"kind":"bare","start":266,"end":365}],"window":{"start":199,"end":212}},{"crop":"soybeans","segments":[{"kind":"bare","start":1,"end":169},{"kind":"crop","name":"soybeans","start":170,"end":273},{"kind":"bare","start":274,"end":365}],"window":{"start":206,"end":241}},{"crop":"oats","segments":[{"kind":"bare","start":1,"end":90},{"kind":"crop","name":"oats","start":91,"end":196},{"kind":"cover","name":"red clover","start":197,"end":365}],"window":{"start":152,"end":181}}]}},"B":{"id":"field_b","county":"Story County, Iowa","climate":[{"start":"05-01","end":"05-15","label":"1 May–15 May","hot_share":0.02,"wetness":0.635,"rain_mm_day":2.74},{"start":"05-16","end":"05-31","label":"16 May–31 May","hot_share":0.05,"wetness":0.632,"rain_mm_day":4.19},{"start":"06-01","end":"06-15","label":"1 Jun–15 Jun","hot_share":0.307,"wetness":0.598,"rain_mm_day":2.94},{"start":"06-16","end":"06-30","label":"16 Jun–30 Jun","hot_share":0.32,"wetness":0.583,"rain_mm_day":4.87},{"start":"07-01","end":"07-15","label":"1 Jul–15 Jul","hot_share":0.327,"wetness":0.568,"rain_mm_day":3.64},{"start":"07-16","end":"07-31","label":"16 Jul–31 Jul","hot_share":0.406,"wetness":0.539,"rain_mm_day":2.73},{"start":"08-01","end":"08-15","label":"1 Aug–15 Aug","hot_share":0.34,"wetness":0.518,"rain_mm_day":2.94},{"start":"08-16","end":"08-31","label":"16 Aug–31 Aug","hot_share":0.331,"wetness":0.514,"rain_mm_day":2.84},{"start":"09-01","end":"09-15","label":"1 Sep–15 Sep","hot_share":0.213,"wetness":0.515,"rain_mm_day":2.98},{"start":"09-16","end":"09-30","label":"16 Sep–30 Sep","hot_share":0.187,"wetness":0.522,"rain_mm_day":2.55}],"windows":{"corn":["07-12","07-25"],"soybeans":["07-23","08-27"],"oats":["06-01","06-30"]},"exposure":{"hottest":{"start":"07-16","end":"07-31","label":"16 Jul–31 Jul","hot_share":0.406,"wetness":0.539,"rain_mm_day":2.73},"crops":{"corn":{"hot_share":0.364,"wetness":0.55,"overlaps_hottest":true,"start":"07-12","end":"07-25","label":"12 Jul–25 Jul"},"soybeans":{"hot_share":0.372,"wetness":0.52,"overlaps_hottest":true,"start":"07-23","end":"08-27","label":"23 Jul–27 Aug"},"oats":{"hot_share":0.313,"wetness":0.591,"overlaps_hottest":false,"start":"06-01","end":"06-30","label":"1 Jun–30 Jun"}},"options":{"cs":{"hot_share":0.368,"wetness":0.535,"years_in_hottest":2,"rotation_years":2},"cs_rye":{"hot_share":0.368,"wetness":0.535,"years_in_hottest":2,"rotation_years":2},"cso_rc":{"hot_share":0.35,"wetness":0.554,"years_in_hottest":2,"rotation_years":3}}},"ratings":{"cs":{"Soil cover and living roots":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Erosion protection":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Water and stress exposure":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Nitrogen needs":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Workload and complexity":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Crop diversity":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""}},"cs_rye":{"Soil cover and living roots":{"rating":"better","evidence":"Now about 8.2 months a year without living cover (Engine 1, NASA HLS 30 m). In nearby cover years with autumn green, the share without living cover was 0.14 lower (≈1.7 months) than in matched years without it. Applied to this field's uncovered years: about 7.1 months a year. Satellite already shows autumn green after corn here in several seasons, so part of the gain is in place. Lower bound: cereal rye also grows in spring, which the observed (likely winter-killed) cover did not.","confidence":"moderate","verify":"Whether autumn green on this or nearby fields is a planted cover (confirm with the farmer).","estimate":"~7.1 months a year without living cover (now ~8.2)"},"Erosion protection":{"rating":"better","evidence":"Better cover (winter cover over bare ground). Erosion importance here is lower: field mean slope 1.62% (NASADEM, smoothed; V12), 90th percentile 2.74%, SSURGO slope 1.607%, K factor 0.276. On this field the benefit is small: mean slope 1.62%, flat ground.","confidence":"moderate","verify":"","estimate":""},"Water and stress exposure":{"rating":"similar","evidence":"Same cash crops and the same windows: 37% of days above 30 °C and wetness 0.54 on average. Rye uses spring soil water before termination; can matter in a dry spring.","confidence":"moderate","verify":"Earlier rye termination in a dry spring.","estimate":""},"Nitrogen needs":{"rating":"similar","evidence":"Soybean credit unchanged. Cereal rye takes up leftover nitrate; can tie up nitrogen ahead of corn if terminated late.","confidence":"moderate","verify":"Rye termination timing ahead of corn, or rye ahead of soybeans only.","estimate":""},"Crop diversity":{"rating":"better","evidence":"3 species in 3 functional groups, against 2 species in 2 groups now (corn, soybeans, cereal rye).","confidence":"high","verify":"","estimate":""},"Workload and complexity":{"rating":"worse","evidence":"Adds autumn seeding and spring termination: seed in autumn after harvest; terminate in spring, well ahead of corn planting (ISU guidance is commonly ~10-14 days).","confidence":"moderate","verify":"Seeding equipment, labour at harvest, termination plan.","estimate":""}},"cso_rc":{"Soil cover and living roots":{"rating":"better","evidence":"Now about 8.2 months a year without living cover. In the oats year, oats then red clover keep living cover from spring through autumn and into the next spring (nurse crop for red clover, which covers the soil after oat harvest). Not observed on these fields, so not quantified.","confidence":"low–moderate","verify":"Clover establishment under oats on this soil.","estimate":""},"Erosion protection":{"rating":"better","evidence":"Better cover (living cover through most of the small-grain year). Erosion importance here is lower: field mean slope 1.62% (NASADEM, smoothed; V12), 90th percentile 2.74%, SSURGO slope 1.607%, K factor 0.276. On this field the benefit is small: mean slope 1.62%, flat ground.","confidence":"moderate","verify":"","estimate":""},"Water and stress exposure":{"rating":"better","evidence":"Measured on this farm, 2016–2025: in the oats year the sensitive stage moves to June, when root-zone wetness averages 0.59 against 0.54 in the corn and soybean windows, and 31% of days pass 30 °C against 37%. Corn and soybeans are exposed in 2 years of 3 instead of every year.","confidence":"moderate","verify":"Oat heading dates locally; clover's late-summer water use.","estimate":""},"Nitrogen needs":{"rating":"better","evidence":"Red clover is a legume; leaves a nitrogen credit for the following corn, in addition to the soybean credit.","confidence":"moderate","verify":"Clover stand density before corn.","estimate":""},"Crop diversity":{"rating":"better","evidence":"4 species in 3 functional groups, against 2 species in 2 groups now (corn, soybeans, oats, red clover).","confidence":"high","verify":"","estimate":""},"Workload and complexity":{"rating":"worse","evidence":"Adds a third crop to plant, harvest (July) and market or feed, plus clover establishment and termination: more change to operations than a cover crop alone.","confidence":"moderate","verify":"Small-grain harvest equipment, storage, local oat market.","estimate":""}}},"notes":["Satellite shows autumn green after the crop in 4 seasons on this field, consistent with a cover crop already in some years (confirm). If so, the current rotation already includes part of the cover-crop option."],"not_established":["Yield or profit effects on this field.","Soil organic carbon, nitrogen, phosphorus, pH, compaction or biology.","Whether autumn or spring green is a planted cover, weeds or volunteers (confirm before crediting).","Field-level soil moisture: stress drivers are regional (POWER ~0.5°, SMAP 9 km)."],"sources":["Iowa State University Extension and Outreach","Midwest Cover Crops Council","Practical Farmers of Iowa","SARE, Managing Cover Crops Profitably (3rd ed.)"],"living_cover":{"corn":{"start":"06-18","end":"08-31"},"soybeans":{"start":"06-22","end":"09-21"}},"calendar":{"cs":[{"crop":"corn","segments":[{"kind":"bare","start":1,"end":168},{"kind":"crop","name":"corn","start":169,"end":243},{"kind":"bare","start":244,"end":365}],"window":{"start":193,"end":206}},{"crop":"soybeans","segments":[{"kind":"bare","start":1,"end":172},{"kind":"crop","name":"soybeans","start":173,"end":264},{"kind":"bare","start":265,"end":365}],"window":{"start":204,"end":239}}],"cs_rye":[{"crop":"corn","segments":[{"kind":"cover","name":"cereal rye","start":1,"end":124},{"kind":"bare","start":125,"end":168},{"kind":"crop","name":"corn","start":169,"end":243},{"kind":"bare","start":244,"end":263},{"kind":"cover","name":"cereal rye","start":264,"end":365}],"window":{"start":193,"end":206}},{"crop":"soybeans","segments":[{"kind":"cover","name":"cereal rye","start":1,"end":128},{"kind":"bare","start":129,"end":172},{"kind":"crop","name":"soybeans","start":173,"end":264},{"kind":"bare","start":265,"end":284},{"kind":"cover","name":"cereal rye","start":285,"end":365}],"window":{"start":204,"end":239}}],"cso_rc":[{"crop":"corn","segments":[{"kind":"cover","name":"red clover","start":1,"end":124},{"kind":"bare","start":125,"end":168},{"kind":"crop","name":"corn","start":169,"end":243},{"kind":"bare","start":244,"end":365}],"window":{"start":193,"end":206}},{"crop":"soybeans","segments":[{"kind":"bare","start":1,"end":172},{"kind":"crop","name":"soybeans","start":173,"end":264},{"kind":"bare","start":265,"end":365}],"window":{"start":204,"end":239}},{"crop":"oats","segments":[{"kind":"bare","start":1,"end":90},{"kind":"crop","name":"oats","start":91,"end":196},{"kind":"cover","name":"red clover","start":197,"end":365}],"window":{"start":152,"end":181}}]}},"C":{"id":"field_c","county":"Story County, Iowa","climate":[{"start":"05-01","end":"05-15","label":"1 May–15 May","hot_share":0.02,"wetness":0.539,"rain_mm_day":2.78},{"start":"05-16","end":"05-31","label":"16 May–31 May","hot_share":0.037,"wetness":0.535,"rain_mm_day":4.25},{"start":"06-01","end":"06-15","label":"1 Jun–15 Jun","hot_share":0.32,"wetness":0.504,"rain_mm_day":3.04},{"start":"06-16","end":"06-30","label":"16 Jun–30 Jun","hot_share":0.353,"wetness":0.489,"rain_mm_day":4.45},{"start":"07-01","end":"07-15","label":"1 Jul–15 Jul","hot_share":0.413,"wetness":0.471,"rain_mm_day":3.47},{"start":"07-16","end":"07-31","label":"16 Jul–31 Jul","hot_share":0.481,"wetness":0.444,"rain_mm_day":2.76},{"start":"08-01","end":"08-15","label":"1 Aug–15 Aug","hot_share":0.373,"wetness":0.43,"rain_mm_day":2.89},{"start":"08-16","end":"08-31","label":"16 Aug–31 Aug","hot_share":0.356,"wetness":0.428,"rain_mm_day":2.97},{"start":"09-01","end":"09-15","label":"1 Sep–15 Sep","hot_share":0.247,"wetness":0.428,"rain_mm_day":2.62},{"start":"09-16","end":"09-30","label":"16 Sep–30 Sep","hot_share":0.24,"wetness":0.437,"rain_mm_day":2.64}],"windows":{"corn":["07-08","07-21"],"soybeans":["07-26","08-30"],"oats":["06-01","06-30"]},"exposure":{"hottest":{"start":"07-16","end":"07-31","label":"16 Jul–31 Jul","hot_share":0.481,"wetness":0.444,"rain_mm_day":2.76},"crops":{"corn":{"hot_share":0.443,"wetness":0.46,"overlaps_hottest":true,"start":"07-08","end":"07-21","label":"8 Jul–21 Jul"},"soybeans":{"hot_share":0.403,"wetness":0.43,"overlaps_hottest":true,"start":"07-26","end":"08-30","label":"26 Jul–30 Aug"},"oats":{"hot_share":0.337,"wetness":0.497,"overlaps_hottest":false,"start":"06-01","end":"06-30","label":"1 Jun–30 Jun"}},"options":{"cs":{"hot_share":0.423,"wetness":0.445,"years_in_hottest":2,"rotation_years":2},"cs_rye":{"hot_share":0.423,"wetness":0.445,"years_in_hottest":2,"rotation_years":2},"cso_rc":{"hot_share":0.394,"wetness":0.462,"years_in_hottest":2,"rotation_years":3}}},"ratings":{"cs":{"Soil cover and living roots":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Erosion protection":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Water and stress exposure":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Nitrogen needs":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Workload and complexity":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""},"Crop diversity":{"rating":"baseline","evidence":"Current rotation; other options are rated against it.","confidence":"—","verify":"","estimate":""}},"cs_rye":{"Soil cover and living roots":{"rating":"better","evidence":"Now about 8.4 months a year without living cover (Engine 1, NASA HLS 30 m). In nearby cover years with autumn green, the share without living cover was 0.14 lower (≈1.7 months) than in matched years without it. Applied to this field's uncovered years: about 6.7 months a year. Lower bound: cereal rye also grows in spring, which the observed (likely winter-killed) cover did not.","confidence":"moderate","verify":"Whether autumn green on this or nearby fields is a planted cover (confirm with the farmer).","estimate":"~6.7 months a year without living cover (now ~8.4)"},"Erosion protection":{"rating":"better","evidence":"Better cover (winter cover over bare ground). Erosion importance here is higher: field mean slope 1.99% (NASADEM, smoothed; V12), 90th percentile 3.52%, SSURGO slope 3.183%, K factor 0.274.","confidence":"moderate","verify":"Slope and erosion history on the steepest part of the field.","estimate":""},"Water and stress exposure":{"rating":"similar","evidence":"Same cash crops and the same windows: 42% of days above 30 °C and wetness 0.45 on average. Rye uses spring soil water before termination; can matter in a dry spring.","confidence":"moderate","verify":"Earlier rye termination in a dry spring.","estimate":""},"Nitrogen needs":{"rating":"similar","evidence":"Soybean credit unchanged. Cereal rye takes up leftover nitrate; can tie up nitrogen ahead of corn if terminated late.","confidence":"moderate","verify":"Rye termination timing ahead of corn, or rye ahead of soybeans only.","estimate":""},"Crop diversity":{"rating":"better","evidence":"3 species in 3 functional groups, against 2 species in 2 groups now (corn, soybeans, cereal rye).","confidence":"high","verify":"","estimate":""},"Workload and complexity":{"rating":"worse","evidence":"Adds autumn seeding and spring termination: seed in autumn after harvest; terminate in spring, well ahead of corn planting (ISU guidance is commonly ~10-14 days).","confidence":"moderate","verify":"Seeding equipment, labour at harvest, termination plan.","estimate":""}},"cso_rc":{"Soil cover and living roots":{"rating":"better","evidence":"Now about 8.4 months a year without living cover. In the oats year, oats then red clover keep living cover from spring through autumn and into the next spring (nurse crop for red clover, which covers the soil after oat harvest). Not observed on these fields, so not quantified.","confidence":"low–moderate","verify":"Clover establishment under oats on this soil.","estimate":""},"Erosion protection":{"rating":"better","evidence":"Better cover (living cover through most of the small-grain year). Erosion importance here is higher: field mean slope 1.99% (NASADEM, smoothed; V12), 90th percentile 3.52%, SSURGO slope 3.183%, K factor 0.274.","confidence":"moderate","verify":"Slope and erosion history on the steepest part of the field.","estimate":""},"Water and stress exposure":{"rating":"better","evidence":"Measured on this farm, 2016–2025: in the oats year the sensitive stage moves to June, when root-zone wetness averages 0.50 against 0.45 in the corn and soybean windows, and 34% of days pass 30 °C against 42%. Corn and soybeans are exposed in 2 years of 3 instead of every year.","confidence":"moderate","verify":"Oat heading dates locally; clover's late-summer water use.","estimate":""},"Nitrogen needs":{"rating":"better","evidence":"Red clover is a legume; leaves a nitrogen credit for the following corn, in addition to the soybean credit.","confidence":"moderate","verify":"Clover stand density before corn.","estimate":""},"Crop diversity":{"rating":"better","evidence":"4 species in 3 functional groups, against 2 species in 2 groups now (corn, soybeans, oats, red clover).","confidence":"high","verify":"","estimate":""},"Workload and complexity":{"rating":"worse","evidence":"Adds a third crop to plant, harvest (July) and market or feed, plus clover establishment and termination: more change to operations than a cover crop alone.","confidence":"moderate","verify":"Small-grain harvest equipment, storage, local oat market.","estimate":""}}},"notes":[],"not_established":["Yield or profit effects on this field.","Soil organic carbon, nitrogen, phosphorus, pH, compaction or biology.","Whether autumn or spring green is a planted cover, weeds or volunteers (confirm before crediting).","Field-level soil moisture: stress drivers are regional (POWER ~0.5°, SMAP 9 km)."],"sources":["Iowa State University Extension and Outreach","Midwest Cover Crops Council","Practical Farmers of Iowa","SARE, Managing Cover Crops Profitably (3rd ed.)"],"living_cover":{"corn":{"start":"06-15","end":"10-01"},"soybeans":{"start":"07-01","end":"10-02"}},"calendar":{"cs":[{"crop":"corn","segments":[{"kind":"bare","start":1,"end":165},{"kind":"crop","name":"corn","start":166,"end":274},{"kind":"bare","start":275,"end":365}],"window":{"start":189,"end":202}},{"crop":"soybeans","segments":[{"kind":"bare","start":1,"end":181},{"kind":"crop","name":"soybeans","start":182,"end":275},{"kind":"bare","start":276,"end":365}],"window":{"start":207,"end":242}}],"cs_rye":[{"crop":"corn","segments":[{"kind":"cover","name":"cereal rye","start":1,"end":121},{"kind":"bare","start":122,"end":165},{"kind":"crop","name":"corn","start":166,"end":274},{"kind":"bare","start":275,"end":294},{"kind":"cover","name":"cereal rye","start":295,"end":365}],"window":{"start":189,"end":202}},{"crop":"soybeans","segments":[{"kind":"cover","name":"cereal rye","start":1,"end":137},{"kind":"bare","start":138,"end":181},{"kind":"crop","name":"soybeans","start":182,"end":275},{"kind":"bare","start":276,"end":295},{"kind":"cover","name":"cereal rye","start":296,"end":365}],"window":{"start":207,"end":242}}],"cso_rc":[{"crop":"corn","segments":[{"kind":"cover","name":"red clover","start":1,"end":121},{"kind":"bare","start":122,"end":165},{"kind":"crop","name":"corn","start":166,"end":274},{"kind":"bare","start":275,"end":365}],"window":{"start":189,"end":202}},{"crop":"soybeans","segments":[{"kind":"bare","start":1,"end":181},{"kind":"crop","name":"soybeans","start":182,"end":275},{"kind":"bare","start":276,"end":365}],"window":{"start":207,"end":242}},{"crop":"oats","segments":[{"kind":"bare","start":1,"end":90},{"kind":"crop","name":"oats","start":91,"end":196},{"kind":"cover","name":"red clover","start":197,"end":365}],"window":{"start":152,"end":181}}]}}},"cover_rows":[{"field":"A","season":2016,"crop":"corn","share":0.66,"off":0,"partial":true},{"field":"A","season":2017,"crop":"soybeans","share":0.621,"off":43,"partial":false},{"field":"A","season":2018,"crop":"corn","share":0.713,"off":0,"partial":false},{"field":"A","season":2019,"crop":"soybeans","share":0.744,"off":0,"partial":false},{"field":"A","season":2020,"crop":"corn","share":0.754,"off":0,"partial":false},{"field":"A","season":2021,"crop":"soybeans","share":0.696,"off":0,"partial":false},{"field":"A","season":2022,"crop":"corn","share":0.741,"off":0,"partial":false},{"field":"A","season":2023,"crop":"soybeans","share":0.693,"off":0,"partial":false},{"field":"A","season":2024,"crop":"corn","share":0.7,"off":0,"partial":false},{"field":"A","season":2025,"crop":"soybeans","share":0.678,"off":0,"partial":false},{"field":"B","season":2016,"crop":"soybeans","share":0.424,"off":42,"partial":true},{"field":"B","season":2017,"crop":"corn","share":0.752,"off":0,"partial":false},{"field":"B","season":2018,"crop":"soybeans","share":0.556,"off":67,"partial":false},{"field":"B","season":2019,"crop":"corn","share":0.744,"off":0,"partial":false},{"field":"B","season":2020,"crop":"soybeans","share":0.731,"off":0,"partial":false},{"field":"B","season":2021,"crop":"corn","share":0.761,"off":0,"partial":false},{"field":"B","season":2022,"crop":"soybeans","share":0.562,"off":69,"partial":false},{"field":"B","season":2023,"crop":"corn","share":0.747,"off":0,"partial":false},{"field":"B","season":2024,"crop":"soybeans","share":0.594,"off":50,"partial":false},{"field":"B","season":2025,"crop":"corn","share":0.739,"off":0,"partial":false},{"field":"C","season":2016,"crop":"soybeans","share":0.616,"off":0,"partial":true},{"field":"C","season":2017,"crop":"corn","share":0.699,"off":0,"partial":false},{"field":"C","season":2018,"crop":"soybeans","share":0.718,"off":0,"partial":false},{"field":"C","season":2019,"crop":"corn","share":0.694,"off":0,"partial":false},{"field":"C","season":2020,"crop":"soybeans","share":0.708,"off":0,"partial":false},{"field":"C","season":2021,"crop":"corn","share":0.665,"off":0,"partial":false},{"field":"C","season":2022,"crop":"soybeans","share":0.728,"off":0,"partial":false},{"field":"C","season":2023,"crop":"corn","share":0.663,"off":0,"partial":false},{"field":"C","season":2024,"crop":"soybeans","share":0.736,"off":0,"partial":false},{"field":"C","season":2025,"crop":"corn","share":0.672,"off":0,"partial":false}],"effect":{"share_reduction":0.14,"months_per_year":1.7,"cover_years":[["A",2017],["B",2018],["B",2022],["B",2024]]},"gains":{"A":1.5,"B":1.1,"C":1.7},"start":{"cs_rye":{"field":"C","start_year":2027,"why":"the largest gain in living cover (1.7 months a year)"},"cso_rc":{"field":"C","start_year":2027,"why":"in soybeans in 2026 and the most bare months (8.4 a year)"}},"options":{"cso_rc":{"label":"Oats + red clover","blurb":"Corn, soybean, then oats with red clover sown under them: a three-year rotation.","phrase":"adding oats + red clover"},"cs_rye":{"label":"Cereal rye cover","blurb":"The same corn–soybean, with cereal rye sown after harvest and ended in spring.","phrase":"adding a cereal rye cover"},"cs":{"label":"Current rotation","blurb":"Corn–soybean as today. The other options are rated against it.","phrase":"keeping the current rotation"}},"rotations":{"cs":["corn","soybeans"],"cs_rye":["corn","soybeans"],"cso_rc":["corn","soybeans","oats"]},"oats_window":["06-01","06-30"],"catalogue":{"corn":{"group":"warm-season grass","sensitive_stage":"silking to early grain fill (R1-R2), typically mid to late July in central Iowa","sensitive_months":[7,8],"nitrogen":"high requirement; benefits from a preceding legume","residue":"high","winter_cover":"none"},"soybeans":{"group":"legume","sensitive_stage":"pod set to seed fill (R3-R6), typically late July to August","sensitive_months":[7,8],"nitrogen":"fixes its own nitrogen; leaves a credit for the following corn","residue":"low and fragile","winter_cover":"none"},"oats":{"group":"cool-season grass (small grain)","sensitive_stage":"heading to grain fill, typically June; harvested in July","sensitive_months":[6,6],"nitrogen":"low requirement","residue":"moderate (straw can be baled)","winter_cover":"nurse crop for red clover, which covers the soil after oat harvest"},"cereal rye":{"group":"cool-season grass (cover)","role":"winter cover crop","living_cover":"establishes after harvest, overwinters, grows again in spring until terminated","nitrogen":"takes up leftover nitrate; can tie up nitrogen ahead of corn if terminated late","water":"uses spring soil water before termination; can matter in a dry spring","management":"seed in autumn after harvest; terminate in spring, well ahead of corn planting (ISU guidance is commonly ~10-14 days)"},"red clover":{"group":"legume (cover)","role":"underseeded or frost-seeded with oats","living_cover":"covers the soil from oat harvest through autumn and into the next spring","nitrogen":"legume; leaves a nitrogen credit for the following corn","management":"establish with the oats; terminate before corn the following spring"}},"engine3":{"PRIORITIES":["Soil protection","Water and stress risk","Nitrogen and input needs","Workload and simplicity","Crop diversity"],"CRITERIA":["Soil cover and living roots","Erosion protection","Water and stress exposure","Nitrogen needs","Workload and complexity","Crop diversity"],"CRITERIA_FOR_PRIORITY":{"Soil protection":["Soil cover and living roots","Erosion protection"],"Water and stress risk":["Water and stress exposure"],"Nitrogen and input needs":["Nitrogen needs"],"Workload and simplicity":["Workload and complexity"],"Crop diversity":["Crop diversity"]},"CANDIDATES":[{"id":"cs","name":"Corn–soybean (current)","needs":[]},{"id":"cs_rye","name":"Corn–soybean + cereal rye cover","needs":["cover_termination"]},{"id":"cso_rc","name":"Corn–soybean–oats/red clover","needs":["small_grain_market"]}],"CONSTRAINTS":{"small_grain_market":"No local market for small grains (oats)","cover_termination":"Can't manage spring termination of a cover crop"},"OPTIONS":{"cso_rc":{"label":"Oats + red clover","blurb":"Corn, soybean, then oats with red clover sown under them: a three-year rotation.","phrase":"adding oats + red clover"},"cs_rye":{"label":"Cereal rye cover","blurb":"The same corn–soybean, with cereal rye sown after harvest and ended in spring.","phrase":"adding a cereal rye cover"},"cs":{"label":"Current rotation","blurb":"Corn–soybean as today. The other options are rated against it.","phrase":"keeping the current rotation"}},"GREEN_YEAR_DAYS":30,"MEANINGFUL_MONTHS":0.5},"plans":{"cs":{"_":{"steps":[{"when":"This season","what":"No change to operations."},{"when":"Worth doing anyway","what":"Confirm what greened up after harvest (step 2), and scout in the late-July weeks when this farm’s hottest days fall."}],"checks":["Months without living cover on every field, each cover year.","Dry or hot spells at each crop’s sensitive stage, against the 1991–2020 base rate."]}},"cs_rye":{"A":{"steps":[{"when":"This winter","what":"Talk to your agronomist and seed supplier: rye seed, how you will sow it on Field A, and how and when you will end it in spring. Check any insurance or programme rules on ending cover crops."},{"when":"After the 2028 corn harvest","what":"Sow cereal rye on Field A as soon as practical. Starting ahead of soybeans avoids the main risk of rye before corn: nitrogen tie-up if it is ended late (ISU)."},{"when":"Spring 2029","what":"End the rye before planting soybeans on Field A, and note the date and method."},{"when":"2029 season","what":"Compare: Field Shift will show spring green, months without living cover and soybean vigour against the field’s own history."}],"checks":["Spring green on Field A in March and April (the rye’s spring growth).","Months without living cover on Field A for the cover year, against its own history.","Dry or hot spells at each crop’s sensitive stage, against the 1991–2020 base rate."],"start_year":2028},"B":{"steps":[{"when":"This winter","what":"Talk to your agronomist and seed supplier: rye seed, how you will sow it on Field B, and how and when you will end it in spring. Check any insurance or programme rules on ending cover crops."},{"when":"After the 2027 corn harvest","what":"Sow cereal rye on Field B as soon as practical. Starting ahead of soybeans avoids the main risk of rye before corn: nitrogen tie-up if it is ended late (ISU)."},{"when":"Spring 2028","what":"End the rye before planting soybeans on Field B, and note the date and method."},{"when":"2028 season","what":"Compare: Field Shift will show spring green, months without living cover and soybean vigour against the field’s own history."}],"checks":["Spring green on Field B in March and April (the rye’s spring growth).","Months without living cover on Field B for the cover year, against its own history.","Dry or hot spells at each crop’s sensitive stage, against the 1991–2020 base rate."],"start_year":2027},"C":{"steps":[{"when":"This winter","what":"Talk to your agronomist and seed supplier: rye seed, how you will sow it on Field C, and how and when you will end it in spring. Check any insurance or programme rules on ending cover crops."},{"when":"After the 2027 corn harvest","what":"Sow cereal rye on Field C as soon as practical. Starting ahead of soybeans avoids the main risk of rye before corn: nitrogen tie-up if it is ended late (ISU)."},{"when":"Spring 2028","what":"End the rye before planting soybeans on Field C, and note the date and method."},{"when":"2028 season","what":"Compare: Field Shift will show spring green, months without living cover and soybean vigour against the field’s own history."}],"checks":["Spring green on Field C in March and April (the rye’s spring growth).","Months without living cover on Field C for the cover year, against its own history.","Dry or hot spells at each crop’s sensitive stage, against the 1991–2020 base rate."],"start_year":2027}},"cso_rc":{"A":{"steps":[{"when":"This winter","what":"Line up a buyer or on-farm use for oats and straw, seed for oats and red clover, and small-grain harvest (own, borrowed or custom)."},{"when":"Spring 2028","what":"Plant oats on Field A instead of corn, with red clover sown with them or frost-seeded (PFI)."},{"when":"July 2028","what":"Harvest the oats; the clover keeps the soil covered through autumn and winter."},{"when":"Spring 2029","what":"End the clover ahead of corn on Field A; ask your agronomist how much nitrogen credit to count (PFI, SARE)."}],"checks":["Living cover on Field A from the oat harvest through the next spring.","Corn vigour on Field A the year after the clover, against its own history.","Dry or hot spells at each crop’s sensitive stage, against the 1991–2020 base rate."],"start_year":2028},"B":{"steps":[{"when":"This winter","what":"Line up a buyer or on-farm use for oats and straw, seed for oats and red clover, and small-grain harvest (own, borrowed or custom)."},{"when":"Spring 2027","what":"Plant oats on Field B instead of corn, with red clover sown with them or frost-seeded (PFI)."},{"when":"July 2027","what":"Harvest the oats; the clover keeps the soil covered through autumn and winter."},{"when":"Spring 2028","what":"End the clover ahead of corn on Field B; ask your agronomist how much nitrogen credit to count (PFI, SARE)."}],"checks":["Living cover on Field B from the oat harvest through the next spring.","Corn vigour on Field B the year after the clover, against its own history.","Dry or hot spells at each crop’s sensitive stage, against the 1991–2020 base rate."],"start_year":2027},"C":{"steps":[{"when":"This winter","what":"Line up a buyer or on-farm use for oats and straw, seed for oats and red clover, and small-grain harvest (own, borrowed or custom)."},{"when":"Spring 2027","what":"Plant oats on Field C instead of corn, with red clover sown with them or frost-seeded (PFI)."},{"when":"July 2027","what":"Harvest the oats; the clover keeps the soil covered through autumn and winter."},{"when":"Spring 2028","what":"End the clover ahead of corn on Field C; ask your agronomist how much nitrogen credit to count (PFI, SARE)."}],"checks":["Living cover on Field C from the oat harvest through the next spring.","Corn vigour on Field C the year after the clover, against its own history.","Dry or hot spells at each crop’s sensitive stage, against the 1991–2020 base rate."],"start_year":2027}}},"worked_lead":"Across the three fields, crops held their vigour in 12 of 13 seasons hit by a dry or hot spell. Field B, which most often turned green after harvest, had about 2.1 months less bare soil in the years that followed, with no sign of a vigour penalty. The weaker seasons the regional flags missed (A 2019, A 2020 and B 2020) line up with field-scale ECOSTRESS stress or the Drought Monitor, which is why the field-scale checks matter.","caveat":"Vigour is the season’s peak and total greenness against this field’s own normal for the crop, not yield, and peak greenness saturates near 0.9, so “held” can overstate resilience. Green after harvest is not confirmed as a cover crop. Ten seasons per field: patterns to discuss, not proof.","validation":["Green-up dates match NASA’s own MSLSP30NA phenology within 10 days in 12 of 12 field-seasons (2016–2019).","Estimated corn silking falls inside Iowa’s 25–75% silked dates (USDA Crop Progress) in 12 of 15 corn seasons; all 3 misses are on Field A (2018, 2020 and 2024).","Off-season cover calls match true-colour satellite images on 28 of 30 random dates (rated blind by AI; to be spot-checked).","NASA SMAP soil moisture agrees with the dry calls in 7–8 of 10 seasons per field.","U.S. Drought Monitor: 12 of 13 dry calls fall in at least abnormally dry weeks, 6 in moderate drought; drought the tool missed: 2020 on Fields A and B; 2016 on Field A.","Field slope from NASADEM, once smoothed, is within 0.21 percentage points of USGS lidar on every field."],"generated":"2026-11-15 08:32 UTC"};
+const E3 = DATA.engine3;
+/* ---------------- V2 logic (mirrors app/v2_model.py and pipeline/engine3.py) ---------------- */
+
+const SCORE = { better: 1, similar: 0, worse: -1, baseline: 0 };
+function orderedCriteria(prios) { const seen = new Set(), out = []; [...prios, ...E3.PRIORITIES.filter(p => !prios.includes(p))].forEach(p => E3.CRITERIA_FOR_PRIORITY[p].forEach(c => { if (!seen.has(c)) { seen.add(c); out.push(c); } })); return out; }
+function applyConstraints(active) { const kept = [], dropped = []; E3.CANDIDATES.forEach(c => { const hit = c.needs.filter(n => active.has(n)); if (hit.length) dropped.push([c.name, hit.map(h => E3.CONSTRAINTS[h]).join("; ")]); else kept.push(c); }); return [kept, dropped]; }
+function rank(ratings, cands, prios) { const crit = orderedCriteria(prios); return [...cands].sort((a, b) => { for (const k of crit) { const d = SCORE[ratings[b.id][k].rating] - SCORE[ratings[a.id][k].rating]; if (d) return d; } return 0; }); }
+function whatIf(ratings, cands, prios) { const out = {}; E3.PRIORITIES.forEach(p => { out[p] = rank(ratings, cands, [p, ...prios.filter(q => q !== p)])[0].name; }); return out; }
+function priorityAction(ratings, prios, active) {
+  const title = "Decide by your first priority", act = new Set(active), O = E3.OPTIONS;
+  if (!prios.length) return { title, text: "Set your priorities to rank the options." };
+  const [kept] = applyConstraints(act);
+  const top = rank(ratings, kept, prios)[0];
+  let text = `With ${prios[0].toLowerCase()} first, ${O[top.id].phrase} comes out on top` + (top.id === "cs" ? ": both alternatives add work that outweighs their gains on that priority." : ".");
+  if (!act.has("small_grain_market") && top.id === "cso_rc") { const [k2] = applyConstraints(new Set([...act, "small_grain_market"])); text += ` Without a local market for oats, ${O[rank(ratings, k2, prios)[0].id].phrase} does instead.`; }
+  return { title, text };
+}
+function joinOr(xs) { return xs.length > 1 ? xs.slice(0, -1).join(", ") + " or " + xs[xs.length - 1] : (xs[0] || ""); }
+function stabilityLine(ratings, kept, prios) {
+  const O = E3.OPTIONS, ids = Object.keys(O);
+  if (kept.length === 1) return `Only the ${O[kept[0].id].label.toLowerCase()} is left after your constraints.`;
+  const byName = Object.fromEntries(E3.CANDIDATES.map(c => [c.name, c.id]));
+  const tops = Object.fromEntries(Object.entries(whatIf(ratings, kept, prios)).map(([p, n]) => [p, byName[n]]));
+  const counts = {}; Object.values(tops).forEach(i => { counts[i] = (counts[i] || 0) + 1; });
+  const most = Object.keys(counts).sort((a, b) => (counts[b] - counts[a]) || (ids.indexOf(a) - ids.indexOf(b)))[0];
+  const others = ids.filter(i => i in counts && i !== most);
+  if (!others.length) return `${O[most].label} comes out on top whichever priority you put first.`;
+  const parts = others.map(o => `${joinOr(Object.entries(tops).filter(([, i]) => i === o).map(([p]) => p.toLowerCase()))} comes first, when ${O[o].phrase} does`);
+  return `${O[most].label} comes out on top unless ` + parts.join("; or unless ") + ".";
+}
+
+function median(xs) { const s = [...xs].sort((a, b) => a - b), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; }
+function round1(x) { return Math.round(x * 10 + Number.EPSILON * Math.sign(x)) / 10; }
+function round3(x) { return Math.round(x * 1000) / 1000; }
+function coverEffect(rows, exclude) {
+  const byCrop = {};
+  rows.forEach(r => {
+    if (r.partial || r.share == null || r.off == null) return;
+    const kind = r.off >= E3.GREEN_YEAR_DAYS ? "with" : r.off <= 5 ? "without" : null;
+    if (kind === "with" && exclude.has(`${r.field}-${r.season}`)) return;
+    if (kind) { (byCrop[r.crop] = byCrop[r.crop] || { with: [], without: [] })[kind].push(r); }
+  });
+  const diffs = [], used = [];
+  Object.values(byCrop).forEach(d => { if (d.with.length && d.without.length) { diffs.push(median(d.without.map(x => x.share)) - median(d.with.map(x => x.share))); d.with.forEach(x => used.push([x.field, x.season])); } });
+  if (!diffs.length) return null;
+  const eff = median(diffs);
+  return { share_reduction: round3(eff), months_per_year: round1(eff * 12), cover_years: used.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] - b[1]) };
+}
+function estimateMonths(rows, letter, effect) {
+  if (!effect) return null;
+  const sh = rows.filter(r => r.field === letter && !r.partial && r.share != null).map(r => (r.off || 0) < E3.GREEN_YEAR_DAYS ? Math.max(0, r.share - effect.share_reduction) : r.share);
+  return sh.length ? round1(sh.reduce((a, b) => a + b, 0) / sh.length * 12) : null;
+}
+function whereToStart(option, farm, gains) {
+  if (option === "cs_rye") {
+    const c = farm.filter(f => gains[f.letter] != null).sort((a, b) => (gains[b.letter] - gains[a.letter]) || (a.letter < b.letter ? -1 : 1));
+    return c.length ? c[0].letter : null;
+  }
+  if (option === "cso_rc") {
+    const c = farm.filter(f => f.crop_2026 === "soybeans").sort((a, b) => (b.bare_months - a.bare_months) || (a.letter < b.letter ? -1 : 1));
+    return c.length ? c[0].letter : null;
+  }
+  return null;
+}
+function ryeSoilRating(cur, est, effect) { return effect && est != null ? (cur - est >= E3.MEANINGFUL_MONTHS ? "better" : "similar") : "better"; }
+/* ---------------- end of V2 logic ---------------- */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pct = x => Math.round(x * 100) + "%";
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const md = s => { const [m, d] = s.split("-").map(Number); return `${d} ${MON[m - 1]}`; };
+const cropWord = c => c === "soybeans" ? "soybean" : c;
+
+const state = { field: "A", answers: {}, late: {}, constraints: new Set(), rented: false, priorities: ["Soil protection", "Water and stress risk", "Workload and simplicity"], choice: null };
+try { const s = JSON.parse(localStorage.getItem("fieldshift_v2") || "{}");
+  if (s.field && DATA.fields[s.field]) state.field = s.field; if (s.answers) state.answers = s.answers; if (s.late) state.late = s.late;
+  if (Array.isArray(s.priorities)) state.priorities = s.priorities.filter(p => E3.PRIORITIES.includes(p)); if (Array.isArray(s.constraints)) state.constraints = new Set(s.constraints);
+  if (s.choice) state.choice = s.choice; state.rented = !!s.rented; } catch (e) {}
+function save() { try { localStorage.setItem("fieldshift_v2", JSON.stringify({ field: state.field, answers: state.answers, late: state.late, priorities: state.priorities, constraints: [...state.constraints], choice: state.choice, rented: state.rented })); } catch (e) {} }
+
+function derive() {
+  const exclude = new Set(DATA.farm.flatMap(f => f.green.filter(g => g.cover_year && state.answers[`${f.letter}-${g.autumn}`] === "weeds").map(g => `${f.letter}-${g.cover_year}`)));
+  const effect = coverEffect(DATA.cover_rows, exclude);
+  const est = {}, gains = {};
+  DATA.farm.forEach(f => { est[f.letter] = estimateMonths(DATA.cover_rows, f.letter, effect); gains[f.letter] = est[f.letter] == null ? null : round1(f.bare_months - est[f.letter]); });
+  return { effect, est, gains, start: { cs_rye: whereToStart("cs_rye", DATA.farm, gains), cso_rc: whereToStart("cso_rc", DATA.farm, gains) } };
+}
+function ratingsFor(L, d) {
+  const r = JSON.parse(JSON.stringify(DATA.fields[L].ratings)), f = DATA.farm.find(x => x.letter === L), c = r.cs_rye["Soil cover and living roots"];
+  c.rating = ryeSoilRating(f.bare_months, d.est[L], d.effect);
+  if (d.effect && d.est[L] != null) {
+    c.estimate = `~${d.est[L].toFixed(1)} months a year without living cover (now ~${f.bare_months.toFixed(1)})`;
+    c.evidence = `Now about ${f.bare_months.toFixed(1)} months a year without living cover (NASA HLS, 30 m). In this farm’s cover years with green after harvest, ${d.effect.share_reduction.toFixed(2)} less of the year went uncovered (≈${d.effect.months_per_year.toFixed(1)} months) than in matched years without. Applied to this field’s uncovered years: about ${d.est[L].toFixed(1)} months. A lower bound: rye also grows in spring.`;
+  } else { c.estimate = ""; c.evidence = "No cover years left to learn from on this farm after your answers, so the gain is not measured: a winter cover fills the harvest-to-planting gap (crop catalogue)."; c.confidence = "low–moderate"; }
+  return r;
+}
+
+/* ---------------- 1 · farm ---------------- */
+function renderFarm(d) {
+  $("decision").textContent = DATA.decision;
+  $("farmlead").textContent = DATA.worked_lead;
+  $("farm").innerHTML = DATA.farm.map(f => `<button type="button" class="fcard" aria-pressed="${f.letter === state.field}" data-f="${f.letter}">
+    ${d.start.cs_rye === f.letter ? `<span class="tag go">Start a rye trial here</span>` : `<span class="tag">Field ${f.letter}</span>`}
+    <h3>Field ${f.letter} · ${f.area.toFixed(1)} ha</h3><span class="small">${esc(f.drainage)} · mean slope ${f.slope}%</span>
+    <span class="big">${f.bare_months.toFixed(1)} months</span><span class="small">a year without living cover</span>
+    <dl><dt>Green after corn harvest</dt><dd>${f.green_corn.length} of ${f.corn_harvests}</dd>
+    <dt>Hit by a dry or hot spell</dt><dd>${f.stress} of ${f.seasons} seasons</dd><dt>Typical decade</dt><dd>about ${f.expected}</dd>
+    <dt>Vigour held when hit</dt><dd>${f.held} of ${f.flagged}</dd><dt>Rye could save</dt><dd>${d.gains[f.letter] == null ? "not measured" : d.gains[f.letter].toFixed(1) + " months"}</dd></dl></button>`).join("");
+  $("farm").querySelectorAll("[data-f]").forEach(b => b.onclick = () => { state.field = b.dataset.f; save(); renderAll(); });
+  const f = DATA.farm.find(x => x.letter === state.field);
+  $("workedsum").textContent = `What the record says worked on Field ${f.letter}`;
+  $("worked").innerHTML = f.worked.map(l => `<li>${esc(l)}</li>`).join("");
+}
+/* ---------------- 2 · answers ---------------- */
+function renderQuestions(d) {
+  const qs = DATA.farm.flatMap(f => f.green.map(g => ({ f, g })));
+  $("questions").innerHTML = qs.map(({ f, g }) => { const k = `${f.letter}-${g.autumn}`, a = state.answers[k] || "unsure";
+    return `<div class="qrow"><span class="q"><b>Field ${f.letter}</b>, autumn ${g.autumn} after ${cropWord(g.after)}: green seen after harvest. What was it?</span>
+    <span class="seg" role="group" aria-label="Field ${f.letter} autumn ${g.autumn}">${[["cover", "Planted cover"], ["weeds", "Weeds or volunteers"], ["unsure", "Not sure"]].map(([v, t]) => `<button type="button" data-q="${k}" data-v="${v}" aria-pressed="${a === v}">${t}</button>`).join("")}</span></div>`; }).join("") +
+    DATA.farm.filter(f => f.late_silking.length).map(f => { const k = f.letter, a = state.late[k] || "unsure", ys = f.late_silking.map(x => x.season);
+    return `<div class="qrow"><span class="q"><b>Field ${f.letter}</b>: the corn looked late in ${ys.join(", ")} (${Math.min(...f.late_silking.map(x => x.days_from_50))}–${Math.max(...f.late_silking.map(x => x.days_from_50))} days behind Iowa’s typical silking). Was it planted late those years?</span>
+    <span class="seg" role="group" aria-label="Field ${f.letter} late planting">${[["yes", "Yes"], ["no", "No"], ["unsure", "Not sure"]].map(([v, t]) => `<button type="button" data-l="${k}" data-v="${v}" aria-pressed="${a === v}">${t}</button>`).join("")}</span></div>`; }).join("");
+  $("questions").querySelectorAll("[data-q]").forEach(b => b.onclick = () => { state.answers[b.dataset.q] = b.dataset.v; save(); renderAll(); });
+  $("questions").querySelectorAll("[data-l]").forEach(b => b.onclick = () => { state.late[b.dataset.l] = b.dataset.v; save(); renderAll(); });
+  $("cons").innerHTML = Object.entries(E3.CONSTRAINTS).map(([k, v]) => `<label><input type="checkbox" id="c-${k}" data-c="${k}" ${state.constraints.has(k) ? "checked" : ""}> ${esc(v)}</label>`).join("") +
+    `<label><input type="checkbox" id="c-rented" ${state.rented ? "checked" : ""}> Rented land on a short lease</label>`;
+  $("cons").querySelectorAll("[data-c]").forEach(c => c.onchange = () => { c.checked ? state.constraints.add(c.dataset.c) : state.constraints.delete(c.dataset.c); save(); renderAll(); });
+  $("c-rented").onchange = e => { state.rented = e.target.checked; save(); renderAll(); };
+  const e = d.effect, weeds = Object.values(state.answers).filter(v => v === "weeds").length, cover = Object.values(state.answers).filter(v => v === "cover").length;
+  $("answerresult").innerHTML = (e ? `<b>With your answers:</b> in this farm’s cover years, about ${e.months_per_year.toFixed(1)} fewer months a year went without living cover (from ${e.cover_years.length} cover year${e.cover_years.length > 1 ? "s" : ""}: ${e.cover_years.map(([f, y]) => `Field ${f} ${y}`).join(", ")}). A cereal rye cover would bring each field to about ${DATA.farm.map(f => `Field ${f.letter} ${d.est[f.letter].toFixed(1)}`).join(", ")} months.`
+    : `<b>With your answers:</b> no cover years are left to learn from, so the rye estimate falls back to crop traits and is not measured.`) +
+    (cover ? ` ${cover} answer${cover > 1 ? "s" : ""} confirm a planted cover, which raises confidence in the estimate.` : "") + (weeds ? ` Years you marked as weeds or volunteers are left out.` : "") +
+    (d.start.cs_rye ? ` <b>Best field for a rye trial: Field ${d.start.cs_rye}</b> (the most months to gain).` : "");
+}
+/* ---------------- 3 · season ---------------- */
+function renderSeason() {
+  const L = state.field, F = DATA.fields[L], ex = F.exposure, h = ex.hottest, c = ex.crops, cs = ex.options.cs;
+  $("seasontitle").textContent = `3 · Your season: where the weather risk sits on Field ${L}`;
+  $("seasonlead").textContent = `On Field ${L}, the hottest weeks are ${h.label}: ${pct(h.hot_share)} of days passed 30 °C in 2016–2025. Corn silks then (${c.corn.label}), and soybeans fill pods ${c.soybeans.label}. Oats are most sensitive in June, when the soil is wetter (root-zone wetness ${c.oats.wetness.toFixed(2)} against ${cs.wetness.toFixed(2)}) and heat days are a little fewer (${pct(c.oats.hot_share)} against ${pct(cs.hot_share)}).`;
+  drawCalendar(F);
+}
+function drawCalendar(F) {
+  const svg = $("cal"), W = 1000, left = 170, right = 10, x = doy => left + (doy - 1) / 365 * (W - left - right);
+  const rowH = 20, gap = 6, groupGap = 16, labels = { cs: "Current rotation", cs_rye: "Cereal rye cover", cso_rc: "Oats + red clover" };
+  const clim = F.climate, toDoy = s => { const [m, d] = s.split("-").map(Number); return Math.round((Date.UTC(2001, m - 1, d) - Date.UTC(2001, 0, 1)) / 864e5) + 1; };
+  const hot = F.exposure.hottest, stripTop = 26, stripH = 54;
+  let y = stripTop + stripH + 22, out = [`<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--cover)" opacity="0.45"/><rect width="3" height="6" fill="var(--cover)"/></pattern></defs>`];
+  out.push(`<rect x="${x(toDoy(hot.start))}" y="${stripTop - 6}" width="${x(toDoy(hot.end) + 1) - x(toDoy(hot.start))}" height="9999" fill="var(--hot)" opacity="0.10"/>`);
+  MON.forEach((m, i) => { const dx = x(toDoy(`${String(i + 1).padStart(2, "0")}-01`)); out.push(`<text x="${dx + 2}" y="14" font-size="12" fill="var(--muted)">${m}</text><line x1="${dx}" x2="${dx}" y1="18" y2="9999" stroke="var(--line)"/>`); });
+  out.push(`<text x="0" y="${stripTop + 16}" font-size="12">Days above 30 °C</text><text x="0" y="${stripTop + 32}" font-size="12" fill="var(--muted)">2016–2025, by half-month</text>`);
+  clim.forEach(cl => { const x0 = x(toDoy(cl.start)), x1 = x(toDoy(cl.end) + 1), bh = cl.hot_share * stripH;
+    out.push(`<rect x="${x0 + 1}" y="${stripTop + stripH - bh}" width="${x1 - x0 - 2}" height="${bh}" fill="var(--hot)" rx="2"><title>${cl.label}: ${pct(cl.hot_share)} of days above 30 °C; root-zone wetness ${cl.wetness.toFixed(2)}</title></rect>`);
+    if (cl.hot_share >= 0.3) out.push(`<text x="${(x0 + x1) / 2}" y="${stripTop + stripH - bh - 3}" font-size="10" text-anchor="middle" fill="var(--muted)">${pct(cl.hot_share)}</text>`); });
+  const fill = s => s.kind === "bare" ? "var(--bare)" : s.kind === "cover" ? "var(--cover)" : s.name === "corn" ? "var(--corn)" : s.name === "soybeans" ? "var(--soy)" : "var(--oats)";
+  Object.entries(F.calendar).forEach(([o, rows]) => {
+    out.push(`<text x="0" y="${y + 13}" font-size="13" font-weight="600">${labels[o]}</text>`);
+    rows.forEach((r, i) => {
+      out.push(`<text x="${left - 8}" y="${y + 14}" font-size="11" text-anchor="end" fill="var(--muted)">${r.crop === "oats" ? "oats year" : cropWord(r.crop) + " year"}</text>`);
+      r.segments.forEach(s => out.push(`<rect x="${x(s.start)}" y="${y}" width="${Math.max(0, x(s.end + 1) - x(s.start))}" height="${rowH}" fill="${s.kind === "cover" ? "url(#hatch)" : fill(s)}"><title>${s.kind === "bare" ? "Bare soil" : s.kind === "cover" ? `${s.name} (planned)` : cropWord(s.name)}</title></rect>`));
+      out.push(`<rect x="${x(r.window.start)}" y="${y - 2}" width="${x(r.window.end + 1) - x(r.window.start)}" height="${rowH + 4}" fill="none" stroke="var(--ink)" stroke-width="2" rx="3"><title>${cropWord(r.crop)} sensitive stage</title></rect>`);
+      y += rowH + gap;
+    });
+    y += groupGap;
+  });
+  svg.setAttribute("viewBox", `0 0 ${W} ${y}`);
+  svg.setAttribute("aria-label", `Season calendar for Field ${state.field}: each option’s crops, planned cover crops and bare soil by month, with each crop’s sensitive stage and the share of days above 30 °C from May to September.`);
+  svg.innerHTML = out.join("");
+}
+/* ---------------- 4 · options ---------------- */
+function renderOrder() {
+  const P = state.priorities;
+  $("order").innerHTML = P.length ? P.map((p, i) => `<li><span class="ord">${i + 1}</span><span class="name">${esc(p)}</span><button type="button" class="mini" data-up="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move ${esc(p)} up">↑</button><button type="button" class="mini" data-rm="${i}" aria-label="Remove ${esc(p)}">✕</button></li>`).join("") : `<li class="empty">Nothing chosen yet: add what matters most to you.</li>`;
+  $("addprios").innerHTML = E3.PRIORITIES.filter(p => !P.includes(p)).map(p => `<button type="button" class="chip" data-add="${esc(p)}">+ ${esc(p)}</button>`).join("") + `<button type="button" class="chip ghost" id="reset">Reset</button>`;
+  const done = () => { save(); renderAll(); };
+  $("order").querySelectorAll("[data-up]").forEach(b => b.onclick = () => { const i = +b.dataset.up; [P[i - 1], P[i]] = [P[i], P[i - 1]]; done(); });
+  $("order").querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { P.splice(+b.dataset.rm, 1); done(); });
+  $("addprios").querySelectorAll("[data-add]").forEach(b => b.onclick = () => { P.push(b.dataset.add); done(); });
+  $("reset").onclick = () => { state.priorities = ["Soil protection", "Water and stress risk", "Workload and simplicity"]; done(); };
+}
+function renderOptions(d) {
+  renderOrder();
+  const L = state.field, ratings = ratingsFor(L, d), [kept, dropped] = applyConstraints(state.constraints);
+  const ranked = rank(ratings, kept, state.priorities), crit = orderedCriteria(state.priorities), mine = new Set(state.priorities.flatMap(p => E3.CRITERIA_FOR_PRIORITY[p] || []));
+  const f = DATA.farm.find(x => x.letter === L), ex = DATA.fields[L].exposure.options;
+  $("optmsg").textContent = priorityAction(ratings, state.priorities, state.constraints).text;
+  $("stable").textContent = stabilityLine(ratings, kept, state.priorities);
+  const bare = { cs: `${f.bare_months.toFixed(1)} months`, cs_rye: d.est[L] != null ? `~${d.est[L].toFixed(1)} months` : "less (not measured)", cso_rc: "lowest (planned, not measured)" };
+  const card = (c, i) => { const o = E3.OPTIONS[c.id], r = ratings[c.id], e = ex[c.id];
+    const measures = `<table class="m"><tr><td>Bare soil, months a year</td><td>${bare[c.id]}</td></tr><tr><td>Years with a crop at its sensitive stage in the hottest weeks</td><td>${e.years_in_hottest} of ${e.rotation_years}</td></tr><tr><td>Days above 30 °C in sensitive stages</td><td>${pct(e.hot_share)}</td></tr><tr><td>Root-zone wetness in sensitive stages</td><td>${e.wetness.toFixed(2)}</td></tr></table>`;
+    if (c.id === "cs") return `<article class="opt${i === 0 ? " top" : ""}"><span class="tag${i === 0 ? " go" : ""}">#${i + 1} for you</span><h3>${esc(o.label)}</h3><p class="blurb">${esc(o.blurb)}</p>${measures}</article>`;
+    const rows = crit.map(k => { const x = r[k], ic = { better: "▲", similar: "●", worse: "▼" }[x.rating] || "·"; return `<li class="r-${x.rating}${mine.has(k) ? " mine" : ""}"><span class="ic" aria-hidden="true">${ic}</span><span class="crit">${esc(k)}</span><span class="word">${x.rating}</span></li>`; }).join("");
+    const verify = [...new Set(crit.map(k => r[k].verify).filter(Boolean))];
+    return `<article class="opt${i === 0 ? " top" : ""}"><span class="tag${i === 0 ? " go" : ""}">#${i + 1} for you</span><h3>${esc(o.label)}</h3><p class="blurb">${esc(o.blurb)}</p>${measures}
+      <ul class="rates" aria-label="Ratings against the current rotation, in your priority order">${rows}</ul>${verify.length ? `<p class="small"><b>Check first:</b> ${esc(verify[0])}</p>` : ""}
+      <details><summary>Why these ratings?</summary><ul class="plain">${crit.map(k => `<li><b>${esc(k)}: ${r[k].rating}</b> (confidence ${esc(r[k].confidence)}). ${esc(r[k].evidence)}</li>`).join("")}</ul></details></article>`; };
+  const keptIds = new Set(kept.map(c => c.id));
+  $("optcards").innerHTML = ranked.map(card).join("") + E3.CANDIDATES.filter(c => !keptIds.has(c.id)).map(c => `<article class="opt out"><span class="tag">Ruled out</span><h3>${esc(E3.OPTIONS[c.id].label)}</h3><p class="blurb">${esc(E3.OPTIONS[c.id].blurb)}</p><p class="small">${esc((dropped.find(([n]) => n === c.name) || [0, "Removed by your answers"])[1])}.</p></article>`).join("");
+  return { ratings, ranked, kept };
+}
+/* ---------------- 5 · plan ---------------- */
+function planFor(d) {
+  const o = state.choice, L = o === "cs" ? "_" : d.start[o];
+  return o && L ? { o, L, plan: DATA.plans[o][L] } : null;
+}
+function renderPlan(d, opt) {
+  const keptIds = new Set(opt.kept.map(c => c.id));
+  if (state.choice && !keptIds.has(state.choice)) state.choice = null;
+  $("pick").innerHTML = opt.ranked.map((c, i) => `<button type="button" data-o="${c.id}" aria-pressed="${state.choice === c.id}"><b>${esc(E3.OPTIONS[c.id].label)}</b><span class="small">#${i + 1} for your priorities</span></button>`).join("");
+  $("pick").querySelectorAll("[data-o]").forEach(b => b.onclick = () => { state.choice = b.dataset.o; save(); renderAll(); document.getElementById("plan").scrollIntoView({ block: "nearest" }); });
+  const p = planFor(d);
+  $("plan").hidden = !p;
+  if (!p) return;
+  const lab = E3.OPTIONS[p.o].label;
+  if (p.o === "cs") { $("planhead").textContent = "Your plan: keep the current rotation."; $("planwhy").textContent = "No change to operations. Two low-cost steps still help the next decision."; }
+  else {
+    const g = d.gains[p.L];
+    $("planhead").textContent = `Your plan: try ${lab.toLowerCase()} on Field ${p.L} first, from ${p.plan.start_year}.`;
+    $("planwhy").textContent = p.o === "cs_rye" ? `Field ${p.L} has the most to gain${g != null ? ` (about ${g.toFixed(1)} fewer bare months a year)` : ""}${DATA.farm.find(f => f.letter === p.L).green_corn.length ? "" : " and has never turned green after harvest, so next spring’s satellite record will show the effect clearly"}. Starting after a corn harvest puts the rye ahead of soybeans.`
+      : `Oats follow soybeans, and Field ${p.L} was in soybeans in 2026 if the alternation continued. One field first keeps the extra work and the oat sales small while you learn.`;
+  }
+  $("timeline").innerHTML = p.plan.steps.map(s => `<li><b>${esc(s.when)}</b><span>${esc(s.what)}</span></li>`).join("");
+  $("nextchecks").innerHTML = p.plan.checks.map(c => `<li>${esc(c)}</li>`).join("");
+  $("askag").innerHTML = agronomistQuestions(p, opt.ratings).map(q => `<li>${esc(q)}</li>`).join("");
+}
+function agronomistQuestions(p, ratings) {
+  const qs = [];
+  if (p.o !== "cs") E3.CRITERIA.forEach(k => { const v = ratings[p.o][k].verify; if (v && !qs.includes(v)) qs.push(v); });
+  const open = DATA.farm.map(f => [f.letter, f.green.filter(g => (state.answers[`${f.letter}-${g.autumn}`] || "unsure") === "unsure").map(g => g.autumn)]).filter(([, ys]) => ys.length);
+  if (open.length) qs.push(`Was the green after harvest a planted cover? ${open.map(([L, ys]) => `Field ${L}: ${ys.join(", ")}`).join("; ")}. Your answer changes the rye estimate (step 2).`);
+  DATA.farm.filter(f => f.late_silking.length).forEach(f => { const a = state.late[f.letter] || "unsure";
+    qs.push(a === "yes" ? `Field ${f.letter}: late planting in ${f.late_silking.map(x => x.season).join(", ")} explains the late satellite timing; does it affect which option suits this field?` :
+      a === "no" ? `Field ${f.letter}: planting was on time, so why did the canopy develop late in ${f.late_silking.map(x => x.season).join(", ")}? Wet spots or drainage are worth checking.` :
+      `Field ${f.letter}: was the corn planted late in ${f.late_silking.map(x => x.season).join(", ")}? The satellite saw it develop 1–2 weeks behind Iowa.`); });
+  if (state.rented) qs.push("On a short lease, who keeps the long-term soil benefits? Check lease terms before investing.");
+  return qs;
+}
+function planText(d, opt) {
+  const p = planFor(d); if (!p) return "";
+  return [`Field Shift V2 plan · ${$("planhead").textContent}`, $("planwhy").textContent, "", "Season by season:", ...p.plan.steps.map(s => `- ${s.when}: ${s.what}`), "",
+    "Questions for your agronomist:", ...agronomistQuestions(p, opt.ratings).map(q => "- " + q), "", "What Field Shift checks next season:", ...p.plan.checks.map(c => "- " + c), "",
+    `Your priorities: ${state.priorities.join(" → ") || "not set"}`].join("\n");
+}
+/* ---------------- how we know ---------------- */
+function renderKnow() {
+  const F = DATA.fields[state.field];
+  $("checks").innerHTML = DATA.validation.map(v => `<li>${esc(v)}</li>`).join("");
+  $("caveat").textContent = DATA.caveat;
+  $("notest").innerHTML = F.not_established.map(n => `<li>${esc(n)}</li>`).join("");
+  $("sources").textContent = "Crop characteristics: " + F.sources.join("; ") + ". Confirm with an agronomist before relying on them.";
+}
+let lastOpt = null, lastD = null;
+function renderAll() { const d = derive(); renderFarm(d); renderQuestions(d); renderSeason(); const opt = renderOptions(d); renderPlan(d, opt); renderKnow(); lastOpt = opt; lastD = d; }
+$("copyplan").onclick = () => { const t = planText(lastD, lastOpt), ta = $("plantext");
+  const fallback = () => { ta.value = t; ta.hidden = false; ta.focus(); ta.select(); $("copied").textContent = "Copying isn’t allowed here: the plan is selected below, copy it from there."; };
+  try { navigator.clipboard.writeText(t).then(() => { ta.hidden = true; $("copied").textContent = "Plan copied."; }, fallback); } catch (e) { fallback(); } };
+renderAll();
+</script>
