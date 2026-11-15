@@ -103,3 +103,12 @@ def test_page_logic_matches_model(tmp_path, model):
     )
     out = subprocess.run(["node", str(script)], capture_output=True, text=True, check=True).stdout.strip()
     assert out == "[]", out
+
+
+def test_plan_follows_each_fields_rotation(model):
+    """Rye is sown after a corn harvest so it precedes soybeans; oats follow soybeans (if the alternation continued in 2026)."""
+    for f in model["farm"]:
+        rye, oats = model["plans"]["cs_rye"][f["letter"]], model["plans"]["cso_rc"][f["letter"]]
+        assert rye["start_year"] == (2027 if f["corn_parity"] == 1 else 2028)
+        assert oats["start_year"] == (2027 if f["crop_2026"] == "soybeans" else 2028)
+        assert all(f"Field {g['letter']}" not in s["what"] for s in rye["steps"] + oats["steps"] for g in model["farm"] if g["letter"] != f["letter"])

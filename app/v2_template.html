@@ -151,7 +151,8 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
 
   <section class="step" id="s5">
     <h2>5 · Your plan</h2>
-    <p>Choose what you want to plan for. Field Shift suggests where to start small, so next season’s satellite record can show whether it worked.</p>
+    <p>Choose the field and what you want to plan for. The plan follows that field’s own rotation and record, and says when another field would be a better place to start small.</p>
+    <div class="qrow" style="border-top:0;padding-top:0"><span class="q"><b>Plan for</b></span><span class="seg" id="planfield" role="group" aria-label="Plan for which field"></span></div>
     <div class="pick" id="pick" role="group" aria-label="Choose an option"></div>
     <div id="plan" hidden>
       <div class="result"><p class="msg" id="planhead"></p><p id="planwhy" style="margin-top:4px"></p></div>
@@ -356,25 +357,44 @@ function renderOptions(d) {
 }
 /* ---------------- 5 · plan ---------------- */
 function planFor(d) {
-  const o = state.choice, L = o === "cs" ? "_" : d.start[o];
-  return o && L ? { o, L, plan: DATA.plans[o][L] } : null;
+  const o = state.choice;
+  if (!o) return null;
+  return { o, L: o === "cs" ? state.field : state.field, plan: DATA.plans[o][o === "cs" ? "_" : state.field] };
+}
+function planWhy(d, p) {
+  const f = DATA.farm.find(x => x.letter === p.L), y = p.plan.start_year, s = d.start[p.o], out = [];
+  if (p.o === "cs_rye") {
+    const g = d.gains[p.L];
+    out.push(g != null ? `About ${g.toFixed(1)} fewer bare months a year on Field ${p.L}, from this farm’s own cover years.` : `The gain on Field ${p.L} is not measured after your answers in step 2.`);
+    if (f.green_corn.length) {
+      const ans = f.green.filter(x => x.after === "corn").map(x => state.answers[`${f.letter}-${x.autumn}`] || "unsure");
+      out.push(ans.every(a => a === "cover") ? `You told us the green after harvest on Field ${p.L} was a planted cover, so this plan makes it routine.`
+        : `Field ${p.L} already turned green after ${f.green_corn.length} of its ${f.corn_harvests} corn harvests; if that was a planted cover, part of the gain is already there.`);
+    } else out.push(`Field ${p.L} has never turned green after harvest, so next spring’s satellite record will show the effect clearly.`);
+    out.push(f.crop_2026 === "corn" ? `Its 2026 corn is already harvested and sowing this late gives little autumn growth, so the plan starts after the ${y} corn harvest, ahead of soybeans.`
+      : `Sowing after the ${y} corn harvest puts the rye ahead of soybeans, which avoids nitrogen tie-up before corn.`);
+    if (s && s !== p.L && d.gains[s] != null) out.push(`Field ${s} has the most to gain (${d.gains[s].toFixed(1)} months a year); consider starting there.`);
+  } else if (p.o === "cso_rc") {
+    out.push(f.crop_2026 === "soybeans" ? `Oats follow soybeans, and Field ${p.L} was in soybeans in 2026 if the alternation continued, so oats can go in this coming spring instead of corn.`
+      : `Oats follow soybeans: Field ${p.L} was in corn in 2026, so soybeans come in 2027 and oats in ${y}.`);
+    if (s && s !== p.L && DATA.plans.cso_rc[s].start_year < y) out.push(`Field ${s} could start a year sooner.`);
+    out.push("One field first keeps the extra work and the oat sales small while you learn.");
+  } else out.push("No change to operations. Two low-cost steps still help the next decision.");
+  return out.join(" ");
 }
 function renderPlan(d, opt) {
   const keptIds = new Set(opt.kept.map(c => c.id));
   if (state.choice && !keptIds.has(state.choice)) state.choice = null;
   $("pick").innerHTML = opt.ranked.map((c, i) => `<button type="button" data-o="${c.id}" aria-pressed="${state.choice === c.id}"><b>${esc(E3.OPTIONS[c.id].label)}</b><span class="small">#${i + 1} for your priorities</span></button>`).join("");
   $("pick").querySelectorAll("[data-o]").forEach(b => b.onclick = () => { state.choice = b.dataset.o; save(); renderAll(); document.getElementById("plan").scrollIntoView({ block: "nearest" }); });
+  $("planfield").innerHTML = DATA.farm.map(f => `<button type="button" data-pf="${f.letter}" aria-pressed="${f.letter === state.field}">Field ${f.letter}</button>`).join("");
+  $("planfield").querySelectorAll("[data-pf]").forEach(b => b.onclick = () => { state.field = b.dataset.pf; save(); renderAll(); });
   const p = planFor(d);
   $("plan").hidden = !p;
   if (!p) return;
   const lab = E3.OPTIONS[p.o].label;
-  if (p.o === "cs") { $("planhead").textContent = "Your plan: keep the current rotation."; $("planwhy").textContent = "No change to operations. Two low-cost steps still help the next decision."; }
-  else {
-    const g = d.gains[p.L];
-    $("planhead").textContent = `Your plan: try ${lab.toLowerCase()} on Field ${p.L} first, from ${p.plan.start_year}.`;
-    $("planwhy").textContent = p.o === "cs_rye" ? `Field ${p.L} has the most to gain${g != null ? ` (about ${g.toFixed(1)} fewer bare months a year)` : ""}${DATA.farm.find(f => f.letter === p.L).green_corn.length ? "" : " and has never turned green after harvest, so next spring’s satellite record will show the effect clearly"}. Starting after a corn harvest puts the rye ahead of soybeans.`
-      : `Oats follow soybeans, and Field ${p.L} was in soybeans in 2026 if the alternation continued. One field first keeps the extra work and the oat sales small while you learn.`;
-  }
+  $("planhead").textContent = p.o === "cs" ? `Your plan for Field ${p.L}: keep the current rotation.` : `Your plan for Field ${p.L}: ${lab.toLowerCase()}, from ${p.plan.start_year}.`;
+  $("planwhy").textContent = planWhy(d, p);
   $("timeline").innerHTML = p.plan.steps.map(s => `<li><b>${esc(s.when)}</b><span>${esc(s.what)}</span></li>`).join("");
   $("nextchecks").innerHTML = p.plan.checks.map(c => `<li>${esc(c)}</li>`).join("");
   $("askag").innerHTML = agronomistQuestions(p, opt.ratings).map(q => `<li>${esc(q)}</li>`).join("");
